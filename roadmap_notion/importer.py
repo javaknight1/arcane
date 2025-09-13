@@ -386,6 +386,225 @@ class NotionImporter:
                 except Exception as e:
                     print(f"Error setting parent for {item['Name']}: {e}")
     
+    def create_overview_page(self) -> str:
+        """Create a comprehensive overview page for the roadmap."""
+        print("Creating roadmap overview page...")
+        
+        # Count items by type
+        type_counts = {}
+        for item in self.roadmap_items:
+            item_type = item.get("Type", "Unknown")
+            type_counts[item_type] = type_counts.get(item_type, 0) + 1
+        
+        # Build hierarchical table of contents
+        toc_blocks = []
+        
+        # Group items by parent for hierarchical display
+        items_by_parent = {}
+        for item in self.roadmap_items:
+            parent = item.get("Parent", "")
+            if parent not in items_by_parent:
+                items_by_parent[parent] = []
+            items_by_parent[parent].append(item)
+        
+        def add_toc_items(parent_name: str, indent_level: int = 0):
+            """Recursively add table of contents items"""
+            if parent_name not in items_by_parent:
+                return
+            
+            # Sort items by type hierarchy
+            type_order = {"Project": 0, "Milestone": 1, "Epic": 2, "Story": 3, "Task": 4}
+            items = sorted(items_by_parent[parent_name], 
+                         key=lambda x: (type_order.get(x.get("Type", ""), 5), x["Name"]))
+            
+            for item in items:
+                indent = "  " * indent_level
+                item_type = item.get("Type", "")
+                duration = f" ({item['Duration']}h)" if item.get("Duration") else ""
+                
+                # Create linked text if page exists
+                if item["Name"] in self.created_pages:
+                    page_id = self.created_pages[item["Name"]]
+                    toc_blocks.append({
+                        "object": "block",
+                        "type": "paragraph",
+                        "paragraph": {
+                            "rich_text": [
+                                {"type": "text", "text": {"content": f"{indent}• "}},
+                                {
+                                    "type": "mention",
+                                    "mention": {"page": {"id": page_id}},
+                                    "href": f"https://www.notion.so/{page_id.replace('-', '')}"
+                                },
+                                {"type": "text", "text": {"content": f" ({item_type}){duration}"}}
+                            ]
+                        }
+                    })
+                else:
+                    toc_blocks.append({
+                        "object": "block",
+                        "type": "paragraph",
+                        "paragraph": {
+                            "rich_text": [{"type": "text", "text": {"content": f"{indent}• {item['Name']} ({item_type}){duration}"}}]
+                        }
+                    })
+                
+                # Recursively add children
+                add_toc_items(item["Name"], indent_level + 1)
+        
+        # Start with root items (no parent)
+        add_toc_items("", 0)
+        
+        # Build overview page content
+        overview_content = [
+            {
+                "object": "block",
+                "type": "heading_1",
+                "heading_1": {
+                    "rich_text": [{"type": "text", "text": {"content": "🗺️ Project Roadmap Overview"}}]
+                }
+            },
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [{"type": "text", "text": {"content": "This comprehensive roadmap outlines the complete development journey for your project. It's organized hierarchically from high-level milestones down to specific implementation tasks."}}]
+                }
+            },
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {
+                    "rich_text": [{"type": "text", "text": {"content": "📊 Roadmap Statistics"}}]
+                }
+            }
+        ]
+        
+        # Add statistics
+        stats_text = f"**Total Items:** {len(self.roadmap_items)}\n\n"
+        for item_type in ["Project", "Milestone", "Epic", "Story", "Task"]:
+            if item_type in type_counts:
+                stats_text += f"**{item_type}s:** {type_counts[item_type]}\n"
+        
+        overview_content.append({
+            "object": "block",
+            "type": "paragraph",
+            "paragraph": {
+                "rich_text": [{"type": "text", "text": {"content": stats_text}}]
+            }
+        })
+        
+        # Add quick access section
+        overview_content.extend([
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {
+                    "rich_text": [{"type": "text", "text": {"content": "🔗 Quick Access"}}]
+                }
+            },
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [
+                        {"type": "text", "text": {"content": "📋 "}},
+                        {
+                            "type": "mention",
+                            "mention": {"database": {"id": self.database_id}},
+                            "href": f"https://www.notion.so/{self.database_id.replace('-', '')}"
+                        },
+                        {"type": "text", "text": {"content": " - Complete Roadmap Database"}}
+                    ]
+                }
+            }
+        ])
+        
+        # Add table of contents
+        overview_content.extend([
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {
+                    "rich_text": [{"type": "text", "text": {"content": "📑 Complete Table of Contents"}}]
+                }
+            },
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [{"type": "text", "text": {"content": "Below is the complete hierarchical structure of your roadmap with links to each item:"}}]
+                }
+            }
+        ])
+        
+        # Add TOC items (limit to first 90 to avoid API limits)
+        overview_content.extend(toc_blocks[:90])
+        
+        if len(toc_blocks) > 90:
+            overview_content.append({
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [{"type": "text", "text": {"content": f"... and {len(toc_blocks) - 90} more items (see the database for complete list)"}}]
+                }
+            })
+        
+        # Add implementation notes
+        overview_content.extend([
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {
+                    "rich_text": [{"type": "text", "text": {"content": "💡 Implementation Notes"}}]
+                }
+            },
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [{"type": "text", "text": {"content": "This roadmap includes detailed Claude Code prompts for each task, making it easy to implement features using AI assistance. Each task contains specific technical requirements, implementation guidance, and acceptance criteria."}}]
+                }
+            },
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [{"type": "text", "text": {"content": "The roadmap follows a milestone-based approach with clear dependencies and hierarchical organization from Projects → Milestones → Epics → Stories → Tasks."}}]
+                }
+            }
+        ])
+        
+        # Create the overview page
+        response = self.notion.pages.create(
+            parent={"page_id": self.parent_page_id},
+            icon={"type": "emoji", "emoji": "🗺️"},
+            properties={
+                "title": [{"type": "text", "text": {"content": "📋 Roadmap Overview"}}]
+            },
+            children=overview_content[:100]  # Limit to 100 blocks
+        )
+        
+        overview_page_id = response["id"]
+        print(f"✅ Created overview page (ID: {overview_page_id})")
+        
+        # Add remaining blocks if needed
+        if len(overview_content) > 100:
+            remaining_blocks = overview_content[100:]
+            batch_size = 100
+            for i in range(0, len(remaining_blocks), batch_size):
+                batch = remaining_blocks[i:i + batch_size]
+                try:
+                    self.notion.blocks.children.append(
+                        block_id=overview_page_id,
+                        children=batch
+                    )
+                except Exception as e:
+                    print(f"  Warning: Could not add some overview blocks: {e}")
+                    break
+        
+        return overview_page_id
+
     def run_import(self, csv_file: str) -> None:
         """Run the complete import process."""
         print("🚀 Starting Roadmap Import...")
@@ -406,8 +625,12 @@ class NotionImporter:
         # Set up relationships
         self.set_parent_relationships()
         
+        # Create overview page
+        overview_page_id = self.create_overview_page()
+        
         print("✅ Import completed successfully!")
         print(f"🔗 Database URL: https://notion.so/{self.database_id.replace('-', '')}")
+        print(f"📄 Overview Page: https://notion.so/{overview_page_id.replace('-', '')}")
         print(f"📊 Created {len(self.created_pages)} pages")
 
 def main():
