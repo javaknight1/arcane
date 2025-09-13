@@ -63,6 +63,10 @@ roadmap-parse input.txt output.csv
 roadmap-import roadmap.csv
 ```
 
+## Getting Started with Claude Code
+
+💡 **Want to generate a roadmap using Claude Code?** See our comprehensive [Claude Code Roadmap Generation Guide](CLAUDE_GUIDE.md) for step-by-step instructions on how to ask Claude to create roadmaps that work perfectly with these tools.
+
 ## CSV Format
 
 The CSV should contain the following columns:

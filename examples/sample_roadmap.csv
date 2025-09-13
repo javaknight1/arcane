@@ -1,0 +1,6 @@
+Name,Type,Parent,Duration,Priority,Status,Goal/Description,Benefits,Prerequisites,Technical Requirements,Claude Code Prompt
+My Project,Project,,480,Critical,Not Started,Build a complete web application,Improved efficiency and user experience,,,
+Phase 1,Milestone,My Project,160,High,Not Started,Foundation and setup,Establish project structure,,,
+Setup Environment,Epic,Phase 1,40,High,Not Started,Configure development environment,Standardized development,,,
+Install Dependencies,Task,Setup Environment,8,Medium,Not Started,Install required packages,Ready to develop,,Node.js and npm,npm install && npm run setup
+Phase 2,Milestone,My Project,320,High,Not Started,Core features,Main functionality,Phase 1 completion,,
