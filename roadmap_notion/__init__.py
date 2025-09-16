@@ -1,8 +1,19 @@
-"""Roadmap Notion Importer - Parse CSV roadmaps and import them into Notion."""
+"""Roadmap Generator & Notion Importer.
 
-__version__ = "0.1.0"
+A comprehensive CLI tool that automates the entire roadmap generation workflow.
+"""
 
-from .parser import parse_roadmap
+from .generator import RoadmapGenerator
 from .importer import NotionImporter
+from .llm_client import LLMClient
+from .parser import RoadmapParser, parse_roadmap
 
-__all__ = ["parse_roadmap", "NotionImporter"]
+__version__ = "1.0.0"
+
+__all__ = [
+    "RoadmapGenerator",
+    "NotionImporter",
+    "LLMClient",
+    "RoadmapParser",
+    "parse_roadmap",
+]
