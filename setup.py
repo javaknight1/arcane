@@ -36,6 +36,7 @@ setup(
     install_requires=requirements,
     entry_points={
         "console_scripts": [
+            "roadmap-notion=roadmap_notion.__main__:main",
             "roadmap-parse=roadmap_notion.parser:main",
             "roadmap-import=roadmap_notion.importer:main",
         ],
