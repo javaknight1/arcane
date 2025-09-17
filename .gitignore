@@ -147,5 +147,9 @@ cython_debug/
 # Project specific
 logs/
 
+# Generated outputs
+output/
+generated_roadmap.*
+
 # Claude
 .claude/
