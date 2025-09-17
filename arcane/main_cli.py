@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Roadmap Generator CLI - Automated roadmap generation and Notion import."""
+"""Arcane CLI - AI-powered roadmap generation and project management integration."""
 
 import os
 import sys
@@ -13,25 +13,27 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.prompt import Prompt, Confirm
 from rich.table import Table
 
-from .generator import RoadmapGenerator
-from .importer import NotionImporter
-from .llm_client import LLMClient
-from .parser import parse_roadmap
+from .engines.generation import RoadmapGenerationEngine
+from .engines.export import FileExportEngine
+from .engines.import_engine import NotionImportEngine
+from .items import Roadmap
 
 
-class RoadmapCLI:
-    """Main CLI application for roadmap generation and import."""
+class ArcaneCLI:
+    """Main CLI application for AI-powered roadmap generation."""
 
     def __init__(self):
         self.console = Console()
-        self.llm_client = None
-        self.roadmap_generator = None
+        self.generation_engine = None
+        self.export_engine = None
+        self.import_engine = None
+        self.current_roadmap = None
 
     def display_banner(self):
         """Display welcome banner."""
         banner = Panel.fit(
-            "[bold blue]🗺️  Roadmap Generator[/bold blue]\n"
-            "[dim]Automated roadmap generation and Notion import[/dim]",
+            "[bold blue]🔮  Arcane[/bold blue]\n"
+            "[dim]AI-powered roadmap generation and project integration[/dim]",
             border_style="blue"
         )
         self.console.print(banner)
@@ -150,7 +152,7 @@ class RoadmapCLI:
 
         return answers or {}
 
-    def generate_roadmap(self, llm_provider: str, idea_file: Optional[str], preferences: Dict[str, Any]) -> Optional[str]:
+    def generate_roadmap(self, llm_provider: str, idea_file: Optional[str], preferences: Dict[str, Any]) -> Optional[Roadmap]:
         """Generate roadmap using selected LLM."""
         with Progress(
             SpinnerColumn(),
@@ -160,60 +162,75 @@ class RoadmapCLI:
             task = progress.add_task("🤖 Generating roadmap with AI...", total=None)
 
             try:
-                # Initialize LLM client
-                self.llm_client = LLMClient(llm_provider)
-                self.roadmap_generator = RoadmapGenerator(self.llm_client)
+                # Initialize generation engine
+                self.generation_engine = RoadmapGenerationEngine(llm_provider)
 
                 # Read idea file if provided
                 idea_content = ""
                 if idea_file:
                     with open(idea_file, 'r', encoding='utf-8') as f:
                         idea_content = f.read()
+                else:
+                    idea_content = "Generate a comprehensive web application roadmap"
 
                 # Generate roadmap
-                roadmap_content = self.roadmap_generator.generate(idea_content, preferences)
-
-                # Save roadmap to file
-                roadmap_file = "generated_roadmap.txt"
-                with open(roadmap_file, 'w', encoding='utf-8') as f:
-                    f.write(roadmap_content)
+                self.current_roadmap = self.generation_engine.generate_roadmap(idea_content, preferences)
 
                 progress.update(task, description="✅ Roadmap generated successfully")
-                self.console.print(f"\n[green]✅ Roadmap saved to: {roadmap_file}[/green]")
 
-                return roadmap_file
+                # Display statistics
+                stats = self.current_roadmap.get_statistics()
+                self.console.print(f"\n[green]✅ Roadmap generated successfully![/green]")
+                self.console.print(f"[dim]Generated {stats['total_items']} items across {stats['milestones']} milestones[/dim]")
+
+                return self.current_roadmap
 
             except Exception as e:
                 progress.update(task, description="❌ Failed to generate roadmap")
                 self.console.print(f"\n[red]❌ Error generating roadmap: {str(e)}[/red]")
                 return None
 
-    def convert_to_csv(self, roadmap_file: str) -> Optional[str]:
-        """Convert roadmap text to CSV format."""
+    def export_roadmap(self, roadmap: Roadmap) -> Optional[Dict[str, str]]:
+        """Export roadmap to multiple formats."""
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=self.console
         ) as progress:
-            task = progress.add_task("📊 Converting roadmap to CSV...", total=None)
+            task = progress.add_task("📊 Exporting roadmap to files...", total=None)
 
             try:
-                csv_file = "generated_roadmap.csv"
-                roadmap_items = parse_roadmap(roadmap_file, csv_file)
+                # Initialize export engine
+                self.export_engine = FileExportEngine()
 
-                progress.update(task, description="✅ CSV conversion completed")
-                self.console.print(f"[green]✅ CSV saved to: {csv_file}[/green]")
-                self.console.print(f"[dim]Generated {len(roadmap_items)} roadmap items[/dim]")
+                # Export to all formats
+                base_path = "generated_roadmap"
+                exported_files = self.export_engine.export_multiple(
+                    roadmap,
+                    base_path,
+                    formats=['csv', 'json', 'yaml']
+                )
 
-                return csv_file
+                progress.update(task, description="✅ Export completed")
+
+                # Display exported files
+                self.console.print("\n[green]✅ Exported roadmap to:[/green]")
+                for file_path in exported_files:
+                    self.console.print(f"  📁 {file_path}")
+
+                return {
+                    'csv': f"{base_path}.csv",
+                    'json': f"{base_path}.json",
+                    'yaml': f"{base_path}.yaml"
+                }
 
             except Exception as e:
-                progress.update(task, description="❌ Failed to convert to CSV")
-                self.console.print(f"[red]❌ Error converting to CSV: {str(e)}[/red]")
+                progress.update(task, description="❌ Failed to export roadmap")
+                self.console.print(f"[red]❌ Error exporting roadmap: {str(e)}[/red]")
                 return None
 
-    def import_to_notion(self, csv_file: str) -> bool:
-        """Import CSV to Notion."""
+    def import_to_notion(self, roadmap: Roadmap) -> bool:
+        """Import roadmap to Notion."""
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
@@ -222,11 +239,11 @@ class RoadmapCLI:
             task = progress.add_task("📤 Importing to Notion...", total=None)
 
             try:
-                notion_token = os.getenv("NOTION_TOKEN")
-                parent_page_id = os.getenv("NOTION_PARENT_PAGE_ID")
+                # Initialize import engine (uses env vars)
+                self.import_engine = NotionImportEngine()
 
-                importer = NotionImporter(notion_token, parent_page_id)
-                importer.run_import(csv_file)
+                # Import the roadmap
+                result = self.import_engine.import_roadmap(roadmap)
 
                 progress.update(task, description="✅ Successfully imported to Notion")
                 self.console.print("[green]✅ Roadmap imported to Notion successfully![/green]")
@@ -238,18 +255,36 @@ class RoadmapCLI:
                 self.console.print(f"[red]❌ Error importing to Notion: {str(e)}[/red]")
                 return False
 
-    def display_summary(self, roadmap_file: str, csv_file: str, notion_success: bool):
+    def display_summary(self, roadmap: Roadmap, export_files: Dict[str, str], notion_success: bool):
         """Display final summary."""
         table = Table(title="🎉 Generation Complete!")
         table.add_column("Step", style="cyan")
         table.add_column("Status", style="green")
         table.add_column("Output", style="blue")
 
-        table.add_row("1. Roadmap Generation", "✅ Success", roadmap_file)
-        table.add_row("2. CSV Conversion", "✅ Success", csv_file)
-        table.add_row("3. Notion Import", "✅ Success" if notion_success else "❌ Failed", "Check Notion workspace")
+        stats = roadmap.get_statistics()
+        table.add_row(
+            "1. Roadmap Generation",
+            "✅ Success",
+            f"{stats['total_items']} items generated"
+        )
+        table.add_row(
+            "2. File Export",
+            "✅ Success",
+            f"CSV, JSON, YAML files created"
+        )
+        table.add_row(
+            "3. Notion Import",
+            "✅ Success" if notion_success else "❌ Failed",
+            "Check Notion workspace" if notion_success else "See error above"
+        )
 
         self.console.print(table)
+
+        if export_files:
+            self.console.print("\n[bold]📁 Generated Files:[/bold]")
+            for format_type, file_path in export_files.items():
+                self.console.print(f"  • {format_type.upper()}: {file_path}")
 
     def run(self):
         """Main application entry point."""
@@ -274,20 +309,20 @@ class RoadmapCLI:
             preferences = self.get_roadmap_preferences()
 
             # Step 5: Generate roadmap
-            roadmap_file = self.generate_roadmap(llm_provider, idea_file, preferences)
-            if not roadmap_file:
+            roadmap = self.generate_roadmap(llm_provider, idea_file, preferences)
+            if not roadmap:
                 return
 
-            # Step 6: Convert to CSV
-            csv_file = self.convert_to_csv(roadmap_file)
-            if not csv_file:
+            # Step 6: Export to files
+            export_files = self.export_roadmap(roadmap)
+            if not export_files:
                 return
 
             # Step 7: Import to Notion
-            notion_success = self.import_to_notion(csv_file)
+            notion_success = self.import_to_notion(roadmap)
 
             # Step 8: Display summary
-            self.display_summary(roadmap_file, csv_file, notion_success)
+            self.display_summary(roadmap, export_files, notion_success)
 
         except KeyboardInterrupt:
             self.console.print("\n[yellow]⚠️  Operation cancelled by user[/yellow]")

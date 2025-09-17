@@ -1,6 +1,6 @@
 # Claude Code Roadmap Generation Guide
 
-This guide shows you how to ask Claude Code to generate roadmaps that work perfectly with the roadmap-notion tools.
+This guide shows you how to ask Claude Code to generate roadmaps that work perfectly with the arcane tools.
 
 ## Quick Start Prompt
 
@@ -192,7 +192,7 @@ If you already have a project plan, you can ask Claude to convert it:
 ```
 I have this existing project plan: [PASTE YOUR PLAN]
 
-Please convert this into the roadmap format that works with roadmap-notion tools. Use the exact format with milestones, epics, stories, and tasks. Include duration estimates and Claude Code prompts for each implementation task.
+Please convert this into the roadmap format that works with arcane tools. Use the exact format with milestones, epics, stories, and tasks. Include duration estimates and Claude Code prompts for each implementation task.
 ```
 
 ## Troubleshooting
@@ -216,5 +216,5 @@ Please convert this into the roadmap format that works with roadmap-notion tools
 If the parser still has issues, ask Claude to validate the format:
 
 ```
-Please review this roadmap and ensure it follows the exact format needed for roadmap-notion tools. Check that all milestones, epics, stories, and tasks are properly formatted with the required fields.
+Please review this roadmap and ensure it follows the exact format needed for arcane tools. Check that all milestones, epics, stories, and tasks are properly formatted with the required fields.
 ```

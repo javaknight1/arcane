@@ -1,20 +1,7 @@
-"""Roadmap Generator - Uses LLMs to generate comprehensive project roadmaps."""
+"""Prompt templates for LLM generation."""
 
-from datetime import datetime
-from typing import Dict, Any
-
-
-class RoadmapGenerator:
-    """Generates project roadmaps using LLM providers."""
-
-    def __init__(self, llm_client):
-        self.llm_client = llm_client
-
-    def create_roadmap_prompt(self, idea_content: str, preferences: Dict[str, Any]) -> str:
-        """Create a comprehensive prompt for roadmap generation."""
-
-        # Base prompt template
-        base_prompt = """You are a senior technical product manager and architect tasked with creating a comprehensive project roadmap. Generate a detailed, actionable roadmap based on the provided project idea and preferences.
+PROMPT_TEMPLATES = {
+    'roadmap_generation': """You are a senior technical product manager and architect tasked with creating a comprehensive project roadmap. Generate a detailed, actionable roadmap based on the provided project idea and preferences.
 
 ## Project Idea:
 {idea_content}
@@ -98,37 +85,80 @@ Each story and task must include a "Claude Code Prompt" that provides specific, 
 - Consider team ramp-up time
 - Plan for iterative development and feedback cycles
 
-Generate a comprehensive roadmap that balances technical depth with practical implementation guidance. Ensure each milestone delivers meaningful business value and builds toward the overall project goals."""
+Generate a comprehensive roadmap that balances technical depth with practical implementation guidance. Ensure each milestone delivers meaningful business value and builds toward the overall project goals.""",
 
-        defaults = {
-            'idea_content': idea_content or "No specific idea provided - generate a generic web application roadmap",
-            'timeline': preferences.get('timeline', '6-months'),
-            'complexity': preferences.get('complexity', 'moderate'),
-            'team_size': preferences.get('team_size', '2-3'),
-            'focus': preferences.get('focus', 'mvp')
-        }
-        return base_prompt.format(**defaults)
+    'milestone_refinement': """Refine and expand the following milestone with more detailed epics, stories, and tasks:
 
-    def generate(self, idea_content: str, preferences: Dict[str, Any]) -> str:
-        """Generate a comprehensive roadmap using the selected LLM."""
-        prompt = self.create_roadmap_prompt(idea_content, preferences)
-        roadmap_content = self.llm_client.generate(prompt)
+## Current Milestone:
+{milestone_content}
 
-        metadata_fields = {
-            'Generated': self._get_timestamp(),
-            'LLM Provider': self.llm_client.provider,
-            'Timeline': preferences.get('timeline', 'Not specified'),
-            'Complexity': preferences.get('complexity', 'Not specified'),
-            'Team Size': preferences.get('team_size', 'Not specified'),
-            'Focus': preferences.get('focus', 'Not specified')
-        }
+## Requirements:
+- Add more technical depth to existing items
+- Ensure all stories have comprehensive Claude Code prompts
+- Include specific technical requirements for each task
+- Add realistic time estimates
+- Include clear dependencies between items
 
-        metadata_lines = [f"**{key}**: {value}" for key, value in metadata_fields.items()]
-        metadata = "# Generated Roadmap\n" + "\n".join(metadata_lines) + "\n\n---\n\n"
+Provide the refined milestone with all the detailed structure.""",
 
-        return metadata + roadmap_content
+    'epic_expansion': """Expand the following epic with detailed stories and tasks:
 
-    def _get_timestamp(self) -> str:
-        """Get current timestamp in readable format."""
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+## Epic:
+{epic_content}
 
+## Context:
+- Project Type: {project_type}
+- Technical Stack: {tech_stack}
+- Team Experience: {team_experience}
+
+## Requirements:
+- Create 3-5 user stories for this epic
+- Each story should have 4-6 specific tasks
+- Include detailed technical requirements
+- Provide comprehensive Claude Code prompts for implementation
+- Consider testing, documentation, and deployment tasks
+
+Generate the expanded epic with complete story and task breakdown.""",
+
+    'task_detail': """Create a detailed implementation plan for the following task:
+
+## Task:
+{task_content}
+
+## Context:
+- Parent Story: {story_context}
+- Technical Stack: {tech_stack}
+- Prerequisites: {prerequisites}
+
+## Requirements:
+- Provide step-by-step implementation guide
+- Include specific code structure and file organization
+- Define clear acceptance criteria
+- Specify testing requirements
+- Create a detailed Claude Code prompt for implementation
+- Estimate time required (in hours)
+
+Generate the detailed task implementation plan.""",
+
+    'project_summary': """Generate a comprehensive project summary based on the following roadmap:
+
+## Roadmap Overview:
+{roadmap_overview}
+
+## Statistics:
+- Total Milestones: {milestone_count}
+- Total Epics: {epic_count}
+- Total Stories: {story_count}
+- Total Tasks: {task_count}
+- Estimated Duration: {total_hours} hours
+
+## Requirements:
+- Executive summary (2-3 paragraphs)
+- Key deliverables and outcomes
+- Technology stack summary
+- Risk assessment
+- Resource requirements
+- Success metrics
+
+Provide a professional project summary suitable for stakeholder presentation."""
+}

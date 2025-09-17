@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Setup configuration for roadmap-notion package."""
+"""Setup configuration for Arcane CLI."""
 
 from setuptools import setup, find_packages
 
@@ -10,11 +10,11 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
 
 setup(
-    name="roadmap-notion",
-    version="0.1.0",
+    name="arcane-cli",
+    version="2.0.0",
     author="Rob Avery",
     author_email="your.email@example.com",
-    description="Parse CSV roadmaps and import them into Notion as a project management system",
+    description="AI-powered roadmap generation CLI with project management integration",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/javaknight1/notion-roadmap",
@@ -36,9 +36,7 @@ setup(
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "roadmap-notion=roadmap_notion.__main__:main",
-            "roadmap-parse=roadmap_notion.parser:main",
-            "roadmap-import=roadmap_notion.importer:main",
+            "arcane=arcane.__main__:main",
         ],
     },
     project_urls={

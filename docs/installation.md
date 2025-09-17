@@ -13,7 +13,7 @@
 
 ```bash
 git clone <repository-url>
-cd roadmap-notion
+cd arcane
 ```
 
 ### 2. Set Up Virtual Environment

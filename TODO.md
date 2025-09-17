@@ -40,7 +40,7 @@
   - [ ] Dry-run mode (preview changes)
 
 - [ ] **Configuration Management**
-  - [ ] Global config file (`~/.roadmap-notion/config.yml`)
+  - [ ] Global config file (`~/.arcane/config.yml`)
   - [ ] Project-specific config files
   - [ ] Template management system
   - [ ] Environment switching (dev/staging/prod)
@@ -171,7 +171,6 @@
 ### Package Distribution
 - [ ] **Distribution Channels**
   - [ ] PyPI package publishing
-  - [ ] Homebrew formula
   - [ ] Chocolatey package (Windows)
   - [ ] Snap package (Linux)
   - [ ] Docker container image

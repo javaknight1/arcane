@@ -1,6 +1,6 @@
-# 🗺️ Roadmap Generator & Notion Importer
+# 🔮 Arcane - AI-Powered Roadmap Generation CLI
 
-A comprehensive CLI tool that automates the entire roadmap generation workflow - from idea to implementation-ready Notion workspace. Generate professional roadmaps using AI (Claude, ChatGPT, Gemini) and automatically import them into Notion with complete project management features.
+A comprehensive command-line tool that transforms ideas into actionable roadmaps using AI and integrates them with project management tools. Generate professional roadmaps using leading AI models (Claude, ChatGPT, Gemini) and automatically import them into Notion with complete project management features.
 
 ## ✨ Features
 
@@ -33,7 +33,7 @@ A comprehensive CLI tool that automates the entire roadmap generation workflow -
 ### 1. Installation
 ```bash
 git clone <your-repo-url>
-cd roadmap-notion
+cd arcane
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -55,7 +55,7 @@ NOTION_PARENT_PAGE_ID=your_notion_parent_page_id
 ### 3. Generate Your First Roadmap
 ```bash
 # Interactive full workflow - handles everything!
-python -m roadmap_notion generate
+python -m arcane interactive
 ```
 
 This single command will:
@@ -72,13 +72,13 @@ This single command will:
 ### Interactive Roadmap Generation (Recommended)
 ```bash
 # Complete automated workflow
-python -m roadmap_notion generate
+python -m arcane interactive
 ```
 
 **Example interaction:**
 ```
-🗺️  Roadmap Generator
-Automated roadmap generation and Notion import
+🔮  Arcane
+AI-powered roadmap generation and project integration
 
 Select your preferred LLM provider:
 ❯ Claude (Anthropic)
@@ -102,15 +102,14 @@ Project timeline:
 
 ### Other Commands
 ```bash
-# Import existing CSV to Notion
-python -m roadmap_notion import roadmap.csv
+# Generate roadmap from idea only (save as JSON)
+python -m arcane generate --idea "Build a task management app"
 
-# Convert roadmap text to CSV only
-python -m roadmap_notion parse roadmap.txt
-python -m roadmap_notion parse roadmap.txt --output custom_name.csv
+# Import roadmap to Notion (planned feature)
+python -m arcane import --roadmap roadmap.json
 
 # Show help
-python -m roadmap_notion --help
+python -m arcane --help
 ```
 
 ## 📝 Creating Your Idea File
@@ -267,7 +266,7 @@ python -m roadmap_notion generate
 ### Setup for Development
 ```bash
 git clone <repo-url>
-cd roadmap-notion
+cd arcane
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
