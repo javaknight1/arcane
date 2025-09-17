@@ -1,23 +1,39 @@
 """Roadmap generation engine using LLMs."""
 
 import re
+import os
+import json
 from typing import Dict, Any, Optional, List
 from datetime import datetime
+from pathlib import Path
 
-from roadmap_notion.llm_clients import BaseLLMClient, LLMClientFactory
-from roadmap_notion.prompts import PromptBuilder
-from roadmap_notion.items import (
+from arcane.llm_clients import BaseLLMClient, LLMClientFactory
+from arcane.prompts import PromptBuilder
+from arcane.prompts.idea_processor import IdeaProcessor
+from arcane.engines.generation.metadata_extractor import MetadataExtractor, ProjectMetadata
+from arcane.items import (
     Roadmap, Project, Milestone, Epic, Story, Task
 )
-from roadmap_notion.constants import PRIORITY_LEVELS, DURATION_MULTIPLIERS
+from arcane.constants import PRIORITY_LEVELS, DURATION_MULTIPLIERS
 
 
 class RoadmapGenerationEngine:
     """Engine for generating comprehensive project roadmaps using LLMs."""
 
-    def __init__(self, llm_provider: str = 'claude'):
+    def __init__(self, llm_provider: str = 'claude', output_directory: Optional[str] = None):
         self.llm_client = LLMClientFactory.create(llm_provider)
         self.prompt_builder = PromptBuilder()
+        self.idea_processor = IdeaProcessor()
+        self.metadata_extractor = MetadataExtractor()
+
+        # Set up output directory
+        if output_directory:
+            self.output_dir = Path(output_directory)
+            self.output_dir.mkdir(parents=True, exist_ok=True)
+            self.save_outputs = True
+        else:
+            self.output_dir = None
+            self.save_outputs = False
 
     def generate_roadmap(
         self,
@@ -27,19 +43,45 @@ class RoadmapGenerationEngine:
         """Generate a complete roadmap from an idea."""
         preferences = preferences or {}
 
-        # Generate roadmap content using LLM
+        # Process the raw idea into structured format
+        print("📝 Processing and structuring idea content...")
+        processed_idea = self.idea_processor.process_idea(idea)
+
+        # Build structured prompt with processed idea
+        structured_idea_content = self._build_structured_idea_content(processed_idea)
+
         prompt = self.prompt_builder.build_roadmap_prompt(
-            idea_content=idea,
+            idea_content=structured_idea_content,
             timeline=preferences.get('timeline'),
             complexity=preferences.get('complexity'),
             team_size=preferences.get('team_size'),
             focus=preferences.get('focus')
         )
 
+        # Generate roadmap content using LLM
+        print("🤖 Generating roadmap with optimized prompt...")
         roadmap_text = self.llm_client.generate(prompt)
 
-        # Parse the generated text into roadmap objects
-        roadmap = self._parse_roadmap_text(roadmap_text, idea)
+        # Extract metadata from LLM output
+        print("📋 Extracting project metadata...")
+        metadata, cleaned_roadmap_text = self.metadata_extractor.extract_metadata(roadmap_text)
+        project_filename_base = metadata.get_safe_filename_base()
+
+        # Save outputs using extracted metadata
+        if self.save_outputs:
+            self._save_prompt(prompt, project_filename_base)
+            self._save_llm_output(roadmap_text, project_filename_base)
+            self._save_metadata(metadata, project_filename_base)
+
+        # Parse the cleaned text into roadmap objects
+        roadmap = self._parse_roadmap_text(cleaned_roadmap_text, metadata.project_name)
+
+        # Save structured roadmap data
+        if self.save_outputs:
+            self._save_structured_roadmap(roadmap, project_filename_base)
+
+        # Store metadata in roadmap for later use
+        roadmap.metadata = metadata
 
         return roadmap
 
@@ -287,3 +329,74 @@ class RoadmapGenerationEngine:
         expanded_text = self.llm_client.generate(prompt)
         # Parse and update epic with new stories and tasks
         return epic
+
+    def _build_structured_idea_content(self, processed_idea: Dict[str, Any]) -> str:
+        """Build structured idea content for the prompt."""
+        features_formatted = self.idea_processor.format_features(processed_idea['key_features'])
+
+        # Update the processed idea with formatted features
+        processed_idea['key_features_formatted'] = features_formatted
+
+        return self.idea_processor.build_structured_prompt(processed_idea)
+
+    def _save_prompt(self, prompt: str, filename_base: str) -> None:
+        """Save the generated prompt for debugging."""
+        try:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"{timestamp}_{filename_base}_prompt.txt"
+            filepath = self.output_dir / filename
+
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(prompt)
+            print(f"💾 Saved prompt: {filepath}")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not save prompt: {e}")
+
+    def _save_llm_output(self, output: str, filename_base: str) -> None:
+        """Save raw LLM output for debugging and reprocessing."""
+        try:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"{timestamp}_{filename_base}_llm_output.md"
+            filepath = self.output_dir / filename
+
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(output)
+            print(f"💾 Saved LLM output: {filepath}")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not save LLM output: {e}")
+
+    def _save_metadata(self, metadata: ProjectMetadata, filename_base: str) -> None:
+        """Save extracted project metadata."""
+        try:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"{timestamp}_{filename_base}_metadata.json"
+            filepath = self.output_dir / filename
+
+            self.metadata_extractor.save_metadata(metadata, filepath)
+            print(f"💾 Saved metadata: {filepath}")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not save metadata: {e}")
+
+    def _save_structured_roadmap(self, roadmap: Roadmap, filename_base: str) -> None:
+        """Save structured roadmap data as JSON."""
+        try:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"{timestamp}_{filename_base}_structured.json"
+            filepath = self.output_dir / filename
+
+            # Convert roadmap to dictionary format
+            roadmap_data = {
+                'project': {
+                    'name': roadmap.project.name,
+                    'description': roadmap.project.description,
+                    'generated_at': datetime.now().isoformat()
+                },
+                'statistics': roadmap.get_statistics(),
+                'items': roadmap.to_dict_list()
+            }
+
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(roadmap_data, f, indent=2, ensure_ascii=False)
+            print(f"💾 Saved structured roadmap: {filepath}")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not save structured roadmap: {e}")

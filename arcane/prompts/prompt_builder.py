@@ -1,7 +1,7 @@
 """Prompt builder for generating structured prompts from templates."""
 
 from typing import Dict, Any, Optional
-from roadmap_notion.constants import PROMPT_TEMPLATES, DEFAULT_TIMELINE, DEFAULT_COMPLEXITY, DEFAULT_TEAM_SIZE, DEFAULT_FOCUS
+from arcane.constants import PROMPT_TEMPLATES, DEFAULT_TIMELINE, DEFAULT_COMPLEXITY, DEFAULT_TEAM_SIZE, DEFAULT_FOCUS
 
 
 class PromptBuilder:

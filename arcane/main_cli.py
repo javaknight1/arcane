@@ -5,6 +5,10 @@ import os
 import sys
 from pathlib import Path
 from typing import Optional, Dict, Any
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 import inquirer
 from rich.console import Console
@@ -74,6 +78,17 @@ class ArcaneCLI:
 
         self.console.print("[bold green]✅ All environment variables configured[/bold green]")
         return True
+
+    def _get_available_providers(self) -> list:
+        """Get list of available LLM providers based on API keys."""
+        available = []
+        if os.getenv('ANTHROPIC_API_KEY'):
+            available.append('Claude (Anthropic)')
+        if os.getenv('OPENAI_API_KEY'):
+            available.append('ChatGPT (OpenAI)')
+        if os.getenv('GOOGLE_API_KEY'):
+            available.append('Gemini (Google)')
+        return available
 
     def get_idea_file(self) -> Optional[str]:
         """Prompt user for idea description file."""
@@ -152,7 +167,49 @@ class ArcaneCLI:
 
         return answers or {}
 
-    def generate_roadmap(self, llm_provider: str, idea_file: Optional[str], preferences: Dict[str, Any]) -> Optional[Roadmap]:
+    def get_output_directory(self) -> Optional[str]:
+        """Get user preference for output directory."""
+        self.console.print("\n[bold]File Output Settings[/bold]")
+        self.console.print("[dim]Save generated files (CSV, JSON, LLM outputs, etc.) to disk?[/dim]")
+
+        # Ask if they want to export files at all
+        export_files = Confirm.ask("📁 Export files to directory?", default=True)
+
+        if not export_files:
+            self.console.print("[yellow]⚠️  File export disabled. Files will not be saved.[/yellow]")
+            return None
+
+        # Ask for directory with "output" as default
+        while True:
+            output_dir = Prompt.ask(
+                "📂 Enter output directory path",
+                default="output"
+            )
+
+            output_path = Path(output_dir.strip()).expanduser().resolve()
+
+            try:
+                # Try to create the directory if it doesn't exist
+                output_path.mkdir(parents=True, exist_ok=True)
+
+                # Test write permissions
+                test_file = output_path / ".test_write"
+                test_file.write_text("test")
+                test_file.unlink()
+
+                self.console.print(f"[green]✅ Output directory set: {output_path}[/green]")
+                return str(output_path)
+
+            except PermissionError:
+                self.console.print(f"[red]❌ Permission denied: {output_path}[/red]")
+                if not Confirm.ask("Try a different directory?"):
+                    return None
+            except Exception as e:
+                self.console.print(f"[red]❌ Invalid directory: {e}[/red]")
+                if not Confirm.ask("Try a different directory?"):
+                    return None
+
+    def generate_roadmap(self, llm_provider: str, idea_file: Optional[str], preferences: Dict[str, Any], output_directory: Optional[str] = None) -> Optional[Roadmap]:
         """Generate roadmap using selected LLM."""
         with Progress(
             SpinnerColumn(),
@@ -163,7 +220,7 @@ class ArcaneCLI:
 
             try:
                 # Initialize generation engine
-                self.generation_engine = RoadmapGenerationEngine(llm_provider)
+                self.generation_engine = RoadmapGenerationEngine(llm_provider, output_directory)
 
                 # Read idea file if provided
                 idea_content = ""
@@ -187,10 +244,27 @@ class ArcaneCLI:
 
             except Exception as e:
                 progress.update(task, description="❌ Failed to generate roadmap")
-                self.console.print(f"\n[red]❌ Error generating roadmap: {str(e)}[/red]")
+                error_msg = str(e)
+
+                # Display formatted error message
+                if "❌" in error_msg:
+                    # Already formatted error from LLM client
+                    self.console.print(f"\n[red]{error_msg}[/red]")
+                else:
+                    # Generic error formatting
+                    self.console.print(f"\n[red]❌ Error generating roadmap: {error_msg}[/red]")
+
+                # Show available providers as alternatives
+                available_providers = self._get_available_providers()
+                if len(available_providers) > 1:
+                    self.console.print(f"\n[yellow]💡 You have {len(available_providers)} LLM providers configured:[/yellow]")
+                    for provider in available_providers:
+                        self.console.print(f"   • {provider}")
+                    self.console.print("[dim]Try selecting a different provider when running the app[/dim]")
+
                 return None
 
-    def export_roadmap(self, roadmap: Roadmap) -> Optional[Dict[str, str]]:
+    def export_roadmap(self, roadmap: Roadmap, output_directory: str) -> Optional[Dict[str, str]]:
         """Export roadmap to multiple formats."""
         with Progress(
             SpinnerColumn(),
@@ -203,11 +277,16 @@ class ArcaneCLI:
                 # Initialize export engine
                 self.export_engine = FileExportEngine()
 
-                # Export to all formats
-                base_path = "generated_roadmap"
+                # Export to all formats in specified directory with project name
+                if hasattr(roadmap, 'metadata') and roadmap.metadata:
+                    filename_base = roadmap.metadata.get_safe_filename_base()
+                else:
+                    filename_base = "generated_roadmap"
+
+                output_path = Path(output_directory) / filename_base
                 exported_files = self.export_engine.export_multiple(
                     roadmap,
-                    base_path,
+                    str(output_path),
                     formats=['csv', 'json', 'yaml']
                 )
 
@@ -270,8 +349,8 @@ class ArcaneCLI:
         )
         table.add_row(
             "2. File Export",
-            "✅ Success",
-            f"CSV, JSON, YAML files created"
+            "✅ Success" if export_files else "⚠️ Skipped",
+            f"CSV, JSON, YAML files created" if export_files else "No output directory specified"
         )
         table.add_row(
             "3. Notion Import",
@@ -305,23 +384,28 @@ class ArcaneCLI:
             # Step 3: Get idea file
             idea_file = self.get_idea_file()
 
-            # Step 4: Get roadmap preferences
+            # Step 4: Get output directory
+            output_directory = self.get_output_directory()
+
+            # Step 5: Get roadmap preferences
             preferences = self.get_roadmap_preferences()
 
-            # Step 5: Generate roadmap
-            roadmap = self.generate_roadmap(llm_provider, idea_file, preferences)
+            # Step 6: Generate roadmap
+            roadmap = self.generate_roadmap(llm_provider, idea_file, preferences, output_directory)
             if not roadmap:
                 return
 
-            # Step 6: Export to files
-            export_files = self.export_roadmap(roadmap)
-            if not export_files:
-                return
+            # Step 7: Export to files
+            export_files = None
+            if output_directory:
+                export_files = self.export_roadmap(roadmap, output_directory)
+                if not export_files:
+                    return
 
-            # Step 7: Import to Notion
+            # Step 8: Import to Notion
             notion_success = self.import_to_notion(roadmap)
 
-            # Step 8: Display summary
+            # Step 9: Display summary
             self.display_summary(roadmap, export_files, notion_success)
 
         except KeyboardInterrupt:

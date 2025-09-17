@@ -4,8 +4,8 @@ import os
 from typing import Dict, List, Any, Optional
 from notion_client import Client
 
-from roadmap_notion.items import Roadmap
-from roadmap_notion.pages import (
+from arcane.items import Roadmap
+from arcane.pages import (
     AnalyticsHubPage,
     BurndownPage,
     DashboardPage,
@@ -69,7 +69,7 @@ class NotionImportEngine:
             parent={"page_id": self.parent_page_id},
             icon={"type": "emoji", "emoji": "🗺️"},
             properties={
-                "title": [{"type": "text", "text": {"content": f"{roadmap.project.name} - Roadmap"}}]
+                "title": [{"type": "text", "text": {"content": self._truncate_text(f"{roadmap.project.name} - Roadmap", 1990)}}]
             },
             children=[
                 {
@@ -156,8 +156,11 @@ class NotionImportEngine:
 
     def _build_item_properties(self, item: Any) -> Dict[str, Any]:
         """Build properties dictionary for a database page."""
+        # Truncate title to fit Notion's 2000 char limit, but preserve full content elsewhere
+        truncated_name = self._truncate_text(item.name, 1990)  # Leave room for "..."
+
         properties = {
-            "Name": {"title": [{"type": "text", "text": {"content": item.name}}]},
+            "Name": {"title": [{"type": "text", "text": {"content": truncated_name}}]},
             "Type": {"select": {"name": item.item_type}},
             "Status": {"select": {"name": item.status}},
             "Priority": {"select": {"name": item.priority}}
@@ -300,3 +303,12 @@ class NotionImportEngine:
         print("  2. Customize database views")
         print("  3. Start managing your roadmap!")
         print("=" * 60)
+
+    def _truncate_text(self, text: str, max_length: int) -> str:
+        """Truncate text to fit Notion's character limits."""
+        if len(text) <= max_length:
+            return text
+
+        # Truncate and add ellipsis
+        truncated = text[:max_length-3] + "..."
+        return truncated

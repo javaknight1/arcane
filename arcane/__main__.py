@@ -7,6 +7,10 @@ Provides a simple command-line interface for AI-powered roadmap generation.
 import argparse
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from .main_cli import ArcaneCLI
 from .engines.generation import RoadmapGenerationEngine
