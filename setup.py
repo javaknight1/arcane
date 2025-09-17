@@ -17,7 +17,7 @@ setup(
     description="AI-powered roadmap generation CLI with project management integration",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/javaknight1/notion-roadmap",
+    url="https://github.com/javaknight1/arcane",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -40,7 +40,7 @@ setup(
         ],
     },
     project_urls={
-        "Bug Reports": "https://github.com/javaknight1/notion-roadmap/issues",
-        "Source": "https://github.com/javaknight1/notion-roadmap",
+        "Bug Reports": "https://github.com/javaknight1/arcane/issues",
+        "Source": "https://github.com/javaknight1/arcane",
     },
 )
