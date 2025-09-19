@@ -204,33 +204,53 @@ class IdeaProcessor:
 
     def _load_idea_template(self) -> str:
         """Load the comprehensive idea template."""
-        return """# Structured Project Analysis
+        return """# Comprehensive Project Analysis for Roadmap Generation
 
-## Project Overview
+## Executive Summary
 **Project Name**: {project_name}
-
 **Problem Statement**: {problem_statement}
-
 **Solution Overview**: {solution_overview}
 
-## Key Features and Functionality
+## Detailed Project Scope
+
+### Core Features and Functionality
 {key_features_formatted}
 
-## Target Users
+### Target Users and Market
 {target_users}
 
-## Technical Considerations
+### Technical Architecture Requirements
 {technical_details}
 
-## Project Constraints
+### Project Constraints and Considerations
 {constraints}
 
-## Original Idea Content
+## Complete Original Idea Context
 {raw_idea}
 
 ---
 
-Based on this structured analysis, generate a comprehensive roadmap that addresses all aspects of the project while considering the specified timeline, complexity, and team constraints."""
+## Critical Roadmap Generation Instructions
+
+**SCOPE REQUIREMENT**: This project requires a COMPLETE, COMPREHENSIVE roadmap covering:
+
+1. **Full Development Lifecycle**: From initial setup through deployment and maintenance
+2. **All Feature Areas**: Every feature mentioned must have dedicated epics, stories, and tasks
+3. **Complete Technical Stack**: Frontend, backend, database, deployment, testing, security
+4. **Project Management**: Setup, CI/CD, documentation, team processes
+5. **Quality Assurance**: Testing strategies, code quality, performance optimization
+6. **Business Requirements**: User experience, analytics, monitoring, support
+
+**COMPLETENESS MANDATE**: You MUST generate ALL items for EVERY milestone, epic, and story. Do not summarize, skip, or abbreviate. Every story needs its full complement of tasks (typically 4-8 tasks per story). Every epic needs its full complement of stories (typically 3-6 stories per epic).
+
+**DETAIL REQUIREMENT**: Each item MUST include comprehensive, actionable content for:
+- Goal/Description: Detailed explanation of what needs to be accomplished
+- Benefits: Clear business and technical value proposition
+- Prerequisites: Specific dependencies and requirements
+- Technical Requirements: Detailed implementation specifications
+- Claude Code Prompt: Specific, actionable implementation guidance
+
+Generate a roadmap that is production-ready and implementation-focused, suitable for immediate development use."""
 
     def format_features(self, features: List[str]) -> str:
         """Format features list for the template."""

@@ -13,9 +13,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from .main_cli import ArcaneCLI
-from .engines.generation import RoadmapGenerationEngine
-from .engines.export import FileExportEngine
-from .engines.import_engine import NotionImportEngine
 
 
 def main():
@@ -31,11 +28,18 @@ Commands:
   export         Export existing roadmap to files (requires --roadmap)
   import         Import roadmap to Notion (requires --roadmap)
 
-Examples:
-  python -m arcane interactive                    # Interactive workflow
-  python -m arcane generate --idea "Task manager" # Generate only
-  python -m arcane export --roadmap roadmap.json  # Export only
-  python -m arcane import --roadmap roadmap.json  # Import only
+Interactive Mode Examples:
+  python -m arcane interactive                                    # Full interactive workflow with guided generation
+  python -m arcane interactive --provider claude                 # Skip LLM selection
+  python -m arcane interactive --provider claude --timeline 6-months --complexity moderate --team-size 2-3 --focus mvp
+                                                                  # Skip preference prompts
+  python -m arcane interactive --idea-file myidea.txt --no-export # Use idea file, skip export
+  python -m arcane interactive --output-dir ./generated          # Use specific output directory
+
+Other Commands:
+  python -m arcane generate --idea "Task manager"                # Generate only
+  python -m arcane export --roadmap roadmap.json                 # Export only
+  python -m arcane import --roadmap roadmap.json                 # Import only
         """
     )
 
@@ -63,16 +67,52 @@ Examples:
     )
 
     parser.add_argument(
-        '--output',
-        help='Output file base name (default: generated_roadmap)'
+        '--output-dir',
+        help='Output directory for generated files (default: output)'
     )
+
+    parser.add_argument(
+        '--idea-file',
+        help='Path to text file containing project idea description'
+    )
+
+    parser.add_argument(
+        '--timeline',
+        choices=['3-months', '6-months', '12-months'],
+        help='Project timeline (skips timeline prompt)'
+    )
+
+    parser.add_argument(
+        '--complexity',
+        choices=['simple', 'moderate', 'complex'],
+        help='Technical complexity level (skips complexity prompt)'
+    )
+
+    parser.add_argument(
+        '--team-size',
+        choices=['1', '2-3', '4-8', '8+'],
+        help='Development team size (skips team size prompt)'
+    )
+
+    parser.add_argument(
+        '--focus',
+        choices=['mvp', 'feature', 'migration', 'optimization'],
+        help='Primary project focus (skips focus prompt)'
+    )
+
+    parser.add_argument(
+        '--no-export',
+        action='store_true',
+        help='Skip file export (no CSV/JSON files created)'
+    )
+
 
     parser.add_argument(
         '--formats',
         nargs='+',
         choices=['csv', 'json', 'yaml'],
-        default=['csv', 'json', 'yaml'],
-        help='Export formats (default: all)'
+        default=['csv'],
+        help='Export formats (default: csv only)'
     )
 
     # Parse arguments
@@ -87,49 +127,26 @@ Examples:
     # Execute appropriate command
     try:
         if args.command == 'interactive':
-            # Full interactive workflow
+            # Full interactive workflow with optional pre-set arguments
+            cli = ArcaneCLI()
+            cli.run(
+                provider=getattr(args, 'provider', None),
+                idea_file=getattr(args, 'idea_file', None),
+                output_dir=getattr(args, 'output_dir', None),
+                timeline=getattr(args, 'timeline', None),
+                complexity=getattr(args, 'complexity', None),
+                team_size=getattr(args, 'team_size', None),
+                focus=getattr(args, 'focus', None),
+                no_export=getattr(args, 'no_export', False),
+                formats=getattr(args, 'formats', ['csv'])
+            )
+
+        elif args.command in ['generate', 'export', 'import']:
+            print(f"Note: The '{args.command}' command has been deprecated.")
+            print("Please use the 'interactive' mode for the full roadmap generation workflow.")
+            print("\nRunning interactive mode...")
             cli = ArcaneCLI()
             cli.run()
-
-        elif args.command == 'generate':
-            if not args.idea:
-                print("Error: generate command requires --idea")
-                parser.print_help()
-                return
-
-            # Generate roadmap only
-            print(f"🤖 Generating roadmap with {args.provider}...")
-            engine = RoadmapGenerationEngine(args.provider)
-            roadmap = engine.generate_roadmap(args.idea, {})
-
-            # Save to JSON for later use
-            exporter = FileExportEngine()
-            output_base = args.output or 'generated_roadmap'
-            json_file = exporter.export(roadmap, f"{output_base}.json", "json")
-
-            print(f"✅ Roadmap generated and saved to: {json_file}")
-            stats = roadmap.get_statistics()
-            print(f"📊 Generated {stats['total_items']} items across {stats['milestones']} milestones")
-
-        elif args.command == 'export':
-            if not args.roadmap:
-                print("Error: export command requires --roadmap")
-                parser.print_help()
-                return
-
-            # TODO: Load roadmap from JSON and export
-            print("Error: Export from existing roadmap not yet implemented")
-            print("Use 'interactive' or 'generate' commands instead")
-
-        elif args.command == 'import':
-            if not args.roadmap:
-                print("Error: import command requires --roadmap")
-                parser.print_help()
-                return
-
-            # TODO: Load roadmap from JSON and import to Notion
-            print("Error: Import from existing roadmap not yet implemented")
-            print("Use 'interactive' command for full workflow")
 
     except KeyboardInterrupt:
         print("\nOperation cancelled by user")

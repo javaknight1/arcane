@@ -85,6 +85,111 @@ class Roadmap:
                 breakdown[item.status] += 1
         return breakdown
 
+    def generate_all_content(self, llm_client, idea_content: str, interactive_mode: bool = False, console=None) -> None:
+        """Generate content for all items in the roadmap recursively."""
+        from rich.console import Console
+        from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+        from rich.prompt import Confirm, Prompt
+
+        if console is None:
+            console = Console()
+
+        # Get generation order (depth-first: milestones -> epics -> stories)
+        generation_items = []
+        for milestone in self.project.get_children_by_type('Milestone'):
+            generation_items.append(milestone)
+            for epic in milestone.get_children_by_type('Epic'):
+                generation_items.append(epic)
+                for story in epic.get_children_by_type('Story'):
+                    generation_items.append(story)
+                    # Tasks are generated with stories, so we don't add them separately
+
+        console.print(f"\n[bold green]🚀 Generating {len(generation_items)} items...[/bold green]")
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            TimeElapsedColumn(),
+            console=console,
+            transient=False
+        ) as progress:
+            task = progress.add_task("Generating roadmap content...", total=len(generation_items))
+
+            for item in generation_items:
+                try:
+                    # Update progress
+                    progress.update(task, description=f"Generating {item.item_type} {item.id}: {item.name.split(': ', 1)[-1] if ': ' in item.name else item.name}")
+
+                    # Build context
+                    parent_context = None
+                    if item.parent:
+                        parent_context = f"{item.parent.item_type} {item.parent.id}: {item.parent.name.split(': ', 1)[-1] if ': ' in item.parent.name else item.parent.name}"
+
+                    # Generate content for this item
+                    item.generate_content(llm_client, idea_content, parent_context, "")
+
+                    # Handle interactive mode
+                    if interactive_mode:
+                        self._handle_interactive_confirmation(item, console, llm_client, idea_content, parent_context)
+
+                    progress.advance(task)
+
+                except KeyboardInterrupt:
+                    console.print("\n[yellow]⚠️ Generation stopped by user[/yellow]")
+                    return
+                except Exception as e:
+                    console.print(f"\n[red]❌ Error generating {item.item_type} {item.id}: {str(e)}[/red]")
+                    if Confirm.ask(f"[yellow]Skip {item.item_type} {item.id} and continue?[/yellow]"):
+                        from arcane.items.base import ItemStatus
+                        item.update_generation_status(ItemStatus.SKIPPED)
+                        console.print(f"[yellow]⏭️  Skipped {item.item_type} {item.id}[/yellow]")
+                        progress.advance(task)
+                        continue
+                    else:
+                        console.print("[red]🛑 Generation stopped[/red]")
+                        return
+
+        console.print(f"\n[green]✅ Generation completed![/green]")
+
+    def _handle_interactive_confirmation(self, item, console, llm_client, idea_content, parent_context):
+        """Handle interactive confirmation for an item."""
+        from rich.prompt import Prompt
+
+        console.print(f"\n[bold green]✅ Generated {item.item_type} {item.id}: {item.name.split(': ', 1)[-1] if ': ' in item.name else item.name}[/bold green]")
+
+        # Show a preview of the generated content
+        if item.content:
+            preview = item.content[:300] + "..." if len(item.content) > 300 else item.content
+            console.print(f"[dim]Preview: {preview}[/dim]")
+
+        # Ask user for confirmation
+        while True:
+            choice = Prompt.ask(
+                "[cyan]What would you like to do?[/cyan]",
+                choices=["continue", "quit", "regenerate"],
+                default="continue"
+            )
+
+            if choice == "continue":
+                break
+            elif choice == "quit":
+                console.print("[yellow]🛑 Generation stopped by user[/yellow]")
+                raise KeyboardInterrupt("User chose to quit generation")
+            elif choice == "regenerate":
+                console.print(f"[yellow]🔄 Regenerating {item.item_type} {item.id}...[/yellow]")
+                # Regenerate the item
+                from arcane.items.base import ItemStatus
+                item.update_generation_status(ItemStatus.PENDING)
+                item.generate_content(llm_client, idea_content, parent_context, "")
+                console.print(f"[green]✅ Regenerated {item.item_type} {item.id}[/green]")
+
+                # Show the new content
+                if item.content:
+                    preview = item.content[:300] + "..." if len(item.content) > 300 else item.content
+                    console.print(f"[dim]New Preview: {preview}[/dim]")
+
     def __repr__(self) -> str:
         stats = self.get_statistics()
         return (f"Roadmap(project='{self.project.name}', "

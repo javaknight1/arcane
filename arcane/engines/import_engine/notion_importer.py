@@ -219,9 +219,9 @@ class NotionImportEngine:
         # Convert roadmap to dict format for page creators
         items_dict = roadmap.to_dict_list()
 
-        # Create overview page
+        # Create overview page with page mapping for links
         overview_creator = OverviewPage(self.notion, items_dict)
-        overview_id = overview_creator.create(container_page_id, database_id=self.database_id)
+        overview_id = overview_creator.create(container_page_id, database_id=self.database_id, page_mapping=self.page_mapping)
         self.page_ids["overview"] = overview_id
 
         # Create kanban board

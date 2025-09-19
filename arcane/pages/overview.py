@@ -7,9 +7,12 @@ from .base import BasePage
 class OverviewPage(BasePage):
     """Creates the roadmap overview page."""
 
-    def create(self, parent_page_id: str, database_id: str = None, **kwargs) -> str:
+    def create(self, parent_page_id: str, database_id: str = None, page_mapping: dict = None, **kwargs) -> str:
         """Create the roadmap overview page."""
         print("Creating roadmap overview page...")
+
+        # Store page mapping for creating links
+        self.page_mapping = page_mapping or {}
 
         # Calculate statistics
         total_items = len(self.roadmap_items)
@@ -118,7 +121,7 @@ class OverviewPage(BasePage):
         return overview_page_id
 
     def _generate_table_of_contents(self) -> List[Dict]:
-        """Generate hierarchical table of contents with ALL roadmap items."""
+        """Generate hierarchical table of contents with clickable links to database items."""
         toc_content = []
 
         # Group items by type
@@ -127,28 +130,32 @@ class OverviewPage(BasePage):
         stories = self.get_items_by_type("Story")
         tasks = self.get_items_by_type("Task")
 
-        # Build complete hierarchy including ALL items
+        # Build complete hierarchy including ALL items with links
         for milestone in milestones:
             milestone_name = milestone.get("Name", "")
-            toc_content.append(self.create_bulleted_list_item(f"**{milestone_name}**"))
+            milestone_link = self._create_item_link(milestone_name, "Milestone")
+            toc_content.append(self._create_linked_list_item(milestone_link, ""))
 
             # Find ALL epics under this milestone
             milestone_epics = [epic for epic in epics if epic.get("Parent") == milestone_name]
             for epic in milestone_epics:
                 epic_name = epic.get("Name", "")
-                toc_content.append(self.create_bulleted_list_item(f"  • {epic_name}"))
+                epic_link = self._create_item_link(epic_name, "Epic")
+                toc_content.append(self._create_linked_list_item(epic_link, "  • "))
 
                 # Find ALL stories under this epic
                 epic_stories = [story for story in stories if story.get("Parent") == epic_name]
                 for story in epic_stories:
                     story_name = story.get("Name", "")
-                    toc_content.append(self.create_bulleted_list_item(f"    ○ {story_name}"))
+                    story_link = self._create_item_link(story_name, "Story")
+                    toc_content.append(self._create_linked_list_item(story_link, "    ○ "))
 
                     # Find ALL tasks under this story
                     story_tasks = [task for task in tasks if task.get("Parent") == story_name]
                     for task in story_tasks:  # Include ALL tasks, no limit
                         task_name = task.get("Name", "")
-                        toc_content.append(self.create_bulleted_list_item(f"      ▪ {task_name}"))
+                        task_link = self._create_item_link(task_name, "Task")
+                        toc_content.append(self._create_linked_list_item(task_link, "      ▪ "))
 
         # Include orphaned stories (not under epics)
         orphaned_stories = [story for story in stories if not any(epic.get("Name") == story.get("Parent") for epic in epics)]
@@ -156,12 +163,60 @@ class OverviewPage(BasePage):
             toc_content.append(self.create_bulleted_list_item("**Additional Stories:**"))
             for story in orphaned_stories:  # Include ALL orphaned stories
                 story_name = story.get("Name", "")
-                toc_content.append(self.create_bulleted_list_item(f"  • {story_name}"))
+                story_link = self._create_item_link(story_name, "Story")
+                toc_content.append(self._create_linked_list_item(story_link, "  • "))
 
                 # Include ALL tasks under orphaned stories
                 story_tasks = [task for task in tasks if task.get("Parent") == story_name]
                 for task in story_tasks:
                     task_name = task.get("Name", "")
-                    toc_content.append(self.create_bulleted_list_item(f"    ▪ {task_name}"))
+                    task_link = self._create_item_link(task_name, "Task")
+                    toc_content.append(self._create_linked_list_item(task_link, "    ▪ "))
 
         return toc_content
+
+    def _create_item_link(self, item_name: str, item_type: str) -> Dict:
+        """Create a Notion link object for a database item."""
+        page_id = self.page_mapping.get(item_name)
+
+        if page_id:
+            # Create a mention link to the actual database page
+            return {
+                "type": "mention",
+                "mention": {
+                    "type": "page",
+                    "page": {"id": page_id}
+                },
+                "annotations": {"bold": item_type in ["Milestone"]},  # Bold for milestones
+                "plain_text": item_name,
+                "href": f"https://notion.so/{page_id.replace('-', '')}"
+            }
+        else:
+            # Fallback to plain text if page ID not found
+            return {
+                "type": "text",
+                "text": {"content": item_name},
+                "annotations": {"bold": item_type in ["Milestone"]}
+            }
+
+    def _create_linked_list_item(self, link_object: Dict, prefix: str) -> Dict:
+        """Create a bulleted list item with a link and prefix."""
+        rich_text = []
+
+        # Add prefix if provided
+        if prefix:
+            rich_text.append({
+                "type": "text",
+                "text": {"content": prefix}
+            })
+
+        # Add the link object
+        rich_text.append(link_object)
+
+        return {
+            "object": "block",
+            "type": "bulleted_list_item",
+            "bulleted_list_item": {
+                "rich_text": rich_text
+            }
+        }

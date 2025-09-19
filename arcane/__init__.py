@@ -6,7 +6,7 @@ architecture for maximum flexibility and extensibility.
 """
 
 # Core engines
-from .engines.generation import RoadmapGenerationEngine
+from .engines.generation import NewGuidedRoadmapGenerator
 from .engines.export import FileExportEngine
 from .engines.import_engine import NotionImportEngine
 
@@ -26,7 +26,7 @@ __version__ = "2.0.0"
 
 __all__ = [
     # Core engines
-    "RoadmapGenerationEngine",
+    "NewGuidedRoadmapGenerator",
     "FileExportEngine",
     "NotionImportEngine",
 
