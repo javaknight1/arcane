@@ -31,6 +31,13 @@ Interactive Mode Examples:
   python -m arcane interactive                                    # Full interactive workflow with guided generation
   python -m arcane interactive --provider claude                 # Skip LLM selection
 
+  # Use predefined profiles (skips ALL questions)
+  python -m arcane interactive --profile mvp-startup             # Solo founder building MVP
+  python -m arcane interactive --profile ai-startup --provider openai # AI startup with different LLM
+  python -m arcane interactive --profile enterprise-migration    # Large team migration project
+  python -m arcane interactive --profile healthcare-app          # HIPAA-compliant healthcare app
+  python -m arcane interactive --profile fintech                 # Financial services platform
+
   # Skip basic roadmap prompts
   python -m arcane interactive --provider claude --timeline 6-months --complexity moderate --team-size 2-3 --focus mvp
 
@@ -97,6 +104,17 @@ Other Commands:
     parser.add_argument(
         '--idea-file',
         help='Path to text file containing project idea description'
+    )
+
+    # Profile selection for predefined configurations
+    parser.add_argument(
+        '--profile',
+        choices=['mvp-startup', 'enterprise-migration', 'ai-startup', 'mobile-app', 'ecommerce',
+                'healthcare-app', 'fintech', 'microservices', 'blockchain', 'education-platform'],
+        help='Use predefined profile (skips ALL questions). Profiles: mvp-startup (solo/bootstrap), '
+             'enterprise-migration (large team), ai-startup (ML-focused), mobile-app (B2C), '
+             'ecommerce, healthcare-app (HIPAA), fintech (compliance), microservices (scale), '
+             'blockchain (Web3), education-platform (LMS)'
     )
 
     parser.add_argument(

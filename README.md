@@ -69,43 +69,157 @@ This single command will:
 
 ## 📖 Usage
 
-### Interactive Roadmap Generation (Recommended)
+### Quick Start Methods
+
+#### 1. 🚀 Use Predefined Profiles (Fastest)
+Skip all questions with predefined configurations for common use cases:
 ```bash
-# Complete automated workflow
+# Solo founder building MVP (3 months, bootstrap budget)
+python -m arcane interactive --profile mvp-startup --idea-file my_idea.txt
+
+# AI/ML startup (6 months, modern tech stack)
+python -m arcane interactive --profile ai-startup
+
+# Enterprise migration (12 months, large team)
+python -m arcane interactive --profile enterprise-migration
+
+# Mobile app (B2C, viral scaling)
+python -m arcane interactive --profile mobile-app
+
+# Healthcare platform (HIPAA compliance)
+python -m arcane interactive --profile healthcare-app
+```
+
+#### 2. 🎯 Custom Flag Configuration
+Skip specific questions by providing flags:
+```bash
+# Skip basic preferences
+python -m arcane interactive --timeline 6-months --complexity moderate --team-size 2-3
+
+# Skip industry and regulatory context
+python -m arcane interactive --industry healthcare --regulatory hipaa gdpr
+
+# Skip deployment preferences
+python -m arcane interactive --deployment-environment cloud --scaling-expectations viral
+```
+
+#### 3. 💬 Full Interactive Mode
+Let the CLI guide you through all questions:
+```bash
 python -m arcane interactive
 ```
 
-**Example interaction:**
-```
-🔮  Arcane
-AI-powered roadmap generation and project integration
+### Available Profiles
 
-Select your preferred LLM provider:
-❯ Claude (Anthropic)
-  ChatGPT (OpenAI)
-  Gemini (Google)
+| Profile | Best For | Timeline | Team | Budget | Key Features |
+|---------|----------|----------|------|--------|--------------|
+| `mvp-startup` | Solo founders | 3 months | 1 dev | Bootstrap | Simple stack, minimal infrastructure |
+| `ai-startup` | ML/AI products | 6 months | 2-3 devs | Seed funded | ML challenges, real-time data |
+| `enterprise-migration` | Legacy systems | 12 months | 8+ devs | Enterprise | Complex migration, compliance |
+| `mobile-app` | Consumer apps | 6 months | 2-3 devs | Seed funded | Offline-first, viral scaling |
+| `ecommerce` | Online stores | 6 months | 4-8 devs | Funded | Payments, seasonal scaling |
+| `healthcare-app` | Medical platforms | 12 months | 4-8 devs | Funded | HIPAA compliance, security |
+| `fintech` | Financial services | 12 months | 4-8 devs | Funded | Financial compliance, real-time |
+| `microservices` | Large platforms | 12 months | 8+ devs | Enterprise | Kubernetes, global scale |
+| `blockchain` | Web3/DeFi | 6 months | 2-3 devs | Seed funded | Blockchain, crypto payments |
+| `education-platform` | Learning systems | 6 months | 2-3 devs | Seed funded | FERPA compliance, video calls |
 
-✅ All environment variables configured
+## 🚩 CLI Flag Reference
 
-📁 Enter path to your idea text file: my_idea.txt
-✅ Found file: my_idea.txt
+This comprehensive guide covers all available command-line flags organized by category.
 
-Project timeline:
-❯ 6 months (Balanced)
+### Core System Flags
 
-🤖 Generating roadmap with AI...
-📊 Converting roadmap to CSV...
-📤 Importing to Notion...
+| Flag | Purpose | Options | Default | Example |
+|------|---------|---------|---------|---------|
+| `--provider` | Select LLM provider | `claude`, `openai`, `gemini` | `claude` | `--provider openai` |
+| `--idea-file` | Project description file | Any text file path | - | `--idea-file ./project.txt` |
+| `--output-dir` | Output directory | Any directory path | `./output` | `--output-dir ./generated` |
+| `--no-export` | Skip file export | Flag (no value) | - | `--no-export` |
+| `--formats` | Export formats | `csv`, `json`, `yaml` | `csv` | `--formats csv json` |
 
-🎉 Generation Complete!
-```
+### Profile Selection
+
+| Flag | Purpose | Options | Example |
+|------|---------|---------|---------|
+| `--profile` | Predefined configuration (skips ALL questions) | `mvp-startup`, `enterprise-migration`, `ai-startup`, `mobile-app`, `ecommerce`, `healthcare-app`, `fintech`, `microservices`, `blockchain`, `education-platform` | `--profile ai-startup` |
+
+### Basic Roadmap Configuration
+
+| Flag | Purpose | Options | Example | Impact |
+|------|---------|---------|---------|---------|
+| `--timeline` | Project duration | `3-months`, `6-months`, `12-months` | `--timeline 6-months` | Milestone pacing and task sizing |
+| `--complexity` | Technical complexity | `simple`, `moderate`, `complex` | `--complexity moderate` | Architecture decisions and challenge level |
+| `--team-size` | Development team size | `1`, `2-3`, `4-8`, `8+` | `--team-size 2-3` | Task sizing and collaboration approach |
+| `--focus` | Primary objective | `mvp`, `feature`, `migration`, `optimization` | `--focus mvp` | Feature prioritization and iteration speed |
+
+### Industry and Regulatory Context
+
+| Flag | Purpose | Options | Example | Impact |
+|------|---------|---------|---------|---------|
+| `--industry` | Industry domain | `b2b-saas`, `b2c-mobile`, `ecommerce`, `healthcare`, `finance`, `education`, `gaming`, `enterprise`, `government`, `non-profit`, `other` | `--industry healthcare` | Domain-specific requirements and standards |
+| `--regulatory` | Compliance needs | `gdpr`, `hipaa`, `pci-dss`, `soc2`, `iso27001`, `ferpa`, `fedramp`, `none` | `--regulatory hipaa gdpr` | Compliance milestones and audit tasks |
+| `--market-maturity` | Competition level | `greenfield`, `emerging`, `established`, `saturated` | `--market-maturity saturated` | Differentiation and competitive strategies |
+| `--target-market` | Geographic scope | `local`, `regional`, `national`, `global` | `--target-market global` | Internationalization and scaling needs |
+
+### Technical Assessment
+
+| Flag | Purpose | Options | Example | Impact |
+|------|---------|---------|---------|---------|
+| `--technical-challenges` | Technical hurdles | `realtime-data`, `high-concurrency`, `complex-logic`, `integrations`, `ml-ai`, `blockchain`, `iot-hardware`, `multi-tenant`, `offline-first`, `data-migrations`, `microservices`, `graphql-apis` | `--technical-challenges realtime-data ml-ai` | Specialized implementation tasks |
+
+### Team Assessment
+
+| Flag | Purpose | Options | Example | Impact |
+|------|---------|---------|---------|---------|
+| `--team-expertise` | Technical skill level | `learning`, `intermediate`, `expert`, `mixed` | `--team-expertise intermediate` | Task complexity and learning milestones |
+| `--team-distribution` | Working arrangement | `colocated`, `remote-sync`, `remote-async`, `hybrid` | `--team-distribution remote-async` | Communication and coordination tasks |
+| `--dev-methodology` | Development process | `agile`, `kanban`, `waterfall`, `adhoc` | `--dev-methodology agile` | Sprint structure and workflow tasks |
+
+### Budget Assessment
+
+| Flag | Purpose | Options | Example | Impact |
+|------|---------|---------|---------|---------|
+| `--budget-range` | Overall budget | `bootstrap`, `seed`, `funded`, `enterprise`, `undefined` | `--budget-range seed` | Tool choices and infrastructure decisions |
+| `--infra-budget` | Monthly infrastructure | `minimal`, `moderate`, `substantial`, `unlimited` | `--infra-budget minimal` | Hosting strategy and cost optimization |
+| `--services-budget` | Third-party services | `free`, `basic`, `professional`, `enterprise` | `--services-budget professional` | Integration choices and feature availability |
+
+### Deployment Assessment
+
+| Flag | Purpose | Options | Example | Impact |
+|------|---------|---------|---------|---------|
+| `--deployment-environment` | Hosting strategy | `cloud`, `serverless`, `kubernetes`, `traditional`, `on-premise`, `hybrid`, `edge` | `--deployment-environment kubernetes` | Infrastructure architecture and DevOps tasks |
+| `--geographic-distribution` | Global infrastructure | `single-region`, `multi-region`, `global`, `data-residency` | `--geographic-distribution multi-region` | CDN, replication, and compliance tasks |
+| `--scaling-expectations` | Traffic patterns | `steady`, `daily-peaks`, `seasonal`, `viral`, `batch` | `--scaling-expectations viral` | Auto-scaling and capacity planning |
+
+### Integration Requirements
+
+| Flag | Purpose | Options | Example | Impact |
+|------|---------|---------|---------|---------|
+| `--payment-integrations` | Payment processing | `stripe`, `paypal`, `square`, `cryptocurrency`, `bank-transfers`, `none` | `--payment-integrations stripe paypal` | Payment gateway and PCI compliance tasks |
+| `--communication-integrations` | Communication channels | `email`, `sms`, `push-notifications`, `in-app-chat`, `video-calls`, `none` | `--communication-integrations email sms` | Notification and messaging system tasks |
+| `--business-integrations` | Business tools | `crm`, `accounting`, `analytics`, `support`, `marketing-automation`, `none` | `--business-integrations crm analytics` | Third-party API integration tasks |
+| `--developer-integrations` | Development tools | `github-gitlab`, `ci-cd`, `monitoring`, `error-tracking`, `feature-flags`, `none` | `--developer-integrations github-gitlab ci-cd` | DevOps and development workflow tasks |
+| `--data-integrations` | Data sources | `rest-apis`, `graphql-apis`, `webhooks`, `websockets`, `file-uploads`, `databases`, `none` | `--data-integrations rest-apis databases` | Data pipeline and API integration tasks |
+
+### Success Definition
+
+| Flag | Purpose | Options | Example | Impact |
+|------|---------|---------|---------|---------|
+| `--success-metric` | Primary measurement | `adoption`, `revenue`, `cost-saving`, `speed`, `performance`, `satisfaction`, `innovation` | `--success-metric revenue` | Analytics and tracking implementation |
+| `--success-timeline` | Measurement timeframe | `immediate`, `short`, `medium`, `long` | `--success-timeline short` | Feedback loops and iteration cycles |
+| `--measurement-approach` | Tracking methodology | `quantitative`, `qualitative`, `mixed`, `none` | `--measurement-approach mixed` | Analytics plus user research tasks |
+| `--failure-tolerance` | Acceptable failure rate | `zero`, `low`, `moderate`, `high` | `--failure-tolerance zero` | Testing requirements and error handling |
 
 ### Other Commands
 ```bash
 # Generate roadmap from idea only (save as JSON)
 python -m arcane generate --idea "Build a task management app"
 
-# Import roadmap to Notion (planned feature)
+# Export existing roadmap
+python -m arcane export --roadmap roadmap.json
+
+# Import roadmap to Notion
 python -m arcane import --roadmap roadmap.json
 
 # Show help

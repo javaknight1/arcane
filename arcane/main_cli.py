@@ -90,7 +90,35 @@ class ArcaneCLI:
     def collect_all_preferences_and_settings(self, cli_flags: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Collect all user preferences and system settings using QuestionBuilder."""
         try:
-            return self.question_builder.collect_all_preferences(cli_flags)
+            # Check if a profile was specified
+            profile_name = cli_flags.get('profile')
+            if profile_name:
+                from .config.profiles import ProjectProfiles
+
+                self.console.print(f"\n[cyan]📋 Using predefined profile: {profile_name}[/cyan]")
+                profile_data = ProjectProfiles.PROFILES[profile_name]
+                self.console.print(f"[dim]{profile_data['description']}[/dim]")
+
+                # Get profile preferences and merge with any additional CLI flags
+                preferences = profile_data['preferences'].copy()
+
+                # Override with any explicitly provided CLI flags (excluding profile)
+                cli_overrides = {k: v for k, v in cli_flags.items()
+                               if k not in ['profile'] and v is not None}
+                preferences.update(cli_overrides)
+
+                # Add required system preferences
+                preferences['llm_provider'] = cli_flags.get('provider', 'claude')
+                if 'output_dir' in cli_flags:
+                    preferences['output_directory'] = cli_flags['output_dir']
+                if 'idea_file' in cli_flags:
+                    preferences['idea_file'] = cli_flags['idea_file']
+
+                self.console.print(f"[green]✅ Profile loaded with {len(preferences)} preferences[/green]")
+                return preferences
+            else:
+                # Normal question collection flow
+                return self.question_builder.collect_all_preferences(cli_flags)
         except Exception as e:
             self.console.print(f"[red]❌ Error collecting preferences and settings: {str(e)}[/red]")
             return None
@@ -110,10 +138,21 @@ class ArcaneCLI:
             else:
                 idea_content = "Generate a comprehensive web application roadmap based on the provided preferences."
 
-            # Build enhanced prompt
+            # Step 1: Aggregate preferences and generate insights
+            from .engines.analysis import PreferenceAggregator
+            aggregator = PreferenceAggregator()
+
+            self.console.print("\n[cyan]🔍 Analyzing preferences and generating insights...[/cyan]")
+            enhanced_context = aggregator.generate_enhanced_context(preferences)
+            insights = aggregator.aggregate_preferences(preferences)
+
+            # Display insights summary
+            self._display_insights_summary(insights)
+
+            # Build enhanced prompt with aggregated context
             enhanced_prompt = self.prompt_builder.build_prompt(
                 idea_content=idea_content,
-                preferences=preferences,
+                preferences=enhanced_context,  # Use enhanced context instead of raw preferences
                 idea_file_path=idea_file_path
             )
 
@@ -252,6 +291,76 @@ class ArcaneCLI:
             self._display_exit_message()
         except Exception as e:
             self.console.print(f"\n[red]❌ Unexpected error: {str(e)}[/red]")
+
+    def _display_insights_summary(self, insights):
+        """Display aggregated insights summary."""
+        from rich.table import Table
+        from rich.panel import Panel
+
+        # Risk Assessment Panel
+        risk_color = {
+            'low': 'green',
+            'medium': 'yellow',
+            'high': 'orange1',
+            'critical': 'red'
+        }.get(insights.risk_assessment.level.value, 'white')
+
+        risk_panel = f"[{risk_color}]Risk Level: {insights.risk_assessment.level.value.upper()}[/{risk_color}]\n"
+        risk_panel += f"Score: {insights.risk_assessment.score:.0%}\n"
+        if insights.risk_assessment.factors:
+            risk_panel += "\nTop Risk Factors:\n"
+            for factor in insights.risk_assessment.factors[:3]:
+                risk_panel += f"  • {factor}\n"
+
+        self.console.print(Panel(risk_panel, title="⚠️ Risk Assessment", border_style=risk_color))
+
+        # Feasibility Analysis
+        if not insights.feasibility.is_feasible:
+            feasibility_panel = "[red]⚠️ PROJECT MAY NOT BE FEASIBLE[/red]\n"
+            feasibility_panel += f"Confidence: {insights.feasibility.confidence:.0%}\n\n"
+            feasibility_panel += "Key Concerns:\n"
+            for concern in insights.feasibility.concerns[:3]:
+                feasibility_panel += f"  • {concern}\n"
+            self.console.print(Panel(feasibility_panel, title="📊 Feasibility Analysis", border_style="red"))
+
+        # Resource Alignment Table
+        table = Table(title="📈 Resource Alignment")
+        table.add_column("Resource", style="cyan")
+        table.add_column("Alignment", style="green")
+        table.add_column("Status", style="yellow")
+
+        def get_status(score):
+            if score >= 0.8:
+                return "✅ Excellent"
+            elif score >= 0.6:
+                return "⚠️ Adequate"
+            else:
+                return "❌ Insufficient"
+
+        table.add_row("Budget", f"{insights.resource_alignment.budget_alignment:.0%}",
+                     get_status(insights.resource_alignment.budget_alignment))
+        table.add_row("Team", f"{insights.resource_alignment.team_alignment:.0%}",
+                     get_status(insights.resource_alignment.team_alignment))
+        table.add_row("Timeline", f"{insights.resource_alignment.timeline_alignment:.0%}",
+                     get_status(insights.resource_alignment.timeline_alignment))
+
+        self.console.print(table)
+
+        # Key Recommendations
+        if insights.priority_recommendations:
+            rec_text = "\n".join(f"  {i+1}. {rec}" for i, rec in enumerate(insights.priority_recommendations[:3]))
+            self.console.print(Panel(rec_text, title="🎯 Priority Recommendations", border_style="cyan"))
+
+        # Warning Flags
+        if insights.warning_flags:
+            for warning in insights.warning_flags[:3]:
+                self.console.print(f"[red]{warning}[/red]")
+
+        # Adjusted Estimates
+        self.console.print("\n[bold cyan]📊 Adjusted Estimates:[/bold cyan]")
+        self.console.print(f"  • Realistic Timeline: {insights.estimated_actual_timeline}")
+        self.console.print(f"  • Recommended Team: {insights.recommended_team_size}")
+        self.console.print(f"  • Minimum Budget: {insights.minimum_budget_estimate}")
 
     def _display_summary(self, roadmap: Roadmap, export_files: Optional[Dict[str, str]], notion_success: bool):
         """Display final summary."""
