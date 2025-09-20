@@ -37,7 +37,8 @@ class ProjectProfiles:
                 'success_metric': 'adoption',
                 'success_timeline': 'short',
                 'measurement_approach': 'quantitative',
-                'failure_tolerance': 'moderate'
+                'failure_tolerance': 'moderate',
+                'roadmap_aspects': ['business-strategy', 'marketing-sales']
             }
         },
 
@@ -71,7 +72,8 @@ class ProjectProfiles:
                 'success_metric': 'performance',
                 'success_timeline': 'long',
                 'measurement_approach': 'quantitative',
-                'failure_tolerance': 'zero'
+                'failure_tolerance': 'zero',
+                'roadmap_aspects': ['operations', 'risk-management']
             }
         },
 
@@ -105,7 +107,8 @@ class ProjectProfiles:
                 'success_metric': 'adoption',
                 'success_timeline': 'medium',
                 'measurement_approach': 'mixed',
-                'failure_tolerance': 'moderate'
+                'failure_tolerance': 'moderate',
+                'roadmap_aspects': ['business-strategy', 'marketing-sales', 'product-management']
             }
         },
 
@@ -139,7 +142,8 @@ class ProjectProfiles:
                 'success_metric': 'adoption',
                 'success_timeline': 'short',
                 'measurement_approach': 'mixed',
-                'failure_tolerance': 'low'
+                'failure_tolerance': 'low',
+                'roadmap_aspects': ['marketing-sales', 'product-management']
             }
         },
 
@@ -173,7 +177,8 @@ class ProjectProfiles:
                 'success_metric': 'revenue',
                 'success_timeline': 'medium',
                 'measurement_approach': 'quantitative',
-                'failure_tolerance': 'low'
+                'failure_tolerance': 'low',
+                'roadmap_aspects': ['business-strategy', 'marketing-sales', 'operations', 'customer-support']
             }
         },
 
@@ -207,7 +212,8 @@ class ProjectProfiles:
                 'success_metric': 'satisfaction',
                 'success_timeline': 'long',
                 'measurement_approach': 'mixed',
-                'failure_tolerance': 'zero'
+                'failure_tolerance': 'zero',
+                'roadmap_aspects': ['legal-compliance', 'operations', 'risk-management']
             }
         },
 
@@ -241,7 +247,8 @@ class ProjectProfiles:
                 'success_metric': 'revenue',
                 'success_timeline': 'medium',
                 'measurement_approach': 'quantitative',
-                'failure_tolerance': 'zero'
+                'failure_tolerance': 'zero',
+                'roadmap_aspects': ['legal-compliance', 'risk-management', 'operations']
             }
         },
 
@@ -275,7 +282,8 @@ class ProjectProfiles:
                 'success_metric': 'performance',
                 'success_timeline': 'long',
                 'measurement_approach': 'quantitative',
-                'failure_tolerance': 'low'
+                'failure_tolerance': 'low',
+                'roadmap_aspects': ['operations', 'risk-management']
             }
         },
 
@@ -309,7 +317,8 @@ class ProjectProfiles:
                 'success_metric': 'adoption',
                 'success_timeline': 'medium',
                 'measurement_approach': 'quantitative',
-                'failure_tolerance': 'high'
+                'failure_tolerance': 'high',
+                'roadmap_aspects': ['legal-compliance', 'business-strategy', 'risk-management']
             }
         },
 
@@ -343,7 +352,8 @@ class ProjectProfiles:
                 'success_metric': 'satisfaction',
                 'success_timeline': 'medium',
                 'measurement_approach': 'mixed',
-                'failure_tolerance': 'low'
+                'failure_tolerance': 'low',
+                'roadmap_aspects': ['product-management', 'customer-support']
             }
         }
     }

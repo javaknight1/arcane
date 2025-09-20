@@ -59,6 +59,11 @@ CRITICAL FORMATTING REQUIREMENTS:
 - **Acceptable Failure Rate:** {failure_tolerance}
 - **Recommended KPIs:** {recommended_kpis}
 
+### Roadmap Scope & Aspects
+- **Included Aspects:** {roadmap_aspects}
+- **Non-Technical Focus Areas:** {non_technical_focus_areas}
+- **Roadmap Coverage:** {roadmap_coverage_description}
+
 ## Contextual Analysis
 
 ### Architecture Recommendation
@@ -124,6 +129,22 @@ Create a hierarchical roadmap with this exact format:
 2. **Epics**: 2-4 epics per milestone, each representing a major feature area or technical component
 3. **Stories**: 2-6 stories per epic, each representing user-facing functionality or major technical work
 4. **Tasks**: 3-8 tasks per story, each representing specific implementation work
+
+### Non-Technical Aspects Integration:
+When non-technical aspects are included in {roadmap_aspects}, integrate them throughout the roadmap as follows:
+
+- **Business Strategy**: Include epics for market research, competitive analysis, business model validation, pricing strategy, partnerships, and go-to-market planning
+- **Marketing & Sales**: Include epics for brand development, content marketing, lead generation systems, sales funnel optimization, customer acquisition campaigns, and conversion tracking
+- **Legal & Compliance**: Include epics for terms of service, privacy policy, regulatory compliance implementation, intellectual property protection, and legal entity setup
+- **Operations**: Include epics for business process design, workflow automation, vendor management, supply chain setup, customer service processes, and operational metrics
+- **Customer Support**: Include epics for help desk setup, documentation systems, training materials, support workflow design, and customer feedback loops
+- **Finance & Accounting**: Include epics for financial systems setup, revenue tracking, expense management, budgeting processes, and financial reporting
+- **HR & Team Building**: Include epics for team hiring plans, onboarding processes, performance management systems, compensation frameworks, and team culture development
+- **Product Management**: Include epics for user research, product strategy, feature prioritization, roadmap planning, user feedback systems, and product analytics
+- **Quality Assurance**: Include epics for QA process design, testing frameworks, quality metrics, bug tracking systems, and release management
+- **Risk Management**: Include epics for risk assessment, business continuity planning, security audits, insurance planning, and crisis management procedures
+
+Mix these non-technical epics with technical implementation epics to create a comprehensive project roadmap that addresses all selected aspects.
 
 ### Technical Detail Requirements:
 

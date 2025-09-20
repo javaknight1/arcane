@@ -17,6 +17,7 @@ from .system.output_directory_question import OutputDirectoryQuestion
 from .project.timeline_question import TimelineQuestion
 from .project.focus_question import FocusQuestion
 from .project.team_size_question import TeamSizeQuestion
+from .project.roadmap_aspects_question import RoadmapAspectsQuestion
 from .project.industry_question import IndustryQuestion
 from .project.regulatory_question import RegulatoryQuestion
 
@@ -73,6 +74,7 @@ class QuestionBuilder:
             TimelineQuestion(self.console),
             FocusQuestion(self.console),
             TeamSizeQuestion(self.console),
+            RoadmapAspectsQuestion(self.console),
             IndustryQuestion(self.console),
             RegulatoryQuestion(self.console),
 

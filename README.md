@@ -451,9 +451,8 @@ Comprehensive guides and references available in the [`docs/`](docs/) directory:
 - **[Configuration Guide](docs/configuration.md)**: Comprehensive configuration options and customization
 
 #### Project Planning
-- **[Idea Template](docs/IDEA_TEMPLATE.md)**: Comprehensive guide for describing project ideas
+- **[Idea File Guide](docs/idea-guide.md)**: **Essential reading** - Complete guide for crafting effective project briefs
 - **[Examples & Use Cases](docs/examples.md)**: Real-world examples across different industries and team sizes
-- **[Claude Code Integration](docs/CLAUDE_GUIDE.md)**: Guide for using generated roadmaps with Claude Code
 
 #### Reference & Support
 - **[Troubleshooting Guide](docs/troubleshooting.md)**: Common issues and solutions with error code reference

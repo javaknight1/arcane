@@ -84,6 +84,12 @@ class RoadmapPromptBuilder(BasePromptBuilder):
         if 'regulatory' in preferences:
             mappings['regulatory_requirements'] = preferences['regulatory']
 
+        # Process roadmap aspects
+        roadmap_aspects = preferences.get('roadmap_aspects', ['technical-only'])
+        mappings['roadmap_aspects'] = self._format_roadmap_aspects(roadmap_aspects)
+        mappings['non_technical_focus_areas'] = self._format_non_technical_focus_areas(roadmap_aspects)
+        mappings['roadmap_coverage_description'] = self._generate_roadmap_coverage_description(roadmap_aspects)
+
         # Set defaults for missing basic variables that template expects
         mappings.update({
             'target_market': preferences.get('target_market', 'Not specified'),
@@ -404,3 +410,100 @@ Structure the roadmap with:
 
 Ensure the roadmap is practical, achievable within the specified constraints, and provides clear value progression toward the defined success metrics.
 """
+
+    def _format_roadmap_aspects(self, roadmap_aspects: list) -> str:
+        """Format roadmap aspects for display in the template."""
+        if not roadmap_aspects or roadmap_aspects == ['technical-only']:
+            return "Technical implementation only"
+
+        # Map internal values to display names
+        display_map = {
+            'business-strategy': 'Business Strategy & Planning',
+            'marketing-sales': 'Marketing & Sales',
+            'legal-compliance': 'Legal & Compliance',
+            'operations': 'Operations & Process Management',
+            'customer-support': 'Customer Support & Success',
+            'finance-accounting': 'Finance & Accounting',
+            'hr-team': 'HR & Team Building',
+            'product-management': 'Product Management',
+            'qa-testing': 'Quality Assurance & Testing',
+            'risk-management': 'Risk Management',
+            'technical-only': 'Technical Implementation Only'
+        }
+
+        display_values = [display_map.get(aspect, aspect) for aspect in roadmap_aspects]
+        return ", ".join(display_values)
+
+    def _format_non_technical_focus_areas(self, roadmap_aspects: list) -> str:
+        """Extract and format non-technical focus areas."""
+        if not roadmap_aspects or roadmap_aspects == ['technical-only']:
+            return "None - Technical implementation focus only"
+
+        non_technical_aspects = [aspect for aspect in roadmap_aspects if aspect != 'technical-only']
+
+        if not non_technical_aspects:
+            return "None - Technical implementation focus only"
+
+        # Group aspects by category for better readability
+        business_aspects = []
+        operational_aspects = []
+
+        business_focused = ['business-strategy', 'marketing-sales', 'finance-accounting', 'product-management']
+        operational_focused = ['legal-compliance', 'operations', 'customer-support', 'hr-team', 'qa-testing', 'risk-management']
+
+        for aspect in non_technical_aspects:
+            if aspect in business_focused:
+                business_aspects.append(aspect)
+            elif aspect in operational_focused:
+                operational_aspects.append(aspect)
+
+        result_parts = []
+        if business_aspects:
+            result_parts.append(f"Business: {', '.join(business_aspects)}")
+        if operational_aspects:
+            result_parts.append(f"Operational: {', '.join(operational_aspects)}")
+
+        return "; ".join(result_parts) if result_parts else "None specified"
+
+    def _generate_roadmap_coverage_description(self, roadmap_aspects: list) -> str:
+        """Generate a description of what the roadmap will cover."""
+        if not roadmap_aspects or roadmap_aspects == ['technical-only']:
+            return "This roadmap focuses exclusively on technical implementation, including architecture, development, testing, and deployment. Business and operational aspects are not included."
+
+        non_technical_count = len([aspect for aspect in roadmap_aspects if aspect != 'technical-only'])
+
+        if non_technical_count == 0:
+            return "This roadmap focuses exclusively on technical implementation, including architecture, development, testing, and deployment. Business and operational aspects are not included."
+
+        coverage_parts = ["This roadmap provides comprehensive coverage including technical implementation"]
+
+        # Add descriptions based on selected aspects
+        aspect_descriptions = {
+            'business-strategy': 'strategic business planning and market analysis',
+            'marketing-sales': 'marketing strategy and sales process development',
+            'legal-compliance': 'legal framework and compliance requirements',
+            'operations': 'operational processes and workflow optimization',
+            'customer-support': 'customer service and support systems',
+            'finance-accounting': 'financial planning and accounting processes',
+            'hr-team': 'team building and human resources management',
+            'product-management': 'product strategy and management processes',
+            'qa-testing': 'quality assurance and testing frameworks',
+            'risk-management': 'risk assessment and mitigation strategies'
+        }
+
+        selected_descriptions = []
+        for aspect in roadmap_aspects:
+            if aspect in aspect_descriptions:
+                selected_descriptions.append(aspect_descriptions[aspect])
+
+        if selected_descriptions:
+            if len(selected_descriptions) == 1:
+                coverage_parts.append(f"as well as {selected_descriptions[0]}")
+            elif len(selected_descriptions) == 2:
+                coverage_parts.append(f"as well as {selected_descriptions[0]} and {selected_descriptions[1]}")
+            else:
+                coverage_parts.append(f"as well as {', '.join(selected_descriptions[:-1])}, and {selected_descriptions[-1]}")
+
+        coverage_parts.append("to ensure holistic project success.")
+
+        return " ".join(coverage_parts)

@@ -41,6 +41,10 @@ Interactive Mode Examples:
   # Skip basic roadmap prompts
   python -m arcane interactive --provider claude --timeline 6-months --complexity moderate --team-size 2-3 --focus mvp
 
+  # Include non-technical aspects in roadmap
+  python -m arcane interactive --roadmap-aspects business-strategy marketing-sales
+  python -m arcane interactive --roadmap-aspects legal-compliance operations risk-management # Enterprise focus
+
   # Skip industry context prompts
   python -m arcane interactive --industry healthcare --regulatory hipaa gdpr --market-maturity established --target-market national
 
@@ -58,6 +62,7 @@ Interactive Mode Examples:
 
   # Comprehensive example (skip all prompts)
   python -m arcane interactive --provider claude --timeline 6-months --complexity moderate --team-size 2-3 --focus mvp \\
+    --roadmap-aspects business-strategy marketing-sales legal-compliance \\
     --industry healthcare --regulatory hipaa --market-maturity established --target-market national \\
     --technical-challenges realtime-data integrations --team-expertise expert --dev-methodology agile \\
     --budget-range funded --deployment-environment cloud --success-metric revenue
@@ -139,6 +144,13 @@ Other Commands:
         '--focus',
         choices=['mvp', 'feature', 'migration', 'optimization'],
         help='Primary project focus (skips focus prompt)'
+    )
+
+    parser.add_argument(
+        '--roadmap-aspects',
+        nargs='+',
+        choices=['business-strategy', 'marketing-sales', 'legal-compliance', 'operations', 'customer-support', 'finance-accounting', 'hr-team', 'product-management', 'qa-testing', 'risk-management', 'technical-only'],
+        help='Non-technical aspects to include in roadmap (can specify multiple, skips roadmap aspects prompt)'
     )
 
     # Industry context flags
@@ -330,6 +342,7 @@ Other Commands:
                 complexity=getattr(args, 'complexity', None),
                 team_size=getattr(args, 'team_size', None),
                 focus=getattr(args, 'focus', None),
+                roadmap_aspects=getattr(args, 'roadmap_aspects', None),
                 industry=getattr(args, 'industry', None),
                 regulatory=getattr(args, 'regulatory', None),
                 market_maturity=getattr(args, 'market_maturity', None),
