@@ -1,41 +1,146 @@
-name: Security
+name: Security Scan
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
   schedule:
-    - cron: '0 6 * * 1'  # Run weekly on Mondays
+    # Run security scans weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
 
 jobs:
-  security:
+  security-scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit[toml] safety semgrep
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r arcane/ -f json -o bandit-results.json
+        continue-on-error: true
+
+      - name: Run Safety dependency check
+        run: |
+          safety check --json --output safety-results.json
+        continue-on-error: true
+
+      - name: Run Semgrep security scan
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: |
+          semgrep --config=auto --json --output semgrep-results.json arcane/
+        continue-on-error: true
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-scan-results
+          path: |
+            bandit-results.json
+            safety-results.json
+            semgrep-results.json
+
+  dependency-check:
+    name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install safety bandit
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pip-audit
 
-    - name: Check for security vulnerabilities in dependencies
-      run: safety check
+      - name: Run pip-audit
+        run: |
+          pip-audit --format=json --output=pip-audit-results.json
+        continue-on-error: true
 
-    - name: Security linting with bandit
-      run: bandit -r roadmap_notion/ -f json -o bandit-report.json
-      continue-on-error: true
+      - name: Check for known vulnerabilities
+        run: |
+          pip install safety
+          safety check --json --output safety-check.json
+        continue-on-error: true
 
-    - name: Upload bandit report
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: bandit-report
-        path: bandit-report.json
+      - name: Upload dependency scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-scan-results
+          path: |
+            pip-audit-results.json
+            safety-check.json
+
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run TruffleHog secrets scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: Run GitLeaks secrets scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
