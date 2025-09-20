@@ -22,6 +22,7 @@ from .prompts.roadmap_prompt_builder import RoadmapPromptBuilder
 from .engines.export import FileExporter
 from .engines.importers import NotionImporter
 from .items import Roadmap
+from .validation import PreferenceValidator, ValidationSeverity
 
 
 class ArcaneCLI:
@@ -32,6 +33,7 @@ class ArcaneCLI:
         self.logger = get_logger(__name__)
         self.question_builder = QuestionBuilder(self.console)
         self.prompt_builder = RoadmapPromptBuilder()
+        self.validator = PreferenceValidator()
         self.export_engine = None
         self.import_engine = None
         self.current_roadmap = None
@@ -86,6 +88,58 @@ class ArcaneCLI:
 
         self.console.print("[bold green]✅ All environment variables configured[/bold green]")
         return True
+
+    def validate_preferences(self, preferences: Dict[str, Any]) -> bool:
+        """
+        Validate preferences for consistency and feasibility.
+
+        Args:
+            preferences: Dictionary of all collected preferences
+
+        Returns:
+            True if validation passes, False if critical issues found
+        """
+        try:
+            self.console.print("\n[cyan]🔍 Validating preference consistency...[/cyan]")
+
+            # Run validation
+            issues = self.validator.validate_preferences(preferences)
+
+            if not issues:
+                self.console.print("[green]✅ All preferences validated successfully[/green]")
+                return True
+
+            # Display validation results
+            self._display_validation_results(issues)
+
+            # Check if we should proceed
+            should_proceed, reason = self.validator.should_proceed(issues)
+
+            if should_proceed:
+                self.console.print(f"[yellow]⚠️  {reason}[/yellow]")
+
+                # Ask user if they want to continue with warnings
+                if issues:
+                    from rich.prompt import Confirm
+                    continue_anyway = Confirm.ask(
+                        "\n[yellow]Do you want to continue with these validation warnings?[/yellow]",
+                        default=True
+                    )
+
+                    if not continue_anyway:
+                        self.console.print("[yellow]Operation cancelled by user due to validation issues[/yellow]")
+                        return False
+
+                return True
+            else:
+                self.console.print(f"[red]❌ {reason}[/red]")
+                self.console.print("[red]Please resolve critical issues before proceeding[/red]")
+                return False
+
+        except Exception as e:
+            self.console.print(f"[yellow]⚠️  Validation error: {str(e)}[/yellow]")
+            self.console.print("[yellow]Proceeding without validation...[/yellow]")
+            return True
 
     def collect_all_preferences_and_settings(self, cli_flags: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Collect all user preferences and system settings using QuestionBuilder."""
@@ -271,6 +325,11 @@ class ArcaneCLI:
             if not self.check_environment_variables(llm_provider):
                 return
 
+            # Step 2.5: Validate preferences for consistency and feasibility
+            validation_passed = self.validate_preferences(all_preferences)
+            if not validation_passed:
+                return
+
             # Step 3: Generate roadmap
             roadmap = self.generate_roadmap(all_preferences)
             if not roadmap:
@@ -377,6 +436,64 @@ class ArcaneCLI:
         table.add_row("3. Notion Import", "✅ Success" if notion_success else "❌ Failed", "Check Notion workspace" if notion_success else "See error above")
 
         self.console.print(table)
+
+    def _display_validation_results(self, issues):
+        """Display validation results in a user-friendly format."""
+
+        # Validation summary
+        summary = self.validator.get_validation_summary(issues)
+
+        self.console.print(f"\n[bold cyan]🔍 Validation Results[/bold cyan]")
+        self.console.print(f"Found {summary['total_issues']} issues: " +
+                          f"{summary['by_severity']['critical']} critical, " +
+                          f"{summary['by_severity']['error']} errors, " +
+                          f"{summary['by_severity']['warning']} warnings, " +
+                          f"{summary['by_severity']['info']} info")
+
+        # Display issues by severity
+        severity_colors = {
+            ValidationSeverity.CRITICAL: "red",
+            ValidationSeverity.ERROR: "orange1",
+            ValidationSeverity.WARNING: "yellow",
+            ValidationSeverity.INFO: "cyan"
+        }
+
+        severity_icons = {
+            ValidationSeverity.CRITICAL: "🚨",
+            ValidationSeverity.ERROR: "❌",
+            ValidationSeverity.WARNING: "⚠️",
+            ValidationSeverity.INFO: "ℹ️"
+        }
+
+        # Group issues by severity
+        by_severity = {}
+        for issue in issues:
+            if issue.severity not in by_severity:
+                by_severity[issue.severity] = []
+            by_severity[issue.severity].append(issue)
+
+        # Display each severity group
+        for severity in [ValidationSeverity.CRITICAL, ValidationSeverity.ERROR,
+                        ValidationSeverity.WARNING, ValidationSeverity.INFO]:
+            if severity not in by_severity:
+                continue
+
+            color = severity_colors[severity]
+            icon = severity_icons[severity]
+            severity_issues = by_severity[severity]
+
+            self.console.print(f"\n[bold {color}]{icon} {severity.value.title()} Issues ({len(severity_issues)}):[/bold {color}]")
+
+            for i, issue in enumerate(severity_issues, 1):
+                self.console.print(f"[{color}]{i}. {issue.message}[/{color}]")
+
+                if issue.affected_preferences:
+                    self.console.print(f"   [dim]Affects: {', '.join(issue.affected_preferences)}[/dim]")
+
+                if issue.recommendation:
+                    self.console.print(f"   [green]💡 Recommendation: {issue.recommendation}[/green]")
+
+                self.console.print()
 
 
 def main():

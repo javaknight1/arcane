@@ -750,5 +750,190 @@ class PreferenceAggregator:
             'estimated_actual_timeline': insights.estimated_actual_timeline,
             'recommended_team_size': insights.recommended_team_size,
             'minimum_budget_estimate': insights.minimum_budget_estimate,
-            'critical_skills_needed': insights.critical_skills_needed
+            'critical_skills_needed': insights.critical_skills_needed,
+
+            # Prompt-specific derived variables (for template compatibility)
+            **self._compute_prompt_variables(preferences)
         }
+
+    def _compute_prompt_variables(self, preferences: Dict[str, Any]) -> Dict[str, str]:
+        """Compute prompt-specific derived variables for template compatibility."""
+        derived = {}
+
+        # Calculate complexity if not explicitly set
+        complexity_factors = []
+        if preferences.get('technical_challenges'):
+            complexity_factors.extend(preferences['technical_challenges'])
+        if preferences.get('scaling_expectations') == 'viral':
+            complexity_factors.append('high_scaling')
+        if preferences.get('regulatory') and 'gdpr' in str(preferences['regulatory']).lower():
+            complexity_factors.append('regulatory_compliance')
+
+        derived['calculated_complexity'] = 'complex' if len(complexity_factors) >= 3 else 'moderate' if len(complexity_factors) >= 1 else 'simple'
+
+        # Count integrations
+        integration_count = 0
+        integration_types = ['payment_integrations', 'communication_integrations', 'business_integrations', 'developer_integrations', 'data_integrations']
+        for integration_type in integration_types:
+            if preferences.get(integration_type):
+                integration_list = preferences[integration_type]
+                if isinstance(integration_list, list):
+                    integration_count += len([item for item in integration_list if item != 'none'])
+                elif integration_list != 'none':
+                    integration_count += 1
+
+        derived['integration_count'] = str(integration_count)
+        derived['integration_complexity'] = 'high' if integration_count >= 5 else 'moderate' if integration_count >= 2 else 'low'
+
+        # Calculate velocity multiplier based on team expertise and methodology
+        velocity = 1.0
+        if preferences.get('team_expertise') == 'expert':
+            velocity *= 1.3
+        elif preferences.get('team_expertise') == 'learning':
+            velocity *= 0.7
+
+        if preferences.get('dev_methodology') == 'agile':
+            velocity *= 1.2
+        elif preferences.get('dev_methodology') == 'waterfall':
+            velocity *= 0.9
+
+        derived['velocity_multiplier'] = f"{velocity:.1f}x"
+
+        # Assess risks
+        derived['technical_risk'] = 'high' if derived['calculated_complexity'] == 'complex' else 'moderate' if derived['calculated_complexity'] == 'moderate' else 'low'
+        derived['budget_risk'] = 'high' if preferences.get('budget_range') == 'bootstrap' else 'moderate' if preferences.get('budget_range') in ['seed', 'undefined'] else 'low'
+        derived['team_risk'] = 'high' if preferences.get('team_size') == '1' else 'moderate' if preferences.get('team_expertise') == 'learning' else 'low'
+
+        # Overall risk score
+        risk_factors = [derived['technical_risk'], derived['budget_risk'], derived['team_risk']]
+        high_risks = risk_factors.count('high')
+        derived['overall_risk_score'] = 'high' if high_risks >= 2 else 'moderate' if high_risks >= 1 else 'low'
+
+        # Architecture constraints
+        constraints = []
+        if preferences.get('budget_range') == 'bootstrap':
+            constraints.append('cost-optimized')
+        if preferences.get('regulatory') and any(req in str(preferences['regulatory']).lower() for req in ['hipaa', 'gdpr']):
+            constraints.append('compliance-required')
+        if preferences.get('deployment_environment') == 'on-premise':
+            constraints.append('on-premise-only')
+
+        derived['architecture_constraints'] = ', '.join(constraints) if constraints else 'flexible'
+
+        # Generate recommended KPIs based on success metric
+        success_metric = preferences.get('success_metric', 'adoption')
+        kpi_map = {
+            'adoption': 'Monthly Active Users, User Retention Rate, Feature Adoption Rate',
+            'revenue': 'Monthly Recurring Revenue, Customer Acquisition Cost, Lifetime Value',
+            'cost-saving': 'Cost Reduction %, Process Efficiency, ROI',
+            'speed': 'Response Time, Time to Market, Development Velocity',
+            'performance': 'Response Time, Uptime, Error Rate, Throughput',
+            'satisfaction': 'NPS Score, User Satisfaction Rating, Support Ticket Volume',
+            'innovation': 'Feature Uniqueness Index, Market Differentiation, Patent Applications'
+        }
+        derived['recommended_kpis'] = kpi_map.get(success_metric, 'Custom metrics based on project goals')
+
+        # Format regulatory requirements for template
+        regulatory = preferences.get('regulatory', [])
+        if isinstance(regulatory, list):
+            derived['regulatory_requirements'] = ', '.join(regulatory) if regulatory and 'none' not in regulatory else 'none'
+        else:
+            derived['regulatory_requirements'] = str(regulatory) if regulatory != 'none' else 'none'
+
+        # Format technical challenges for template
+        tech_challenges = preferences.get('technical_challenges', [])
+        if isinstance(tech_challenges, list):
+            derived['technical_challenges'] = ', '.join(tech_challenges) if tech_challenges else 'none'
+        else:
+            derived['technical_challenges'] = str(tech_challenges) if tech_challenges else 'none'
+
+        # Contextual analysis strings
+        derived.update(self._generate_contextual_analysis_strings(preferences))
+
+        return derived
+
+    def _generate_contextual_analysis_strings(self, preferences: Dict[str, Any]) -> Dict[str, str]:
+        """Generate contextual analysis strings for template."""
+        analysis = {}
+
+        # Architecture recommendation
+        factors = []
+        if preferences.get('budget_range') == 'bootstrap':
+            factors.append("Budget-conscious architecture recommended")
+        if preferences.get('scaling_expectations') == 'viral':
+            factors.append("Highly scalable architecture required")
+        if preferences.get('team_size') == '1':
+            factors.append("Simple, maintainable architecture for solo developer")
+        complexity = preferences.get('calculated_complexity') or preferences.get('complexity')
+        if complexity == 'complex':
+            factors.append("Modular architecture to handle complexity")
+
+        analysis['recommended_architecture'] = "; ".join(factors) if factors else "Standard web application architecture"
+
+        # Technology stack suggestions
+        suggestions = []
+        industry = preferences.get('industry', '')
+        if industry == 'healthcare':
+            suggestions.append("HIPAA-compliant technologies")
+        elif industry == 'finance':
+            suggestions.append("Security-first tech stack")
+
+        if preferences.get('budget_range') == 'bootstrap':
+            suggestions.append("Open-source solutions preferred")
+
+        if preferences.get('deployment_environment') == 'serverless':
+            suggestions.append("Serverless-compatible technologies")
+
+        analysis['tech_stack_recommendations'] = "; ".join(suggestions) if suggestions else "Standard modern tech stack"
+
+        # Risk assessment summary
+        risks = []
+        if preferences.get('technical_risk') == 'high':
+            risks.append("High technical complexity risk")
+        if preferences.get('budget_risk') == 'high':
+            risks.append("Budget constraint risk")
+        if preferences.get('team_risk') == 'high':
+            risks.append("Team capacity risk")
+
+        timeline = preferences.get('timeline', '')
+        team_size = preferences.get('team_size', '')
+        if team_size == '1' and timeline == '3-months':
+            risks.append("Aggressive timeline for solo developer")
+
+        analysis['risk_assessment'] = "; ".join(risks) if risks else "Low to moderate risk profile"
+
+        # Timeline feasibility
+        timeline = preferences.get('timeline', '')
+        complexity = preferences.get('calculated_complexity') or preferences.get('complexity', '')
+        team_size = preferences.get('team_size', '')
+
+        if timeline == '3-months' and complexity == 'complex':
+            analysis['timeline_feasibility'] = "Aggressive timeline - recommend MVP approach"
+        elif timeline == '12-months' and complexity == 'simple':
+            analysis['timeline_feasibility'] = "Conservative timeline - opportunity for additional features"
+        else:
+            analysis['timeline_feasibility'] = "Timeline appears reasonable for scope"
+
+        # Key constraints
+        constraints = []
+        regulatory = preferences.get('regulatory', [])
+        if isinstance(regulatory, list):
+            if 'hipaa' in [r.lower() for r in regulatory]:
+                constraints.append("HIPAA compliance required")
+            if 'gdpr' in [r.lower() for r in regulatory]:
+                constraints.append("GDPR compliance required")
+        elif isinstance(regulatory, str):
+            if 'hipaa' in regulatory.lower():
+                constraints.append("HIPAA compliance required")
+            if 'gdpr' in regulatory.lower():
+                constraints.append("GDPR compliance required")
+
+        if preferences.get('budget_range') == 'bootstrap':
+            constraints.append("Minimal budget constraints")
+
+        if preferences.get('deployment_environment') == 'on-premise':
+            constraints.append("On-premise deployment requirement")
+
+        analysis['key_constraints'] = "; ".join(constraints) if constraints else "No major constraints identified"
+
+        return analysis

@@ -11,10 +11,76 @@ CRITICAL FORMATTING REQUIREMENTS:
 {idea_content}
 
 ## Project Preferences:
-- Timeline: {timeline}
-- Technical Complexity: {complexity}
-- Team Size: {team_size}
-- Primary Focus: {focus}
+
+### Timeline & Scope
+- **Timeline:** {timeline}
+- **Primary Focus:** {focus}
+- **Complexity Level:** {complexity}
+
+### Industry & Market Context
+- **Industry/Domain:** {industry}
+- **Target Market:** {target_market}
+- **Market Maturity:** {market_maturity}
+- **Regulatory Requirements:** {regulatory_requirements}
+
+### Technical Architecture
+- **Technical Challenges:** {technical_challenges}
+- **Calculated Complexity:** {calculated_complexity}
+- **Deployment Environment:** {deployment_environment}
+- **Geographic Distribution:** {geographic_distribution}
+- **Scaling Pattern:** {scaling_expectations}
+
+### Team & Resources
+- **Team Size:** {team_size}
+- **Team Expertise:** {team_expertise}
+- **Team Distribution:** {team_distribution}
+- **Development Methodology:** {dev_methodology}
+- **Velocity Multiplier:** {velocity_multiplier}
+
+### Financial Constraints
+- **Overall Budget:** {budget_range}
+- **Infrastructure Budget:** {infra_budget}
+- **Services Budget:** {services_budget}
+- **Architecture Constraints:** {architecture_constraints}
+
+### Integration Requirements
+- **Payment Systems:** {payment_integrations}
+- **Communication Services:** {communication_integrations}
+- **Business Tools:** {business_integrations}
+- **Developer Tools:** {developer_integrations}
+- **Data Sources:** {data_integrations}
+- **Integration Count:** {integration_count}
+- **Integration Complexity:** {integration_complexity}
+
+### Success Definition
+- **Primary Success Metric:** {success_metric}
+- **Success Timeline:** {success_timeline}
+- **Measurement Approach:** {measurement_approach}
+- **Acceptable Failure Rate:** {failure_tolerance}
+- **Recommended KPIs:** {recommended_kpis}
+
+## Contextual Analysis
+
+### Architecture Recommendation
+{recommended_architecture}
+
+### Technology Stack Suggestions
+{tech_stack_recommendations}
+
+### Risk Assessment
+{risk_assessment}
+
+### Timeline Feasibility
+{timeline_feasibility}
+
+### Key Constraints
+{key_constraints}
+
+### Risk Levels
+- **Technical Risk:** {technical_risk}
+- **Budget Risk:** {budget_risk}
+- **Team Risk:** {team_risk}
+- **Overall Risk Score:** {overall_risk_score}
 
 ## Roadmap Requirements:
 
@@ -61,33 +127,56 @@ Create a hierarchical roadmap with this exact format:
 
 ### Technical Detail Requirements:
 
-1. **Architecture Considerations**: Include database design, API structure, frontend architecture
-2. **Technology Stack**: Suggest appropriate technologies based on complexity and team size
-3. **Infrastructure**: Include deployment, monitoring, and scalability considerations
-4. **Testing Strategy**: Unit tests, integration tests, end-to-end testing
-5. **Security**: Authentication, authorization, data protection
-6. **Performance**: Optimization strategies and performance requirements
+1. **Architecture Considerations**: Include database design, API structure, frontend architecture aligned with deployment environment and scaling expectations
+2. **Technology Stack**: Suggest appropriate technologies based on complexity, team expertise, budget constraints, and technical challenges
+3. **Infrastructure**: Include deployment, monitoring, and scalability considerations that match geographic distribution and scaling patterns
+4. **Testing Strategy**: Unit tests, integration tests, end-to-end testing appropriate for team size and methodology
+5. **Security**: Authentication, authorization, data protection aligned with regulatory requirements
+6. **Performance**: Optimization strategies and performance requirements based on success metrics and failure tolerance
+7. **Integration Planning**: Account for all specified integrations (payment, communication, business, developer, data)
+8. **Compliance Implementation**: Address all regulatory requirements throughout the roadmap
+9. **Budget Optimization**: Consider infrastructure and services budget constraints in technology choices
+10. **Team Considerations**: Align complexity and learning requirements with team expertise level
 
 ### Claude Code Prompts:
 Each story and task must include a "Claude Code Prompt" that provides specific, actionable instructions for implementing that piece of functionality using Claude Code. These prompts should:
-- Be specific enough to guide implementation
-- Include file structures and naming conventions
-- Specify testing requirements
-- Include any necessary configuration or setup steps
+- Be specific enough to guide implementation based on team expertise level
+- Include file structures and naming conventions appropriate for the chosen tech stack
+- Specify testing requirements aligned with the development methodology
+- Include any necessary configuration or setup steps for the deployment environment
+- Consider integration requirements and provide specific guidance for each integration
+- Address regulatory and compliance requirements where applicable
+- Account for budget constraints when suggesting tools or services
+- Include performance considerations based on scaling expectations
+- Provide appropriate guidance for the team's distribution model (remote/colocated)
+- Consider the success metrics and provide implementation guidance for tracking and analytics
 
 ### Industry Best Practices:
-- Follow agile development principles
-- Include proper CI/CD pipeline setup
-- Consider mobile-first or responsive design where applicable
-- Include proper error handling and logging
-- Plan for scalability and maintainability
-- Include documentation and knowledge transfer
+- Follow the specified development methodology (agile/kanban/waterfall/adhoc)
+- Include proper CI/CD pipeline setup aligned with developer integrations
+- Consider mobile-first or responsive design based on industry and target market
+- Include proper error handling and logging appropriate for failure tolerance level
+- Plan for scalability and maintainability based on scaling expectations
+- Include documentation and knowledge transfer appropriate for team distribution
+- Implement security measures aligned with regulatory requirements
+- Consider industry-specific best practices and standards
+- Account for geographic distribution requirements (CDN, data residency, etc.)
+- Implement monitoring and analytics aligned with success metrics
+- Include cost optimization strategies based on budget constraints
+- Plan for integration testing based on the number and complexity of integrations
+- Consider team expertise level when planning knowledge transfer and training
 
 ### Timeline Considerations:
-- Distribute work evenly across the specified timeline
-- Include buffer time for testing and bug fixes
-- Consider team ramp-up time
-- Plan for iterative development and feedback cycles
+- Distribute work evenly across the specified timeline accounting for velocity multiplier
+- Include buffer time for testing and bug fixes based on failure tolerance
+- Consider team ramp-up time based on team expertise level
+- Plan for iterative development and feedback cycles aligned with development methodology
+- Account for compliance review cycles if regulatory requirements are present
+- Consider integration complexity when estimating timeline
+- Factor in geographic distribution challenges for team coordination
+- Account for learning curve if team expertise is below requirements
+- Plan milestone deliveries based on success timeline expectations
+- Include time for documentation and knowledge transfer appropriate for team distribution
 
 ### MANDATORY COMPLETION INSTRUCTIONS - NO EXCEPTIONS:
 

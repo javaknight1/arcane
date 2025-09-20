@@ -9,6 +9,14 @@ Preferences:
 - Complexity: {complexity}
 - Team Size: {team_size}
 - Focus: {focus}
+- Industry: {industry}
+- Budget Range: {budget_range}
+- Technical Challenges: {technical_challenges}
+- Regulatory Requirements: {regulatory_requirements}
+- Team Expertise: {team_expertise}
+- Integration Count: {integration_count}
+- Deployment Environment: {deployment_environment}
+- Success Metric: {success_metric}
 
 Generate ONLY the outline structure in this exact format:
 
