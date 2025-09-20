@@ -1,0 +1,42 @@
+Generate ONLY the header section for Milestone {milestone_number}.
+
+PROJECT CONTEXT:
+{project_context}
+
+ROADMAP CONTEXT:
+{roadmap_context}
+
+MILESTONE TO GENERATE HEADER FOR:
+Milestone {milestone_number}: {milestone_title}
+
+EXPECTED EPICS IN THIS MILESTONE:
+{expected_epics}
+
+CRITICAL INSTRUCTIONS:
+1. Generate ONLY the milestone header information - NO epic, story, or task details
+2. The epics listed above will be generated separately
+3. Focus on high-level milestone overview and planning
+4. Use the roadmap context to understand how this milestone fits into the overall project
+5. Use the exact format below
+6. Do NOT include any epic content - just reference them
+
+FORMAT REQUIREMENTS:
+## Milestone {milestone_number}: {milestone_title}
+
+**Duration:** [X hours total for entire milestone]
+**Priority:** [Critical/High/Medium/Low]
+**Goal:** [Clear objective statement for this milestone]
+
+### **What it is and why we need it:**
+[Detailed explanation of this milestone's purpose and importance in the overall project]
+
+### **Benefits:**
+- [Specific business benefit of completing this milestone]
+- [Specific technical benefit of completing this milestone]
+- [Specific operational benefit of completing this milestone]
+
+### **What happens if we don't have it:**
+- [Specific consequence of not completing this milestone]
+- [Business impact of missing this milestone]
+
+Generate ONLY this header content - do not include epic details.

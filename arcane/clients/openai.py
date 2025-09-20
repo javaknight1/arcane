@@ -4,6 +4,9 @@ import os
 import time
 import random
 from .base import BaseLLMClient
+from ..utils.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class OpenAILLMClient(BaseLLMClient):
@@ -49,8 +52,10 @@ class OpenAILLMClient(BaseLLMClient):
 
                 if is_retryable and attempt < max_retries:
                     delay = min(base_delay * (2 ** attempt) + random.uniform(0, 1), max_delay)
-                    print(f"🔄 OpenAI API temporarily unavailable (attempt {attempt + 1}/{max_retries + 1})")
-                    print(f"⏳ Waiting {delay:.1f} seconds before retry...")
+                    logger.warning(
+                        "OpenAI API temporarily unavailable (attempt %d/%d). Waiting %.1f seconds before retry...",
+                        attempt + 1, max_retries + 1, delay
+                    )
                     time.sleep(delay)
                     continue
 

@@ -10,7 +10,7 @@ from arcane.items import Roadmap
 from arcane.constants import CSV_FIELDNAMES, EXPORT_FORMATS
 
 
-class FileExportEngine:
+class FileExporter:
     """Engine for exporting roadmap data to various file formats."""
 
     def __init__(self):

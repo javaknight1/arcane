@@ -4,6 +4,9 @@ import os
 import time
 import random
 from .base import BaseLLMClient
+from ..utils.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class ClaudeLLMClient(BaseLLMClient):
@@ -47,9 +50,11 @@ class ClaudeLLMClient(BaseLLMClient):
                     # Calculate exponential backoff with jitter
                     delay = min(base_delay * (2 ** attempt) + random.uniform(0, 1), max_delay)
 
-                    # Show user-friendly retry message
-                    print(f"🔄 Claude API temporarily overloaded (attempt {attempt + 1}/{max_retries + 1})")
-                    print(f"⏳ Waiting {delay:.1f} seconds before retry...")
+                    # Log retry attempt
+                    logger.warning(
+                        "Claude API temporarily overloaded (attempt %d/%d). Waiting %.1f seconds before retry...",
+                        attempt + 1, max_retries + 1, delay
+                    )
 
                     time.sleep(delay)
                     continue

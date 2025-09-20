@@ -1,0 +1,49 @@
+Generate COMPLETE detailed content for Epic {epic_number} ONLY.
+
+PROJECT CONTEXT:
+{project_context}
+
+ROADMAP CONTEXT:
+{roadmap_context}
+
+MILESTONE CONTEXT:
+{milestone_context}
+
+EPIC TO DETAIL:
+Epic {epic_number}: {epic_title}
+
+EXPECTED STORIES IN THIS EPIC:
+{expected_stories}
+
+CRITICAL INSTRUCTIONS:
+1. Generate ONLY this epic's content - NO story or task details
+2. The stories listed above will be generated separately
+3. Focus on epic-level planning and requirements
+4. Use the roadmap context to understand how this epic relates to other milestones and epics
+5. Use the exact format below
+6. Do NOT include story/task content - just reference them
+
+FORMAT REQUIREMENTS:
+### Epic {epic_number}: {epic_title}
+
+**Duration:** [X hours total for entire epic]
+**Priority:** [Critical/High/Medium]
+
+#### **What it is and why we need it:**
+[Detailed explanation of this epic's purpose and how it fits into the milestone]
+
+#### **Benefits:**
+- [Specific business benefit of this epic]
+- [Specific technical benefit of this epic]
+- [Specific user benefit of this epic]
+
+#### **Prerequisites:**
+- [What must be completed before starting this epic]
+- [Dependencies and requirements]
+
+#### **Technical Requirements:**
+- [Key technical specifications for this epic]
+- [Architecture or technology decisions needed]
+- [Integration requirements]
+
+Generate ONLY this epic header content - stories will be generated separately.

@@ -54,8 +54,8 @@ class Milestone(Item):
 
     def generate_prompt(self, project_context: str, parent_context: Optional[str] = None, roadmap_context: Optional[str] = None) -> str:
         """Generate prompt for milestone header generation."""
-        from arcane.prompts.prompt_builder import PromptBuilder
-        builder = PromptBuilder()
+        from arcane.prompts.roadmap_prompt_builder import RoadmapPromptBuilder
+        builder = RoadmapPromptBuilder()
 
         # Build expected structure from children
         expected_epics = "\n".join([f"- Epic {child.id}: {child.name.split(': ', 1)[-1] if ': ' in child.name else child.name}"

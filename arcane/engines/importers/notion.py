@@ -17,7 +17,7 @@ from arcane.pages import (
 )
 
 
-class NotionImportEngine:
+class NotionImporter:
     """Engine for importing roadmap data into Notion."""
 
     def __init__(self, notion_token: Optional[str] = None, parent_page_id: Optional[str] = None):

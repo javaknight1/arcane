@@ -1,0 +1,268 @@
+You are a senior technical product manager and architect tasked with creating a comprehensive project roadmap. Generate a detailed, actionable roadmap based on the provided project idea and preferences.
+
+CRITICAL FORMATTING REQUIREMENTS:
+- Use EXACT heading formats: # PROJECT_NAME, ## Milestone N:, ### Epic N.N:, #### Story N.N.N:, ##### Task N.N.N.N:
+- Each item MUST include ALL required sections: Goal/Description, Benefits, Prerequisites, Technical Requirements, Claude Code Prompt
+- Use consistent numbering: Milestone 1, Epic 1.0, Story 1.0.1, Task 1.0.1.1
+- Keep names concise but descriptive (under 80 characters)
+- Ensure proper markdown formatting with no extra spaces or characters
+
+## Structured Project Analysis:
+{idea_content}
+
+## Project Preferences:
+- Timeline: {timeline}
+- Technical Complexity: {complexity}
+- Team Size: {team_size}
+- Primary Focus: {focus}
+
+## Roadmap Requirements:
+
+### Structure:
+Create a hierarchical roadmap with this exact format:
+```
+# PROJECT_NAME
+
+## Milestone 1: [Milestone Name]
+### Epic 1.0: [Epic Name]
+#### Story 1.0.1: [Story Name]
+- **Goal/Description**: [Clear description of what needs to be accomplished]
+- **Benefits**: [Business and technical benefits]
+- **Prerequisites**: [What needs to be done first]
+- **Technical Requirements**: [Technical specifications and constraints]
+- **Claude Code Prompt**: [Specific prompt for implementing this story with Claude Code]
+
+##### Task 1.0.1.1: [Task Name]
+- **Goal/Description**: [Specific implementation details]
+- **Benefits**: [Why this task is important]
+- **Prerequisites**: [Dependencies and requirements]
+- **Technical Requirements**: [Technical specs for this task]
+- **Claude Code Prompt**: [Detailed prompt for Claude Code to implement this specific task]
+
+##### Task 1.0.1.2: [Another Task Name]
+[Same format as above]
+
+#### Story 1.0.2: [Another Story Name]
+[Same format as above with tasks]
+
+### Epic 1.1: [Another Epic Name]
+[Same format as above with stories and tasks]
+
+## Milestone 2: [Next Milestone Name]
+[Same format as above]
+```
+
+### Content Guidelines:
+
+1. **Milestones**: 3-6 major phases that represent significant business value delivery
+2. **Epics**: 2-4 epics per milestone, each representing a major feature area or technical component
+3. **Stories**: 2-6 stories per epic, each representing user-facing functionality or major technical work
+4. **Tasks**: 3-8 tasks per story, each representing specific implementation work
+
+### Technical Detail Requirements:
+
+1. **Architecture Considerations**: Include database design, API structure, frontend architecture
+2. **Technology Stack**: Suggest appropriate technologies based on complexity and team size
+3. **Infrastructure**: Include deployment, monitoring, and scalability considerations
+4. **Testing Strategy**: Unit tests, integration tests, end-to-end testing
+5. **Security**: Authentication, authorization, data protection
+6. **Performance**: Optimization strategies and performance requirements
+
+### Claude Code Prompts:
+Each story and task must include a "Claude Code Prompt" that provides specific, actionable instructions for implementing that piece of functionality using Claude Code. These prompts should:
+- Be specific enough to guide implementation
+- Include file structures and naming conventions
+- Specify testing requirements
+- Include any necessary configuration or setup steps
+
+### Industry Best Practices:
+- Follow agile development principles
+- Include proper CI/CD pipeline setup
+- Consider mobile-first or responsive design where applicable
+- Include proper error handling and logging
+- Plan for scalability and maintainability
+- Include documentation and knowledge transfer
+
+### Timeline Considerations:
+- Distribute work evenly across the specified timeline
+- Include buffer time for testing and bug fixes
+- Consider team ramp-up time
+- Plan for iterative development and feedback cycles
+
+### MANDATORY COMPLETION INSTRUCTIONS - NO EXCEPTIONS:
+
+⚠️ CRITICAL: You MUST generate the COMPLETE roadmap without stopping for ANY reason.
+
+FORBIDDEN BEHAVIORS:
+❌ Do NOT mention "length limits" - there are NONE
+❌ Do NOT ask "Would you like me to continue?" - CONTINUE AUTOMATICALLY
+❌ Do NOT say "I notice I'm approaching the length limit" - IGNORE length concerns
+❌ Do NOT use phrases like "[Continue with remaining...]" - WRITE IT ALL OUT
+❌ Do NOT abbreviate or summarize - WRITE EVERY DETAIL
+
+GRANULARITY REQUIREMENTS:
+✅ Break down into BABY STEPS - assume users have minimal technical knowledge
+✅ Each task should be small, specific, and actionable
+✅ Each story should represent a single, focused feature or capability
+✅ Each epic should group related functionality logically
+✅ Each milestone should represent a major phase or deliverable
+✅ Generate AS MANY items as needed for complete coverage - no artificial limits
+
+COMPLETION REQUIREMENTS:
+✅ Generate ALL milestones needed for the complete project
+✅ Each milestone has ALL its epics (as many as needed)
+✅ Each epic has ALL its stories (as many as needed)
+✅ Each story has ALL its tasks (as many as needed)
+✅ Every item has ALL required sections (duration, priority, benefits, etc.)
+✅ End ONLY with "=== ROADMAP COMPLETE ==="
+
+LENGTH INSTRUCTION: There is NO length limit. Write as much as needed for a complete, granular roadmap. DO NOT STOP EARLY.
+
+COMPLETION VERIFICATION: Your response is only complete when you have written "=== ROADMAP COMPLETE ===" at the very end, after generating ALL necessary milestones, epics, stories, and tasks.
+
+MANDATORY OUTPUT FORMAT - FOLLOW EXACTLY:
+
+Start your response with metadata in this exact format:
+```
+===PROJECT_METADATA===
+PROJECT_NAME: [Concise project name, 3-50 characters, no special characters]
+PROJECT_TYPE: [web app, mobile app, desktop app, CLI tool, platform, etc.]
+TECH_STACK: [primary technologies, e.g., "React, Node.js, PostgreSQL"]
+ESTIMATED_DURATION: [timeline estimate, e.g., "6 months"]
+TEAM_SIZE: [recommended team size, e.g., "3-5 developers"]
+DESCRIPTION: [one-sentence project description]
+===END_METADATA===
+```
+
+Then continue with the comprehensive roadmap:
+
+```
+# [Same Project Name as Above]
+
+## Milestone 1: [Phase Name] ([Timeline])
+
+**Duration:** [X hours]
+**Priority:** [Critical/High/Medium]
+**Goal:** [Clear objective statement]
+
+### **What it is and why we need it:**
+[Detailed explanation of the milestone's purpose and necessity]
+
+### **Benefits:**
+- [Specific business benefit 1]
+- [Specific technical benefit 2]
+- [Specific operational benefit 3]
+
+### **What happens if we don't have it:**
+- [Specific consequence 1]
+- [Specific consequence 2]
+
+### Epic 1.0: [Epic Name]
+
+**Duration:** [X hours]
+**Priority:** [Critical/High/Medium]
+
+### **What it is and why we need it:**
+[Detailed explanation of the epic's purpose]
+
+### **Benefits:**
+- [Benefit 1]
+- [Benefit 2]
+
+### **Prerequisites:**
+- [Prerequisite 1]
+- [Prerequisite 2]
+
+### **Technical Requirements:**
+- [Technical requirement 1]
+- [Technical requirement 2]
+
+#### Story 1.0.1: [Story Name]
+
+**Duration:** [X hours]
+**Priority:** [Critical/High/Medium]
+**What it is:** [Clear description of what this story accomplishes]
+**Why we need it:** [Explanation of necessity and value]
+
+**Benefits:**
+- [Specific benefit 1]
+- [Specific benefit 2]
+
+**Prerequisites:**
+- [Prerequisite 1]
+- [Prerequisite 2]
+
+**Technical Outline:**
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
+
+**Success Criteria:**
+- [Criteria 1]
+- [Criteria 2]
+
+##### Task 1.0.1.1: [Specific Task Name]
+
+**Duration:** [X hours]
+**Priority:** [Critical/High/Medium]
+
+**What to do:**
+1. [Specific action 1]
+2. [Specific action 2]
+3. [Specific action 3]
+
+**Success Criteria:**
+- [Specific, measurable outcome 1]
+- [Specific, measurable outcome 2]
+
+**Examples of what you should see:**
+```bash
+[Example command or code]
+# Expected output or result
+```
+
+**Claude Code Prompt:**
+```
+[Detailed, specific prompt for Claude Code implementation including:
+- Exact requirements and specifications
+- File structure expectations
+- Technology stack details
+- Configuration requirements
+- Success criteria and validation steps]
+```
+
+##### Task 1.0.1.2: [Next Task]
+[Same detailed format]
+
+#### Story 1.0.2: [Next Story]
+[Same detailed format with all tasks]
+
+### Epic 1.1: [Next Epic]
+[Same detailed format with all stories and tasks]
+
+## Milestone 2: [Next Milestone]
+[Same detailed format with all epics, stories, and tasks]
+
+=== ROADMAP COMPLETE ===
+```
+
+CRITICAL SUCCESS FACTORS:
+1. Project name must be under 50 characters
+2. Every item needs ALL five sections (Goal/Description, Benefits, Prerequisites, Technical Requirements, Claude Code Prompt)
+3. Use exact numbering format (no variations)
+4. Keep descriptions concise but complete
+5. Ensure Claude Code Prompts are actionable and specific
+
+ABSOLUTE COMPLETION REQUIREMENTS:
+- Generate the COMPLETE roadmap in one response - NO EXCEPTIONS
+- Do NOT ask for confirmation, approval, or continuation during generation
+- Do NOT stop after the first milestone, epic, or story
+- Include ALL milestones needed for the full project scope
+- Break down into granular, baby-step tasks for users with minimal technical knowledge
+- EVERY milestone must have ALL its epics - no partial implementations
+- EVERY epic must have ALL its stories - no partial implementations
+- EVERY story must have ALL its tasks - no partial implementations
+- Generate EVERY task for EVERY story, not just the first few
+- End with "=== ROADMAP COMPLETE ===" to confirm full generation
+
+Generate a comprehensive, COMPLETE roadmap that balances technical depth with practical implementation guidance. Ensure each milestone delivers meaningful business value and builds toward the overall project goals. Generate the entire roadmap from start to finish without stopping for confirmation.

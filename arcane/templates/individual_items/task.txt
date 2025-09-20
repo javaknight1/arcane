@@ -1,0 +1,47 @@
+Generate detailed content for Task {task_number}.
+
+PROJECT CONTEXT:
+{project_context}
+
+ROADMAP CONTEXT:
+{roadmap_context}
+
+STORY CONTEXT:
+{story_context}
+
+TASK TO DETAIL:
+Task {task_number}: {task_title}
+
+INSTRUCTIONS:
+1. Generate comprehensive task details
+2. Focus on specific implementation work
+3. Include clear acceptance criteria
+4. Provide technical requirements if applicable
+
+FORMAT YOUR RESPONSE EXACTLY AS:
+
+## Task {task_number}: {task_title}
+
+**What to Do:**
+- [Specific implementation step 1]
+- [Specific implementation step 2]
+- [Specific implementation step 3]
+
+**Success Criteria:**
+- [Measurable criterion 1]
+- [Measurable criterion 2]
+- [Measurable criterion 3]
+
+**Technical Requirements:**
+[Any specific technical considerations, dependencies, or constraints]
+
+**Prerequisites:**
+[Any tasks or conditions that must be completed first]
+
+**Benefits:**
+[Why this task is important and what value it provides]
+
+**Claude Code Prompt:**
+[If applicable, provide a specific prompt for Claude Code to implement this task]
+
+IMPORTANT: Keep task details focused and actionable. This should be specific implementation work that can be completed by a developer.

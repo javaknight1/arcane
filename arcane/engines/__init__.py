@@ -1,11 +1,11 @@
 """Engines module for roadmap processing."""
 
-from .generation import NewGuidedRoadmapGenerator
-from .export import FileExportEngine
-from .import_engine import NotionImportEngine
+from .generation import RoadmapGenerator
+from .export import FileExporter
+from .importers import NotionImporter
 
 __all__ = [
-    'NewGuidedRoadmapGenerator',
-    'FileExportEngine',
-    'NotionImportEngine'
+    'RoadmapGenerator',
+    'FileExporter',
+    'NotionImporter'
 ]

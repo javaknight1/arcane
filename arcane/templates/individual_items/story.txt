@@ -1,0 +1,79 @@
+Generate COMPLETE content for Story {story_number} AND all its tasks in one response.
+
+PROJECT CONTEXT:
+{project_context}
+
+ROADMAP CONTEXT:
+{roadmap_context}
+
+EPIC CONTEXT:
+{epic_context}
+
+STORY TO DETAIL:
+Story {story_number}: {story_title}
+
+EXPECTED TASKS (generate ALL of these):
+{expected_tasks}
+
+CRITICAL INSTRUCTIONS:
+1. Generate the story content AND all its tasks in this response
+2. Follow the exact format below for story + all tasks
+3. Include complete details for every task listed above
+4. Use the roadmap context to understand how this story integrates with the broader project
+5. Use the specific formatting for each section
+6. Do NOT skip any tasks - generate all of them
+
+FORMAT REQUIREMENTS:
+##### Story {story_number}: {story_title}
+
+**Duration:** [X hours for story work]
+**Priority:** [Critical/High/Medium]
+**What it is:** [Clear description of what this story accomplishes]
+**Why we need it:** [Explanation of necessity and business value]
+
+**Benefits:**
+- [Specific benefit to users/business]
+- [Technical benefit or improvement]
+
+**Prerequisites:**
+- [What must be done before this story]
+- [Dependencies on other stories/epics]
+
+**Technical Outline:**
+1. [High-level implementation step]
+2. [High-level implementation step]
+3. [High-level implementation step]
+
+**Success Criteria:**
+- [Measurable outcome 1]
+- [Measurable outcome 2]
+
+[For each task in the expected_tasks list above, generate this format:]
+
+###### Task [Task_ID]: [Task_Title]
+
+**Duration:** [X hours]
+**Priority:** [Critical/High/Medium]
+
+**What to do:**
+1. [Specific action or implementation step]
+2. [Specific action or implementation step]
+3. [Specific action or implementation step]
+
+**Success Criteria:**
+- [Specific, measurable outcome]
+- [Specific, measurable outcome]
+
+**Claude Code Prompt:**
+```
+[Detailed implementation prompt for Claude Code including:
+- Exact requirements and specifications
+- File structure expectations
+- Technology stack details
+- Configuration requirements
+- Testing and validation steps]
+```
+
+[Continue this format for ALL tasks listed in expected_tasks - do not use placeholder variables]
+
+IMPORTANT: Generate COMPLETE details for the story AND every single task.

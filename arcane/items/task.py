@@ -54,8 +54,8 @@ class Task(Item):
 
     def generate_prompt(self, project_context: str, parent_context: Optional[str] = None, roadmap_context: Optional[str] = None) -> str:
         """Generate prompt for task generation (usually handled by story generation)."""
-        from arcane.prompts.prompt_builder import PromptBuilder
-        builder = PromptBuilder()
+        from arcane.prompts.roadmap_prompt_builder import RoadmapPromptBuilder
+        builder = RoadmapPromptBuilder()
 
         story_context = parent_context or ""
         if self.parent:

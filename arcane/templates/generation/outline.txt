@@ -1,0 +1,69 @@
+Generate a comprehensive roadmap OUTLINE for the following project.
+
+CRITICAL: Provide ONLY the table of contents structure with titles - no descriptions, details, or content. This will be used to generate detailed content later.
+
+{idea_content}
+
+Preferences:
+- Timeline: {timeline}
+- Complexity: {complexity}
+- Team Size: {team_size}
+- Focus: {focus}
+
+Generate ONLY the outline structure in this exact format:
+
+===PROJECT_METADATA===
+PROJECT_NAME: [Concise project name]
+PROJECT_TYPE: [web app, mobile app, etc.]
+TECH_STACK: [primary technologies]
+ESTIMATED_DURATION: [timeline]
+TEAM_SIZE: [team size]
+DESCRIPTION: [one sentence]
+===END_METADATA===
+
+# [Project Name]
+
+## Milestone 1: [Milestone Name]
+### Epic 1.0: [Epic Name]
+#### Story 1.0.1: [Story Name]
+##### Task 1.0.1.1: [Task Name]
+##### Task 1.0.1.2: [Task Name]
+##### Task 1.0.1.3: [Task Name]
+#### Story 1.0.2: [Story Name]
+##### Task 1.0.2.1: [Task Name]
+##### Task 1.0.2.2: [Task Name]
+#### Story 1.0.3: [Story Name]
+##### Task 1.0.3.1: [Task Name]
+##### Task 1.0.3.2: [Task Name]
+### Epic 1.1: [Epic Name]
+#### Story 1.1.1: [Story Name]
+##### Task 1.1.1.1: [Task Name]
+##### Task 1.1.1.2: [Task Name]
+#### Story 1.1.2: [Story Name]
+##### Task 1.1.2.1: [Task Name]
+##### Task 1.1.2.2: [Task Name]
+
+## Milestone 2: [Milestone Name]
+### Epic 2.0: [Epic Name]
+#### Story 2.0.1: [Story Name]
+##### Task 2.0.1.1: [Task Name]
+##### Task 2.0.1.2: [Task Name]
+#### Story 2.0.2: [Story Name]
+##### Task 2.0.2.1: [Task Name]
+##### Task 2.0.2.2: [Task Name]
+### Epic 2.1: [Epic Name]
+#### Story 2.1.1: [Story Name]
+##### Task 2.1.1.1: [Task Name]
+##### Task 2.1.1.2: [Task Name]
+
+## Milestone 3: [Milestone Name]
+### Epic 3.0: [Epic Name]
+#### Story 3.0.1: [Story Name]
+##### Task 3.0.1.1: [Task Name]
+##### Task 3.0.1.2: [Task Name]
+
+[Continue for all milestones...]
+
+=== OUTLINE COMPLETE ===
+
+IMPORTANT: Generate COMPLETE outline with ALL milestones, epics, stories, AND tasks. Include proper numbering and hierarchy. Include 2-3 tasks per story minimum. No descriptions - titles only.

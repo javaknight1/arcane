@@ -11,7 +11,7 @@ from arcane.items.story import Story
 from arcane.items.task import Task
 from arcane.items.base import Item, ItemStatus
 from arcane.engines.parsing.outline_parser import OutlineParser
-from arcane.prompts.idea_processor import IdeaProcessor
+# IdeaProcessor removed - using simplified processing
 
 
 class RecursiveRoadmapGenerator:
@@ -20,7 +20,6 @@ class RecursiveRoadmapGenerator:
     def __init__(self, llm_client):
         self.llm_client = llm_client
         self.console = Console()
-        self.idea_processor = IdeaProcessor()
         self.outline_parser = OutlineParser()
 
     def generate_from_outline(self, outline_content: str, idea_content: str, interactive_mode: bool = False) -> List[Milestone]:
@@ -44,11 +43,8 @@ class RecursiveRoadmapGenerator:
                           f"{item_counts['epics']} epics, {item_counts['stories']} stories, "
                           f"{item_counts['tasks']} tasks[/green]")
 
-        # Process idea content
-        processed_idea = self.idea_processor.process_idea(idea_content)
-        features_formatted = self.idea_processor.format_features(processed_idea['key_features'])
-        processed_idea['key_features_formatted'] = features_formatted
-        project_context = self.idea_processor.build_structured_prompt(processed_idea)
+        # Process idea content (simplified processing)
+        project_context = f"Project Idea: {idea_content}"
 
         # Generate content for each item
         self._generate_all_items(milestones, project_context, interactive_mode)

@@ -7,6 +7,9 @@ from arcane.items.epic import Epic
 from arcane.items.story import Story
 from arcane.items.task import Task
 from arcane.items.base import ItemStatus
+from ...utils.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class OutlineParser:
@@ -213,13 +216,13 @@ class OutlineParser:
     def print_structure(self, milestones: List[Milestone]) -> None:
         """Print the parsed structure for debugging."""
         for milestone in milestones:
-            print(f"📊 {milestone.name} (ID: {milestone.id})")
+            logger.debug("📊 %s (ID: %s)", milestone.name, milestone.id)
 
             for epic in milestone.get_children_by_type('Epic'):
-                print(f"  📁 {epic.name} (ID: {epic.id})")
+                logger.debug("  📁 %s (ID: %s)", epic.name, epic.id)
 
                 for story in epic.get_children_by_type('Story'):
-                    print(f"    📄 {story.name} (ID: {story.id})")
+                    logger.debug("    📄 %s (ID: %s)", story.name, story.id)
 
                     for task in story.get_children_by_type('Task'):
-                        print(f"      ✅ {task.name} (ID: {task.id})")
+                        logger.debug("      ✅ %s (ID: %s)", task.name, task.id)

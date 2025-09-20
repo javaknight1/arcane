@@ -54,8 +54,8 @@ class Epic(Item):
 
     def generate_prompt(self, project_context: str, parent_context: Optional[str] = None, roadmap_context: Optional[str] = None) -> str:
         """Generate prompt for epic generation."""
-        from arcane.prompts.prompt_builder import PromptBuilder
-        builder = PromptBuilder()
+        from arcane.prompts.roadmap_prompt_builder import RoadmapPromptBuilder
+        builder = RoadmapPromptBuilder()
 
         # Build expected structure from children
         expected_stories = "\n".join([f"- Story {child.id}: {child.name.split(': ', 1)[-1] if ': ' in child.name else child.name}"
