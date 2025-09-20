@@ -103,7 +103,7 @@ Choose at least one LLM provider and set up API access:
 Test your installation:
 
 ```bash
-python -m roadmap_notion --help
+python -m arcane --help
 ```
 
 You should see the CLI help message indicating successful installation.

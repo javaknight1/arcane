@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-This guide helps resolve common issues when using the Roadmap Notion tool.
+This guide helps resolve common issues when using the Arcane CLI tool.
 
 ## Installation Issues
 
@@ -8,7 +8,7 @@ This guide helps resolve common issues when using the Roadmap Notion tool.
 
 **Error:**
 ```
-ModuleNotFoundError: No module named 'roadmap_notion'
+ModuleNotFoundError: No module named 'arcane'
 ```
 
 **Solutions:**
@@ -25,7 +25,7 @@ ModuleNotFoundError: No module named 'roadmap_notion'
 
 3. Verify you're in the correct directory:
    ```bash
-   ls -la  # Should show roadmap_notion/ directory
+   ls -la  # Should show arcane/ directory
    ```
 
 ### Package Dependencies
@@ -134,7 +134,7 @@ NotionClientError: body failed validation
 
 2. Use absolute path:
    ```bash
-   python -m roadmap_notion parse /full/path/to/roadmap.txt
+   python -m arcane parse /full/path/to/roadmap.txt
    ```
 
 3. Check file permissions:
@@ -259,7 +259,7 @@ Enable verbose output for troubleshooting:
 
 ```bash
 export DEBUG=1
-python -m roadmap_notion
+python -m arcane
 ```
 
 This will show:

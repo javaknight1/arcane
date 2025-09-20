@@ -1,6 +1,6 @@
 # Examples and Use Cases
 
-This document provides practical examples of using the Roadmap Notion tool for different types of projects.
+This document provides practical examples of using the Arcane CLI tool for different types of projects.
 
 ## Complete Workflow Examples
 
@@ -48,7 +48,7 @@ Business Goals:
 
 **Command:**
 ```bash
-python -m roadmap_notion
+python -m arcane
 ```
 
 **Generated Structure:**
@@ -133,8 +133,8 @@ Task 1.0.1.2: Design product schema,Task,Story 1.0.1: Database Architecture,8,Me
 
 **Command:**
 ```bash
-python -m roadmap_notion parse fitness_roadmap.txt fitness_roadmap.csv
-python -m roadmap_notion import fitness_roadmap.csv
+python -m arcane parse fitness_roadmap.txt fitness_roadmap.csv
+python -m arcane import fitness_roadmap.csv
 ```
 
 ## Project Type Examples

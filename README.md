@@ -306,6 +306,28 @@ export DOTENV_PATH=/path/to/custom/.env
 export DEBUG=1
 ```
 
+### Configuration
+Arcane supports extensive customization through YAML configuration files. You can customize LLM settings, generation parameters, file handling, display options, and more.
+
+📖 **[Complete Configuration Guide](docs/configuration.md)** - Detailed explanation of all configuration options, examples, and best practices.
+
+Quick setup:
+```bash
+# Create user configuration directory
+mkdir -p ~/.arcane
+
+# Create basic configuration
+cat > ~/.arcane/config.yaml << EOF
+llm:
+  default_provider: "claude"
+generation:
+  interactive_mode: true
+  default_timeline: "6-months"
+files:
+  default_output_dir: "./my-roadmaps"
+EOF
+```
+
 ### API Key Setup
 
 #### Claude (Anthropic)
@@ -424,18 +446,16 @@ python -m roadmap_notion generate
 Comprehensive guides and references available in the [`docs/`](docs/) directory:
 
 #### Getting Started
-- **[Installation Guide](docs/installation.md)**: Step-by-step setup instructions with troubleshooting
+- **[Installation Guide](docs/installation.md)**: Step-by-step setup instructions with API key configuration
 - **[Usage Guide](docs/usage.md)**: Complete usage documentation with workflows and examples
-- **[CLI Usage Reference](docs/CLI_USAGE.md)**: Detailed command-line interface documentation
+- **[Configuration Guide](docs/configuration.md)**: Comprehensive configuration options and customization
 
 #### Project Planning
 - **[Idea Template](docs/IDEA_TEMPLATE.md)**: Comprehensive guide for describing project ideas
 - **[Examples & Use Cases](docs/examples.md)**: Real-world examples across different industries and team sizes
 - **[Claude Code Integration](docs/CLAUDE_GUIDE.md)**: Guide for using generated roadmaps with Claude Code
 
-#### Technical Reference
-- **[API Reference](docs/api-reference.md)**: Technical documentation for all modules and classes
-- **[Application Summary](docs/ROADMAP_APP_SUMMARY.md)**: Technical overview and architecture
+#### Reference & Support
 - **[Troubleshooting Guide](docs/troubleshooting.md)**: Common issues and solutions with error code reference
 
 ### Quick Reference
@@ -443,10 +463,9 @@ Comprehensive guides and references available in the [`docs/`](docs/) directory:
 - **Getting Started**: See [Installation Guide](docs/installation.md) for complete setup
 - **Project Ideas**: Use [Idea Template](docs/IDEA_TEMPLATE.md) for detailed project descriptions
 - **Usage Examples**: Check [Examples](docs/examples.md) for your project type
+- **Configuration**: See [Configuration Guide](docs/configuration.md) for customization options
 - **Claude Code**: See [Claude Code Integration](docs/CLAUDE_GUIDE.md) for implementation guidance
-- **CLI Commands**: Refer to [CLI Usage](docs/CLI_USAGE.md) for all command options
-- **Technical Details**: See [API Reference](docs/api-reference.md) for implementation details
-- **Architecture**: Review [Application Summary](docs/ROADMAP_APP_SUMMARY.md) for technical overview
+- **CLI Commands**: Refer to the [CLI Flag Reference](#-cli-flag-reference) section above for all command options
 - **Need Help?**: Consult [Troubleshooting Guide](docs/troubleshooting.md) for common issues
 
 ## 🐛 Troubleshooting

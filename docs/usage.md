@@ -1,6 +1,6 @@
 # Usage Guide
 
-This guide covers how to use the Roadmap Notion tool for generating and importing roadmaps.
+This guide covers how to use the Arcane CLI tool for generating and importing roadmaps.
 
 ## Quick Start
 
@@ -9,7 +9,7 @@ This guide covers how to use the Roadmap Notion tool for generating and importin
 The easiest way to get started is with the interactive CLI:
 
 ```bash
-python -m roadmap_notion
+python -m arcane
 ```
 
 This will:
@@ -26,16 +26,16 @@ The tool provides several commands for different workflows:
 
 ```bash
 # Interactive mode (recommended for first-time users)
-python -m roadmap_notion
+python -m arcane
 
 # Generate roadmap only
-python -m roadmap_notion generate
+python -m arcane generate
 
 # Import existing CSV
-python -m roadmap_notion import <csv_file>
+python -m arcane import <csv_file>
 
 # Parse text file to CSV
-python -m roadmap_notion parse <text_file> [output_csv]
+python -m arcane parse <text_file> [output_csv]
 ```
 
 ## Detailed Workflows
@@ -45,7 +45,7 @@ python -m roadmap_notion parse <text_file> [output_csv]
 For complete automation from idea to Notion:
 
 ```bash
-python -m roadmap_notion
+python -m arcane
 ```
 
 **Process:**
@@ -67,7 +67,7 @@ python -m roadmap_notion
 If you have an existing roadmap text file:
 
 ```bash
-python -m roadmap_notion parse roadmap.txt output.csv
+python -m arcane parse roadmap.txt output.csv
 ```
 
 **Input Format:**
@@ -92,7 +92,7 @@ Your text file should follow this hierarchy:
 If you already have a CSV file:
 
 ```bash
-python -m roadmap_notion import your_roadmap.csv
+python -m arcane import your_roadmap.csv
 ```
 
 **CSV Requirements:**
