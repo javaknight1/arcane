@@ -191,6 +191,8 @@ class ArcaneCLI:
 
                 # Add required system preferences
                 preferences['llm_provider'] = cli_flags.get('provider', 'claude')
+                if 'model' in cli_flags:
+                    preferences['model'] = cli_flags['model']
                 if 'output_dir' in cli_flags:
                     preferences['output_directory'] = cli_flags['output_dir']
                 if 'idea_file' in cli_flags:
@@ -210,6 +212,7 @@ class ArcaneCLI:
         try:
             # Extract settings from preferences
             llm_provider = preferences.get('llm_provider')
+            llm_model = preferences.get('model')  # Specific model name
             idea_file_path = preferences.get('idea_file')
             output_directory = preferences.get('output_directory')
 
@@ -244,13 +247,13 @@ class ArcaneCLI:
             from .clients.factory import LLMClientFactory
 
             try:
-                llm_client = LLMClientFactory.create(llm_provider)
+                llm_client = LLMClientFactory.create(llm_provider, llm_model)
                 enhanced_result = llm_client.generate(enhanced_prompt)
                 self.console.print(f"[green]✅ Enhanced LLM generation completed ({len(enhanced_result)} characters)[/green]")
 
                 # Fall back to existing generator for roadmap parsing
                 from .engines.generation.roadmap_generator import RoadmapGenerator
-                generator = RoadmapGenerator(llm_provider, output_directory)
+                generator = RoadmapGenerator(llm_provider, output_directory, model=llm_model)
 
             except Exception as e:
                 self.console.print(f"[yellow]⚠️  Enhanced LLM integration failed: {e}[/yellow]")
@@ -258,7 +261,7 @@ class ArcaneCLI:
 
                 # Fall back to existing generator
                 from .engines.generation.roadmap_generator import RoadmapGenerator
-                generator = RoadmapGenerator(llm_provider, output_directory)
+                generator = RoadmapGenerator(llm_provider, output_directory, model=llm_model)
 
             # Generate roadmap using all comprehensive question data
             roadmap = generator.generate_roadmap(idea_content, preferences)
@@ -319,11 +322,12 @@ class ArcaneCLI:
             self.console.print(f"[red]❌ Error importing to Notion: {str(e)}[/red]")
             return False
 
-    def run(self, provider=None, idea_file=None, output_dir=None, compression=None, model_mode=None, debug=None, debug_report=None, **cli_flags):
+    def run(self, provider=None, model=None, idea_file=None, output_dir=None, compression=None, model_mode=None, debug=None, debug_report=None, **cli_flags):
         """Main application entry point with clean, modular flow.
 
         Args:
             provider: LLM provider to use
+            model: Specific model name (e.g., 'gpt-4o-mini', 'claude-haiku-4-20250514')
             idea_file: Path to idea file
             output_dir: Output directory for exports
             compression: Compression level ('none', 'light', 'moderate', 'aggressive')
@@ -375,6 +379,8 @@ class ArcaneCLI:
             all_cli_flags = cli_flags.copy()
             if provider:
                 all_cli_flags['provider'] = provider
+            if model:
+                all_cli_flags['model'] = model
             if idea_file:
                 all_cli_flags['idea_file'] = idea_file
             if output_dir:

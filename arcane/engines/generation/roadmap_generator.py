@@ -37,10 +37,23 @@ class RoadmapGenerator:
     and individual item content generation.
     """
 
-    def __init__(self, llm_provider: str = 'claude', output_directory: Optional[str] = None):
+    def __init__(
+        self,
+        llm_provider: str = 'claude',
+        output_directory: Optional[str] = None,
+        model: Optional[str] = None
+    ):
+        """Initialize the roadmap generator.
+
+        Args:
+            llm_provider: LLM provider name ('claude', 'openai', 'gemini')
+            output_directory: Directory for output files
+            model: Optional specific model name (e.g., 'gpt-4o-mini', 'claude-haiku-4-20250514')
+        """
         self.config = get_config()
         self.llm_provider = llm_provider or self.config.get('llm.default_provider', 'claude')
-        self.llm_client: LLMClientProtocol = LLMClientFactory.create(self.llm_provider)
+        self.model = model
+        self.llm_client: LLMClientProtocol = LLMClientFactory.create(self.llm_provider, self.model)
         self.metadata_extractor = MetadataExtractor()
         self.recursive_generator = RecursiveRoadmapGenerator(self.llm_client)
         self.outline_parser = OutlineParser()

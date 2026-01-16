@@ -111,10 +111,18 @@ Other Commands (deprecated):
     )
 
     parser.add_argument(
+        '--model',
+        help='LLM model to use. Format: "provider" or "provider/model-name". '
+             'Examples: "claude", "openai/gpt-4o-mini", "gemini/gemini-1.5-flash". '
+             'Use "auto" for tiered model selection (default: claude).',
+        default=None
+    )
+
+    parser.add_argument(
         '--provider',
         choices=['claude', 'openai', 'gemini'],
-        default='claude',
-        help='LLM provider to use (default: claude)'
+        default=None,
+        help='(Deprecated: use --model instead) LLM provider to use'
     )
 
     parser.add_argument(
@@ -331,6 +339,15 @@ Other Commands (deprecated):
         help='Skip file export (no CSV/JSON files created)'
     )
 
+    parser.add_argument(
+        '--export-to',
+        choices=['notion', 'jira', 'asana', 'linear', 'trello',
+                 'github_projects', 'azure_devops', 'monday', 'clickup',
+                 'file_only', 'skip'],
+        help='Platform to export roadmap to. Options: notion, jira, asana, linear, trello, '
+             'github_projects, azure_devops, monday, clickup, file_only (CSV/JSON/YAML only), '
+             'skip (no export)'
+    )
 
     parser.add_argument(
         '--formats',
@@ -390,13 +407,39 @@ Other Commands (deprecated):
 
     args = parser.parse_args()
 
+    # Handle model/provider arguments with backward compatibility
+    provider = None
+    model = None
+
+    if args.model and args.model != 'auto':
+        if '/' in args.model:
+            provider, model = args.model.split('/', 1)
+        else:
+            provider = args.model
+            model = None
+    elif args.provider:
+        # Backward compatibility: --provider is deprecated
+        import warnings
+        warnings.warn(
+            "--provider is deprecated, use --model instead. "
+            "Example: --model claude or --model openai/gpt-4o-mini",
+            DeprecationWarning
+        )
+        provider = args.provider
+        model = None
+    else:
+        # Default to claude
+        provider = 'claude'
+        model = None
+
     # Execute appropriate command
     try:
         if args.command == 'interactive':
             # Full interactive workflow with optional pre-set arguments
             cli = ArcaneCLI()
             cli.run(
-                provider=getattr(args, 'provider', None),
+                provider=provider,
+                model=model,
                 idea_file=getattr(args, 'idea_file', None),
                 output_dir=getattr(args, 'output_dir', None),
                 timeline=getattr(args, 'timeline', None),
@@ -429,6 +472,7 @@ Other Commands (deprecated):
                 measurement_approach=getattr(args, 'measurement_approach', None),
                 failure_tolerance=getattr(args, 'failure_tolerance', None),
                 no_export=getattr(args, 'no_export', False),
+                export_to=getattr(args, 'export_to', None),
                 formats=getattr(args, 'formats', ['csv'])
             )
 
@@ -448,7 +492,8 @@ Other Commands (deprecated):
                 revert=getattr(args, 'revert', None),
                 history=getattr(args, 'history', False),
                 compare=getattr(args, 'compare', False),
-                provider=getattr(args, 'provider', 'claude'),
+                provider=provider,
+                model=model,
                 output=getattr(args, 'output_dir', None),
                 history_file=getattr(args, 'history_file', None),
                 dry_run=getattr(args, 'dry_run', False),
