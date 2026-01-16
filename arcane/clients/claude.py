@@ -25,23 +25,51 @@ class ClaudeLLMClient(BaseLLMClient):
         except ImportError:
             raise ImportError("anthropic package not installed. Run: pip install anthropic")
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, max_tokens: int = None) -> str:
         """Generate text using Claude with retry logic for overload errors."""
         max_retries = 5
         base_delay = 2.0  # Start with 2 seconds
         max_delay = 60.0  # Max 60 seconds between retries
 
+        # Use appropriate token limit within Claude API constraints (max 8192)
+        if max_tokens is None:
+            # Claude 3.5 Sonnet has a max of 8192 output tokens
+            max_tokens = 8192
+
+        # Always use streaming for roadmap generation to avoid timeout
+        use_streaming = 'roadmap' in prompt.lower() or max_tokens >= 8000
+
         for attempt in range(max_retries + 1):
             try:
-                response = self.client.messages.create(
-                    model="claude-3-5-sonnet-20241022",
-                    max_tokens=8000,
-                    messages=[{"role": "user", "content": prompt}]
-                )
-                return response.content[0].text
+                if use_streaming:
+                    # Use streaming for large responses to avoid timeout
+                    response_text = ""
+                    with self.client.messages.stream(
+                        model="claude-3-5-sonnet-20241022",
+                        max_tokens=max_tokens,
+                        messages=[{"role": "user", "content": prompt}]
+                    ) as stream:
+                        for text in stream.text_stream:
+                            response_text += text
+                    return response_text
+                else:
+                    # Use regular request for smaller responses
+                    response = self.client.messages.create(
+                        model="claude-3-5-sonnet-20241022",
+                        max_tokens=max_tokens,
+                        messages=[{"role": "user", "content": prompt}]
+                    )
+                    return response.content[0].text
 
             except Exception as e:
                 error_msg = str(e)
+
+                # Check for streaming requirement error first
+                if "streaming is required" in error_msg.lower():
+                    # Retry with streaming enabled
+                    logger.warning("Request requires streaming due to duration. Retrying with streaming enabled...")
+                    use_streaming = True
+                    continue
 
                 # Check if this is a retryable error (overload, rate limit, temporary issues)
                 is_retryable = self._is_retryable_error(error_msg)

@@ -48,7 +48,8 @@ class RoadmapGenerator:
         # Step 2: Generate outline
         outline = self.outline_processor.generate_and_confirm_outline(
             self.llm_client, idea, preferences,
-            self.file_manager.save_outline if self.file_manager.save_outputs else None
+            self.file_manager.save_outline if self.file_manager.save_outputs else None,
+            self.file_manager.save_outline_prompt if self.file_manager.save_outputs else None
         )
         if not outline:
             return None

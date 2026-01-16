@@ -21,6 +21,10 @@ class OutlineParser:
     def parse_outline(self, outline_content: str) -> List[Milestone]:
         """Parse outline content and return list of milestone objects with full hierarchy."""
         self.milestones = []
+
+        # Preprocess to fix common format errors
+        outline_content = self._fix_format_issues(outline_content)
+
         lines = outline_content.split('\n')
 
         current_milestone = None
@@ -226,3 +230,50 @@ class OutlineParser:
 
                     for task in story.get_children_by_type('Task'):
                         logger.debug("      ✅ %s (ID: %s)", task.name, task.id)
+
+    def _fix_format_issues(self, content: str) -> str:
+        """Fix common format issues in outline content."""
+        lines = content.split('\n')
+        fixed_lines = []
+
+        for line in lines:
+            original_line = line
+            line = line.strip()
+
+            # Skip empty lines and metadata
+            if not line or line.startswith('==='):
+                fixed_lines.append(original_line)
+                continue
+
+            # Fix milestone format: "## 1. Name" -> "## Milestone 1: Name"
+            milestone_fix = re.sub(r'^##\s*(\d+)\.\s*(.+)', r'## Milestone \1: \2', line)
+            if milestone_fix != line:
+                logger.debug(f"Fixed milestone format: '{line}' -> '{milestone_fix}'")
+                fixed_lines.append(milestone_fix)
+                continue
+
+            # Fix epic format: "### 1.1. Name" -> "### Epic 1.0: Name"
+            epic_fix = re.sub(r'^###\s*(\d+)\.(\d+)\.\s*(.+)', r'### Epic \1.\2: \3', line)
+            if epic_fix != line:
+                logger.debug(f"Fixed epic format: '{line}' -> '{epic_fix}'")
+                fixed_lines.append(epic_fix)
+                continue
+
+            # Fix story format: "#### 1.1.1. Name" -> "#### Story 1.1.1: Name"
+            story_fix = re.sub(r'^####\s*(\d+)\.(\d+)\.(\d+)\.\s*(.+)', r'#### Story \1.\2.\3: \4', line)
+            if story_fix != line:
+                logger.debug(f"Fixed story format: '{line}' -> '{story_fix}'")
+                fixed_lines.append(story_fix)
+                continue
+
+            # Fix task format: "##### 1.1.1.1. Name" -> "##### Task 1.1.1.1: Name"
+            task_fix = re.sub(r'^#####\s*(\d+)\.(\d+)\.(\d+)\.(\d+)\.\s*(.+)', r'##### Task \1.\2.\3.\4: \5', line)
+            if task_fix != line:
+                logger.debug(f"Fixed task format: '{line}' -> '{task_fix}'")
+                fixed_lines.append(task_fix)
+                continue
+
+            # No changes needed
+            fixed_lines.append(original_line)
+
+        return '\n'.join(fixed_lines)

@@ -123,7 +123,11 @@ class PromptTemplatesProxy:
         return get_template(key)
 
     def __contains__(self, key: str) -> bool:
-        return key in get_available_templates()
+        try:
+            get_template(key)
+            return True
+        except FileNotFoundError:
+            return False
 
     def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
         try:

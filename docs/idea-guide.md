@@ -55,9 +55,9 @@ Your idea file **must** include these essential elements:
 - **Success criteria** - how do you measure completion?
 
 ### 4. Constraints (Required)
-- **Timeline expectations** (launch date, milestones)
+- **Timeline expectations** (launch date, milestones) - *Note: Arcane supports timelines from 3 months to multi-year projects (36+ months)*
 - **Budget considerations** (if relevant to technical decisions)
-- **Resource limitations** (team size, skill sets available)
+- **Resource limitations** (team size, skill sets available) - *Note: Arcane supports teams from solo developers to enterprise teams (100+ members)*
 - **Technical constraints** (existing systems, legacy requirements)
 
 ## 📋 Roadmap Scope Considerations
@@ -236,13 +236,15 @@ Before submitting your idea file, ensure:
 - [ ] A technical stranger could understand what you're building
 - [ ] You've explained **why** each major feature is needed
 - [ ] Technical constraints and preferences are clearly stated
-- [ ] Timeline and resource constraints are realistic and explicit
+- [ ] Timeline and resource constraints are realistic and explicit (consider: 3 months to 36+ months)
+- [ ] Team size and structure are clearly defined (consider: 1 to 100+ members)
 - [ ] Success criteria are measurable and specific
 - [ ] You've prioritized features into must-have, should-have, could-have
 - [ ] Integration requirements are detailed
 - [ ] Security and compliance needs are addressed
 - [ ] You've included specific examples rather than generic terms
 - [ ] The scope is clearly bounded (what's in, what's out)
+- [ ] Non-technical aspects are identified if comprehensive roadmap is desired
 
 ## Example Idea File Structure
 

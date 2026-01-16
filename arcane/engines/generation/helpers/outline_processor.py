@@ -24,7 +24,8 @@ class OutlineProcessor:
         llm_client: LLMClientProtocol,
         idea: str,
         preferences: Dict[str, Any],
-        save_callback: Optional[Callable[[str, str], str]] = None
+        save_callback: Optional[Callable[[str, str], str]] = None,
+        save_prompt_callback: Optional[Callable[[str, str], str]] = None
     ) -> Optional[str]:
         """Generate and get user confirmation for the outline."""
         self.console.print("\n[bold]📋 Generating roadmap outline...[/bold]")
@@ -36,6 +37,12 @@ class OutlineProcessor:
         )
 
         outline = llm_client.generate(outline_prompt)
+
+        # Save prompt if callback provided
+        if save_prompt_callback:
+            project_name = self.extract_project_name(outline) if outline else "roadmap"
+            prompt_file = save_prompt_callback(outline_prompt, project_name)
+            self.console.print(f"[dim]💾 Outline prompt saved to: {prompt_file}[/dim]")
 
         # Show outline summary
         lines = outline.split('\n')
@@ -63,7 +70,7 @@ class OutlineProcessor:
         # Get user confirmation
         if not Confirm.ask("\n[cyan]Are you satisfied with this outline structure?[/cyan]", default=True):
             if Confirm.ask("[yellow]Would you like to regenerate the outline?[/yellow]"):
-                return self.generate_and_confirm_outline(llm_client, idea, preferences, save_callback)
+                return self.generate_and_confirm_outline(llm_client, idea, preferences, save_callback, save_prompt_callback)
             else:
                 return None
 

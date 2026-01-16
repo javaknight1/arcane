@@ -1,0 +1,123 @@
+# Sample configuration file for Arcane CLI
+# Copy this to ~/.arcane/config.yaml and customize as needed
+
+# LLM Settings
+llm:
+  default_provider: "claude"
+  default_model: "claude-3-sonnet"
+  max_tokens: 4000
+  temperature: 0.7
+  enable_cost_estimation: true
+  cost_threshold_warning: 1.0
+  rate_limit_delay: 1.0
+  api_keys: {}  # Add your API keys here
+
+# Generation Settings
+generation:
+  interactive_mode: true
+  save_outputs: true
+  cache_templates: true
+  validate_inputs: true
+  max_retries: 3
+  request_timeout: 30.0
+
+  # Default values for roadmap generation
+  default_timeline: "6-months"
+  default_complexity: "moderate"
+  default_team_size: 3
+
+  # Generation mode settings
+  mode_choices: ["automatic", "interactive"]
+  default_mode: "automatic"
+
+  # Token estimates for cost calculation
+  outline_output_tokens: 3000
+  milestone_output_tokens: 400
+  epic_output_tokens: 800
+  story_output_tokens: 1200
+
+  # Item count estimation based on timeline
+  milestones_per_timeline:
+    "3-months": 3
+    "6-months": 4
+    "12-months": 6
+
+  # Complexity multipliers
+  epics_per_milestone:
+    simple: 1.5
+    moderate: 2.0
+    complex: 3.0
+
+  stories_per_epic:
+    simple: 2
+    moderate: 2
+    complex: 3
+
+  tasks_per_story:
+    simple: 3
+    moderate: 4
+    complex: 5
+
+# File Operation Settings
+files:
+  default_output_dir: "./output"
+  template_cache_dir: "./cache/templates"
+  progress_save_dir: "./output/progress"
+  default_project_name: "roadmap"
+  timestamp_format: "%Y%m%d_%H%M%S"
+
+  # Directory pattern for each run (uses timestamp)
+  run_directory_pattern: "{timestamp}"
+
+  # File naming patterns (simpler now - timestamp is in directory)
+  outline_filename_pattern: "{project_name}_outline.md"
+  roadmap_filename_pattern: "{project_name}_complete.md"
+  progress_filename_pattern: "{project_name}_progress.json"
+
+  # Supported export formats
+  supported_export_formats:
+    - "md"
+    - "json"
+    - "csv"
+    - "yaml"
+    - "html"
+
+# Display and Console Settings
+display:
+  console_width: 120
+  show_progress: true
+  use_rich_formatting: true
+  show_cost_warnings: true
+  verbose_logging: false
+  debug: false
+
+  # Color scheme
+  success_color: "green"
+  warning_color: "yellow"
+  error_color: "red"
+  info_color: "cyan"
+  highlight_color: "bold cyan"
+
+# Environment-specific overrides
+# These will be automatically applied based on the detected environment
+# You can also create config.development.yaml, config.testing.yaml, etc.
+
+# Development environment example:
+# development:
+#   display:
+#     debug: true
+#     verbose_logging: true
+#   generation:
+#     cache_templates: false
+#     max_retries: 1
+#   llm:
+#     cost_threshold_warning: 0.5
+
+# Testing environment example:
+# testing:
+#   generation:
+#     save_outputs: false
+#     interactive_mode: false
+#   llm:
+#     default_provider: "mock"
+#     enable_cost_estimation: false

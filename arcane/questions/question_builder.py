@@ -18,6 +18,7 @@ from .project.timeline_question import TimelineQuestion
 from .project.focus_question import FocusQuestion
 from .project.team_size_question import TeamSizeQuestion
 from .project.roadmap_aspects_question import RoadmapAspectsQuestion
+from .project.scope_control_question import ScopeControlQuestion
 from .project.industry_question import IndustryQuestion
 from .project.regulatory_question import RegulatoryQuestion
 
@@ -75,6 +76,7 @@ class QuestionBuilder:
             FocusQuestion(self.console),
             TeamSizeQuestion(self.console),
             RoadmapAspectsQuestion(self.console),
+            ScopeControlQuestion(self.console),
             IndustryQuestion(self.console),
             RegulatoryQuestion(self.console),
 

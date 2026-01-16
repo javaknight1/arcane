@@ -1,7 +1,7 @@
 """Milestone class - Major phase in the project roadmap."""
 
 import re
-from typing import Optional
+from typing import Optional, List
 from .base import Item, ItemStatus
 
 
@@ -20,7 +20,10 @@ class Milestone(Item):
         benefits: Optional[str] = None,
         prerequisites: Optional[str] = None,
         technical_requirements: Optional[str] = None,
-        claude_code_prompt: Optional[str] = None
+        claude_code_prompt: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        work_type: Optional[str] = None,
+        complexity: Optional[str] = None
     ):
         self.number = number
         super().__init__(
@@ -34,7 +37,10 @@ class Milestone(Item):
             benefits=benefits,
             prerequisites=prerequisites,
             technical_requirements=technical_requirements,
-            claude_code_prompt=claude_code_prompt
+            claude_code_prompt=claude_code_prompt,
+            tags=tags,
+            work_type=work_type,
+            complexity=complexity
         )
         self.id = number
         if not self.validate_id():

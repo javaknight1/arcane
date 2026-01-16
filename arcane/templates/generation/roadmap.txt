@@ -63,6 +63,10 @@ CRITICAL FORMATTING REQUIREMENTS:
 - **Included Aspects:** {roadmap_aspects}
 - **Non-Technical Focus Areas:** {non_technical_focus_areas}
 - **Roadmap Coverage:** {roadmap_coverage_description}
+- **Scope Control:** {scope_control}
+
+### Scope Control Instructions
+{scope_control_guidance}
 
 ## Contextual Analysis
 
@@ -101,6 +105,9 @@ Create a hierarchical roadmap with this exact format:
 - **Benefits**: [Business and technical benefits]
 - **Prerequisites**: [What needs to be done first]
 - **Technical Requirements**: [Technical specifications and constraints]
+- **Work Type**: [Type of work: implementation, design, research, documentation, deployment, maintenance, configuration]
+- **Complexity**: [Complexity level: simple, moderate, complex]
+- **Tags**: [Comma-separated list of relevant tags - see tagging guidelines below]
 - **Claude Code Prompt**: [Specific prompt for implementing this story with Claude Code]
 
 ##### Task 1.0.1.1: [Task Name]
@@ -108,6 +115,9 @@ Create a hierarchical roadmap with this exact format:
 - **Benefits**: [Why this task is important]
 - **Prerequisites**: [Dependencies and requirements]
 - **Technical Requirements**: [Technical specs for this task]
+- **Work Type**: [Type of work: implementation, design, research, documentation, deployment, maintenance, configuration]
+- **Complexity**: [Complexity level: simple, moderate, complex]
+- **Tags**: [Comma-separated list of relevant tags - see tagging guidelines below]
 - **Claude Code Prompt**: [Detailed prompt for Claude Code to implement this specific task]
 
 ##### Task 1.0.1.2: [Another Task Name]
@@ -125,10 +135,30 @@ Create a hierarchical roadmap with this exact format:
 
 ### Content Guidelines:
 
-1. **Milestones**: 3-6 major phases that represent significant business value delivery
-2. **Epics**: 2-4 epics per milestone, each representing a major feature area or technical component
-3. **Stories**: 2-6 stories per epic, each representing user-facing functionality or major technical work
-4. **Tasks**: 3-8 tasks per story, each representing specific implementation work
+{content_guidelines}
+
+{scaling_guidance}
+
+### Tagging Guidelines:
+Every story and task MUST include relevant tags to help categorize and filter roadmap items:
+
+**Scope Tags (REQUIRED)**:
+- "core-scope": Items directly mentioned in the original idea
+- "extended-scope": Supporting items necessary for complete implementation
+- "out-of-scope": Creative additions or enhancements beyond the original idea
+
+**Technical Area Tags**:
+- "frontend", "backend", "api", "database", "infrastructure", "devops", "testing", "security", "performance"
+
+**Functional Area Tags**:
+- "authentication", "user-management", "payments", "integrations", "analytics", "monitoring", "notifications"
+
+**Examples**:
+- Authentication story: Work Type="implementation", Complexity="moderate", Tags="core-scope, backend, authentication, security"
+- CI/CD setup task: Work Type="configuration", Complexity="moderate", Tags="extended-scope, devops, infrastructure"
+- Advanced analytics dashboard: Work Type="implementation", Complexity="complex", Tags="out-of-scope, frontend, analytics"
+
+Note: Priority is handled by the existing Priority field, Work Type has its own field, and Complexity has its own field. Tags should focus on scope and technical/functional areas only.
 
 ### Non-Technical Aspects Integration:
 When non-technical aspects are included in {roadmap_aspects}, integrate them throughout the roadmap as follows:

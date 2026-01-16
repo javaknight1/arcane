@@ -37,6 +37,9 @@ class TimelineQuestion(BaseQuestion):
                 ('3 months (MVP focus)', '3-months'),
                 ('6 months (Balanced)', '6-months'),
                 ('12 months (Comprehensive)', '12-months'),
+                ('18 months (Large project)', '18-months'),
+                ('24 months (Enterprise/Complex)', '24-months'),
+                ('36 months (Multi-year initiative)', '36-months'),
                 ('Custom timeline', 'custom'),
                 ('❌ Cancel', 'cancel')
             ]
@@ -49,8 +52,13 @@ class TimelineQuestion(BaseQuestion):
         timeline = answer['timeline']
         if timeline == 'custom':
             try:
-                custom_timeline = Prompt.ask("Enter custom timeline (e.g., '4 months', '18 months')")
-                return custom_timeline
+                custom_timeline = Prompt.ask("Enter custom timeline (e.g., '4 months', '5 years', '48 months')")
+                # Validate the custom timeline format
+                if custom_timeline.strip():
+                    return custom_timeline.strip()
+                else:
+                    self.console.print("[red]Please enter a valid timeline[/red]")
+                    return self._prompt_user()  # Retry
             except KeyboardInterrupt:
                 return 'cancel'
 

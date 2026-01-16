@@ -166,6 +166,28 @@ class NotionImporter:
             "Priority": {"select": {"name": item.priority}}
         }
 
+        # Add Work Type if present
+        if hasattr(item, 'work_type') and item.work_type:
+            # Capitalize first letter to match the select options
+            work_type_display = item.work_type.capitalize()
+            properties["Work Type"] = {"select": {"name": work_type_display}}
+
+        # Add Complexity if present
+        if hasattr(item, 'complexity') and item.complexity:
+            # Capitalize first letter to match the select options
+            complexity_display = item.complexity.capitalize()
+            properties["Complexity"] = {"select": {"name": complexity_display}}
+
+        # Add Tags if present
+        if hasattr(item, 'tags') and item.tags:
+            # Create multi_select options for tags
+            tag_options = []
+            for tag in item.tags:
+                if tag.strip():  # Only add non-empty tags
+                    tag_options.append({"name": tag.strip()})
+            if tag_options:
+                properties["Tags"] = {"multi_select": tag_options}
+
         # Add duration if present
         if item.duration:
             properties["Duration"] = {"number": item.duration}

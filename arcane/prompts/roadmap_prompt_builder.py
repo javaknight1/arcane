@@ -44,14 +44,12 @@ class RoadmapPromptBuilder(BasePromptBuilder):
         # Use the outline_generation template
         outline_template = PROMPT_TEMPLATES['outline_generation']
 
-        # Prepare variables for outline template
-        variables = {
-            'idea_content': idea_content,
-            'timeline': preferences.get('timeline', '6-months'),
-            'complexity': preferences.get('complexity') or preferences.get('calculated_complexity', 'moderate'),
-            'team_size': preferences.get('team_size', '2-3'),
-            'focus': preferences.get('focus', 'mvp')
-        }
+        # Mark this as outline generation for proper scaling guidance
+        preferences = preferences.copy()
+        preferences['generation_type'] = 'outline'
+
+        # Prepare all variables including scaling guidance
+        variables = self._prepare_all_variables(idea_content, preferences)
 
         # Format the outline template
         return self._format_template(outline_template, variables)
@@ -73,6 +71,9 @@ class RoadmapPromptBuilder(BasePromptBuilder):
 
         # Add contextual analysis
         variables.update(self._generate_contextual_analysis(preferences))
+
+        # Add dynamic scaling guidance based on timeline and team size
+        variables.update(self._generate_scaling_guidance(preferences))
 
         return variables
 
@@ -507,3 +508,235 @@ Ensure the roadmap is practical, achievable within the specified constraints, an
         coverage_parts.append("to ensure holistic project success.")
 
         return " ".join(coverage_parts)
+
+    def _generate_scaling_guidance(self, preferences: Dict[str, Any]) -> Dict[str, str]:
+        """Generate dynamic scaling guidance based on timeline and team size."""
+        timeline = preferences.get('timeline', '6-months')
+        team_size_str = preferences.get('team_size', '2-3')
+        complexity = preferences.get('complexity', preferences.get('calculated_complexity', 'moderate'))
+
+        # Parse timeline to months
+        timeline_months = self._parse_timeline_to_months(timeline)
+
+        # Parse team size to number
+        team_size = self._parse_team_size(team_size_str)
+
+        # Generate content guidelines without specific counts
+        content_guidelines = f"""**Project Context**:
+- Timeline: {timeline} ({timeline_months} months)
+- Team Size: {team_size_str} developers
+- Complexity: {complexity}
+
+**Roadmap Structure Guidelines**:
+1. **Milestones**: Determine the appropriate number of major phases based on the {timeline} timeline
+   - Each milestone should represent a significant deliverable or project phase
+   - Consider natural breakpoints in the development process
+
+2. **Epics**: For each milestone, include epics that represent major feature areas
+   - Number should reflect the actual work needed, not arbitrary counts
+   - Consider team capacity and parallel work streams
+
+3. **Stories**: Break down each epic into user stories or technical work items
+   - Include as many as needed to properly decompose the functionality
+   - Each story should be independently deliverable
+
+4. **Tasks**: Decompose stories into specific implementation tasks
+   - Include all necessary technical work
+   - Consider development, testing, documentation, and deployment tasks
+
+**IMPORTANT**: Generate a roadmap that:
+- Appropriately uses the {timeline} timeline
+- Reflects the actual scope and complexity of the project
+- Accounts for {team_size_str} team members working in parallel
+- Is complete and comprehensive without artificial constraints
+- Lets the project requirements determine the structure, not predefined counts"""
+
+        # For outline generation, we want full structure
+        # The detailed content will be generated separately for each item
+        if 'outline' in str(preferences.get('generation_type', '')).lower():
+            generation_note = f"""
+**OUTLINE GENERATION REQUIREMENTS**:
+- Generate a COMPLETE outline structure for the entire {timeline} project
+- Include ALL milestones needed to cover the project timeline
+- EVERY milestone must have full epic → story → task hierarchy
+- DO NOT abbreviate or skip details for any milestones
+- Each milestone should have appropriate detail based on its scope"""
+        else:
+            generation_note = ""
+
+        scaling_guidance = f"""### Project Timeline: {timeline}
+
+**GENERATION APPROACH**:
+✅ Determine the appropriate number of milestones for a {timeline} project
+✅ Structure the roadmap based on logical project phases and deliverables
+✅ Include as many items at each level as needed to properly represent the work
+✅ Let the project scope and requirements drive the structure
+
+**Team Capacity Considerations**:
+- Team Size: {team_size_str} developers
+- Parallel Work Streams: {self._calculate_parallel_streams(team_size)}
+- Monthly Velocity: Approximately {self._calculate_monthly_velocity(team_size, complexity)} story points
+
+**Timeline Distribution**:
+- Total Duration: {timeline} ({timeline_months} months)
+- Determine appropriate milestone duration based on project phases
+- Include buffer time for testing, bug fixes, and refinement
+{generation_note}
+
+**IMPORTANT**: Create a roadmap that properly scales to the {timeline} timeline and {team_size_str} team capacity.
+Let the project needs determine the structure rather than following arbitrary patterns."""
+
+        # Add scope control guidance
+        scope_control_guidance = self._generate_scope_control_guidance(preferences)
+
+        return {
+            'content_guidelines': content_guidelines,
+            'scaling_guidance': scaling_guidance,
+            'scope_control': preferences.get('scope_control', 'standard'),
+            'scope_control_guidance': scope_control_guidance
+        }
+
+    def _generate_scope_control_guidance(self, preferences: Dict[str, Any]) -> str:
+        """Generate guidance based on scope control preference."""
+        scope_control = preferences.get('scope_control', 'standard')
+
+        guidance_map = {
+            'strict': """
+**STRICT SCOPE**: Include ONLY items explicitly mentioned in the original idea.
+- Focus solely on the core functionality described
+- Do not add supporting infrastructure beyond what's absolutely required
+- Avoid "nice-to-have" features or improvements
+- Tag all items as "core-scope"
+            """.strip(),
+
+            'standard': """
+**STANDARD SCOPE**: Include necessary supporting items for a complete implementation.
+- Add essential infrastructure, testing, and deployment items
+- Include basic security, monitoring, and maintenance tasks
+- Add supporting features that are implied by the main functionality
+- Tag direct items as "core-scope", supporting items as "extended-scope"
+            """.strip(),
+
+            'creative': """
+**CREATIVE SCOPE**: Add useful related features and improvements.
+- Include enhancements that improve user experience
+- Add useful integrations and optimizations
+- Include modern best practices and quality improvements
+- Suggest related features that complement the core idea
+- Tag direct items as "core-scope", supporting items as "extended-scope", additions as "out-of-scope"
+            """.strip(),
+
+            'expansive': """
+**EXPANSIVE SCOPE**: Include all possible enhancements and integrations.
+- Add comprehensive feature set with advanced capabilities
+- Include full enterprise-grade infrastructure and monitoring
+- Add extensive integrations with popular platforms
+- Include advanced analytics, AI/ML features, and automation
+- Suggest future-proofing and scalability enhancements
+- Tag direct items as "core-scope", supporting items as "extended-scope", all additions as "out-of-scope"
+            """.strip()
+        }
+
+        return guidance_map.get(scope_control, guidance_map['standard'])
+
+    def _parse_timeline_to_months(self, timeline: str) -> int:
+        """Parse timeline string to number of months."""
+        timeline_lower = timeline.lower()
+
+        # Handle standard formats (with space removed for exact matches)
+        timeline_no_space = timeline_lower.replace(' ', '')
+        if '3-months' in timeline_no_space or '3months' in timeline_no_space:
+            return 3
+        elif '6-months' in timeline_no_space or '6months' in timeline_no_space:
+            return 6
+        elif '12-months' in timeline_no_space or '12months' in timeline_no_space:
+            return 12
+        elif '18-months' in timeline_no_space or '18months' in timeline_no_space:
+            return 18
+        elif '24-months' in timeline_no_space or '24months' in timeline_no_space:
+            return 24
+        elif '36-months' in timeline_no_space or '36months' in timeline_no_space:
+            return 36
+
+        # Handle custom formats (preserve spaces for regex)
+        import re
+
+        # Try to extract number and unit
+        match = re.search(r'(\d+\.?\d*)\s*(years?|months?|weeks?)', timeline_lower)
+        if match:
+            number = float(match.group(1))
+            unit = match.group(2)
+
+            if unit.startswith('year'):
+                return int(number * 12)
+            elif unit.startswith('month'):
+                return int(number)
+            elif unit.startswith('week'):
+                return int(number / 4)
+
+        # Default to 6 months if parsing fails
+        return 6
+
+    def _parse_team_size(self, team_size_str: str) -> int:
+        """Parse team size string to number."""
+        if not team_size_str:
+            return 2
+
+        # Handle specific numbers
+        try:
+            return int(team_size_str)
+        except ValueError:
+            pass
+
+        # Handle ranges
+        if '-' in team_size_str:
+            parts = team_size_str.split('-')
+            try:
+                return int(parts[1])  # Use upper bound
+            except (ValueError, IndexError):
+                pass
+
+        # Handle "30+"
+        if '+' in team_size_str:
+            try:
+                return int(team_size_str.replace('+', ''))
+            except ValueError:
+                pass
+
+        # Default
+        return 3
+
+    def _calculate_parallel_streams(self, team_size: int) -> str:
+        """Calculate number of parallel work streams based on team size."""
+        if team_size <= 3:
+            return "1-2 parallel streams"
+        elif team_size <= 8:
+            return "2-3 parallel streams"
+        elif team_size <= 15:
+            return "3-5 parallel streams"
+        elif team_size <= 30:
+            return "5-8 parallel streams"
+        else:
+            return "8+ parallel streams with sub-teams"
+
+    def _calculate_monthly_velocity(self, team_size: int, complexity: str) -> int:
+        """Calculate estimated monthly velocity in story points."""
+        base_velocity_per_dev = {
+            'simple': 20,
+            'moderate': 15,
+            'complex': 10
+        }
+
+        velocity_per_dev = base_velocity_per_dev.get(complexity, 15)
+
+        # Account for coordination overhead
+        if team_size <= 5:
+            efficiency = 0.9
+        elif team_size <= 10:
+            efficiency = 0.8
+        elif team_size <= 20:
+            efficiency = 0.7
+        else:
+            efficiency = 0.6
+
+        return int(team_size * velocity_per_dev * efficiency)

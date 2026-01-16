@@ -1,7 +1,7 @@
 """Project class - Root level of the roadmap hierarchy."""
 
 import re
-from typing import Optional
+from typing import Optional, List
 from .base import Item
 
 
@@ -19,7 +19,10 @@ class Project(Item):
         benefits: Optional[str] = None,
         prerequisites: Optional[str] = None,
         technical_requirements: Optional[str] = None,
-        claude_code_prompt: Optional[str] = None
+        claude_code_prompt: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        work_type: Optional[str] = None,
+        complexity: Optional[str] = None
     ):
         super().__init__(
             name=name,
@@ -32,7 +35,10 @@ class Project(Item):
             benefits=benefits,
             prerequisites=prerequisites,
             technical_requirements=technical_requirements,
-            claude_code_prompt=claude_code_prompt
+            claude_code_prompt=claude_code_prompt,
+            tags=tags,
+            work_type=work_type,
+            complexity=complexity
         )
 
         # Additional project-specific fields

@@ -36,7 +36,10 @@ class Item(ABC):
         benefits: Optional[str] = None,
         prerequisites: Optional[str] = None,
         technical_requirements: Optional[str] = None,
-        claude_code_prompt: Optional[str] = None
+        claude_code_prompt: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        work_type: Optional[str] = None,
+        complexity: Optional[str] = None
     ):
         self.name = name
         self.item_type = item_type
@@ -49,6 +52,9 @@ class Item(ABC):
         self.prerequisites = prerequisites or ''
         self.technical_requirements = technical_requirements or ''
         self.claude_code_prompt = claude_code_prompt or ''
+        self.tags = tags or []
+        self.work_type = work_type or ''
+        self.complexity = complexity or ''
         self.children: List['Item'] = []
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
@@ -179,6 +185,37 @@ class Item(ABC):
 
         completed_count = sum(1 for child in self.children if child.status == 'Completed')
         return (completed_count / len(self.children)) * 100.0
+
+    def add_tag(self, tag: str) -> None:
+        """Add a tag to this item if it doesn't already exist."""
+        tag = tag.strip().lower()
+        if tag and tag not in self.tags:
+            self.tags.append(tag)
+            self.updated_at = datetime.now()
+
+    def add_tags(self, tags: List[str]) -> None:
+        """Add multiple tags to this item."""
+        for tag in tags:
+            self.add_tag(tag)
+
+    def remove_tag(self, tag: str) -> None:
+        """Remove a tag from this item."""
+        tag = tag.strip().lower()
+        if tag in self.tags:
+            self.tags.remove(tag)
+            self.updated_at = datetime.now()
+
+    def has_tag(self, tag: str) -> bool:
+        """Check if this item has a specific tag."""
+        return tag.strip().lower() in self.tags
+
+    def has_any_tag(self, tags: List[str]) -> bool:
+        """Check if this item has any of the specified tags."""
+        return any(self.has_tag(tag) for tag in tags)
+
+    def get_tags_display(self) -> str:
+        """Get tags as a comma-separated string for display."""
+        return ', '.join(self.tags) if self.tags else 'None'
 
     def __repr__(self) -> str:
         return f"{self.item_type}(name='{self.name}', status='{self.status}')"

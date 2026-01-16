@@ -35,16 +35,35 @@ class DatabaseCreator(BasePage):
             {"name": "Low", "color": "green"}
         ]
 
+        work_type_options = [
+            {"name": "Implementation", "color": "blue"},
+            {"name": "Design", "color": "purple"},
+            {"name": "Research", "color": "orange"},
+            {"name": "Documentation", "color": "gray"},
+            {"name": "Deployment", "color": "green"},
+            {"name": "Maintenance", "color": "yellow"},
+            {"name": "Configuration", "color": "brown"}
+        ]
+
+        complexity_options = [
+            {"name": "Simple", "color": "green"},
+            {"name": "Moderate", "color": "yellow"},
+            {"name": "Complex", "color": "red"}
+        ]
+
         database_properties = {
             "Name": {"title": {}},
             "Type": {"select": {"options": type_options}},
             "Status": {"select": {"options": status_options}},
             "Priority": {"select": {"options": priority_options}},
+            "Work Type": {"select": {"options": work_type_options}},
+            "Complexity": {"select": {"options": complexity_options}},
             "Duration": {"number": {"format": "number"}},
             "Goal/Description": {"rich_text": {}},
             "Benefits": {"rich_text": {}},
             "Prerequisites": {"rich_text": {}},
             "Technical Requirements": {"rich_text": {}},
+            "Tags": {"multi_select": {"options": []}},
             "Claude Code Prompt": {"rich_text": {}}
         }
 

@@ -41,6 +41,11 @@ Interactive Mode Examples:
   # Skip basic roadmap prompts
   python -m arcane interactive --provider claude --timeline 6-months --complexity moderate --team-size 2-3 --focus mvp
 
+  # Extended timeline and team size examples
+  python -m arcane interactive --timeline 18-months --team-size 15                    # Large project with specific team size
+  python -m arcane interactive --timeline "2.5 years" --team-size 30+               # Multi-year enterprise initiative
+  python -m arcane interactive --timeline "4 months" --team-size 7                  # Custom timeline with exact team size
+
   # Include non-technical aspects in roadmap
   python -m arcane interactive --roadmap-aspects business-strategy marketing-sales
   python -m arcane interactive --roadmap-aspects legal-compliance operations risk-management # Enterprise focus
@@ -61,7 +66,7 @@ Interactive Mode Examples:
   python -m arcane interactive --success-metric revenue --success-timeline medium --measurement-approach mixed --failure-tolerance low
 
   # Comprehensive example (skip all prompts)
-  python -m arcane interactive --provider claude --timeline 6-months --complexity moderate --team-size 2-3 --focus mvp \\
+  python -m arcane interactive --provider claude --timeline 18-months --complexity moderate --team-size 12 --focus mvp \\
     --roadmap-aspects business-strategy marketing-sales legal-compliance \\
     --industry healthcare --regulatory hipaa --market-maturity established --target-market national \\
     --technical-challenges realtime-data integrations --team-expertise expert --dev-methodology agile \\
@@ -124,8 +129,7 @@ Other Commands:
 
     parser.add_argument(
         '--timeline',
-        choices=['3-months', '6-months', '12-months'],
-        help='Project timeline (skips timeline prompt)'
+        help='Project timeline: 3-months, 6-months, 12-months, 18-months, 24-months, 36-months, or custom (e.g., "4 months", "5 years") - skips timeline prompt'
     )
 
     parser.add_argument(
@@ -136,14 +140,19 @@ Other Commands:
 
     parser.add_argument(
         '--team-size',
-        choices=['1', '2-3', '4-8', '8+'],
-        help='Development team size (skips team size prompt)'
+        help='Development team size: ranges (1, 2-3, 4-8, 9-15, 16-30, 30+) or specific number (e.g., 5, 12, 25) - skips team size prompt'
     )
 
     parser.add_argument(
         '--focus',
         choices=['mvp', 'feature', 'migration', 'optimization'],
         help='Primary project focus (skips focus prompt)'
+    )
+
+    parser.add_argument(
+        '--scope-control',
+        choices=['strict', 'standard', 'creative', 'expansive'],
+        help='LLM creative liberty: strict (only direct items), standard (supporting items), creative (useful features), expansive (all enhancements) - skips scope control prompt'
     )
 
     parser.add_argument(
@@ -342,6 +351,7 @@ Other Commands:
                 complexity=getattr(args, 'complexity', None),
                 team_size=getattr(args, 'team_size', None),
                 focus=getattr(args, 'focus', None),
+                scope_control=getattr(args, 'scope_control', None),
                 roadmap_aspects=getattr(args, 'roadmap_aspects', None),
                 industry=getattr(args, 'industry', None),
                 regulatory=getattr(args, 'regulatory', None),

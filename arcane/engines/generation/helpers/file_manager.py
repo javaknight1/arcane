@@ -79,6 +79,20 @@ class FileManager(FileOperationsProtocol):
 
         return str(filepath)
 
+    def save_outline_prompt(self, prompt: str, project_name: str) -> str:
+        """Save outline generation prompt to file."""
+        if not self.save_outputs:
+            raise ValueError("Output directory not configured")
+
+        # Use simple filename without timestamp (timestamp is in directory)
+        filename = f"{project_name}_outline_prompt.txt"
+        filepath = self._output_dir / filename
+
+        with open(filepath, 'w') as f:
+            f.write(prompt)
+
+        return str(filepath)
+
     def save_complete_roadmap(self, content: str, project_name: str) -> str:
         """Save complete roadmap to file."""
         if not self.save_outputs:

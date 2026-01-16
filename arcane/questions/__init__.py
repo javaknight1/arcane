@@ -14,6 +14,8 @@ from .project.focus_question import FocusQuestion
 from .project.team_size_question import TeamSizeQuestion
 from .project.industry_question import IndustryQuestion
 from .project.regulatory_question import RegulatoryQuestion
+from .project.roadmap_aspects_question import RoadmapAspectsQuestion
+from .project.scope_control_question import ScopeControlQuestion
 
 # Technical Assessment
 from .technical.technical_challenges_question import TechnicalChallengesQuestion
@@ -59,6 +61,8 @@ __all__ = [
     'TeamSizeQuestion',
     'IndustryQuestion',
     'RegulatoryQuestion',
+    'RoadmapAspectsQuestion',
+    'ScopeControlQuestion',
     # Technical Assessment
     'TechnicalChallengesQuestion',
     # Team Assessment

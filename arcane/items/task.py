@@ -1,7 +1,7 @@
 """Task class - Specific implementation work."""
 
 import re
-from typing import Optional
+from typing import Optional, List
 from .base import Item, ItemStatus
 
 
@@ -20,7 +20,10 @@ class Task(Item):
         benefits: Optional[str] = None,
         prerequisites: Optional[str] = None,
         technical_requirements: Optional[str] = None,
-        claude_code_prompt: Optional[str] = None
+        claude_code_prompt: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        work_type: Optional[str] = None,
+        complexity: Optional[str] = None
     ):
         self.number = number
         super().__init__(
@@ -34,7 +37,10 @@ class Task(Item):
             benefits=benefits,
             prerequisites=prerequisites,
             technical_requirements=technical_requirements,
-            claude_code_prompt=claude_code_prompt
+            claude_code_prompt=claude_code_prompt,
+            tags=tags,
+            work_type=work_type,
+            complexity=complexity
         )
         self.id = number
         if not self.validate_id():
@@ -96,6 +102,23 @@ class Task(Item):
         if success_match:
             self.success_criteria = [s.strip('- ').strip()
                                    for s in success_match.group(1).split('\n') if s.strip()]
+
+        # Extract Work Type if present
+        work_type_match = re.search(r'\*\*Work Type:\*\*\s*(.+?)(?:\n|$)', llm_response)
+        if work_type_match:
+            self.work_type = work_type_match.group(1).strip().lower()
+
+        # Extract Complexity if present
+        complexity_match = re.search(r'\*\*Complexity:\*\*\s*(.+?)(?:\n|$)', llm_response)
+        if complexity_match:
+            self.complexity = complexity_match.group(1).strip().lower()
+
+        # Extract Tags if present
+        tags_match = re.search(r'\*\*Tags:\*\*\s*(.+?)(?:\n|$)', llm_response)
+        if tags_match:
+            tags_str = tags_match.group(1).strip()
+            # Split by comma and clean up each tag
+            self.tags = [tag.strip().lower() for tag in tags_str.split(',') if tag.strip()]
 
         # Extract Claude Code prompt
         claude_prompt_match = re.search(r'\*\*Claude Code Prompt:\*\*\n```\n?(.+?)```',

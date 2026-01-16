@@ -1,6 +1,30 @@
-Generate a comprehensive roadmap OUTLINE for the following project.
+Generate a COMPLETE roadmap OUTLINE for the following project.
 
-CRITICAL: Provide ONLY the table of contents structure with titles - no descriptions, details, or content. This will be used to generate detailed content later.
+⚠️ CRITICAL REQUIREMENTS:
+- Determine the appropriate number of milestones based on the timeline and project scope
+- Each milestone should represent a meaningful phase of development
+- Include as many epics, stories, and tasks as needed to properly decompose the work
+- DO NOT stop early - generate the COMPLETE outline
+- DO NOT use placeholders like "[Continue...]" or "[Note: I'll continue...]"
+- GENERATE THE COMPLETE OUTLINE IN A SINGLE RESPONSE
+
+🚨 STOP! READ THIS FIRST - MANDATORY FORMAT REQUIREMENTS 🚨
+YOU MUST USE THESE EXACT FORMATS OR YOUR OUTPUT WILL BE REJECTED:
+- ## Milestone 1: [Name]  ← USE THIS
+- ### Epic 1.0: [Name]   ← USE THIS
+- #### Story 1.0.1: [Name]  ← USE THIS
+- ##### Task 1.0.1.1: [Name]  ← USE THIS
+
+❌ NEVER USE: "1. Name", "1.1 Name", "1.1.1 Name" ❌
+
+⚠️ CRITICAL FORMAT REQUIREMENTS:
+- Use EXACT heading format: ## Milestone N:, ### Epic N.N:, #### Story N.N.N:, ##### Task N.N.N.N:
+- The word "Milestone" must be followed by number and colon (e.g., "Milestone 1:")
+- The word "Epic" must be followed by decimal number and colon (e.g., "Epic 1.0:")
+- The word "Story" must be followed by three-part number and colon (e.g., "Story 1.0.1:")
+- The word "Task" must be followed by four-part number and colon (e.g., "Task 1.0.1.1:")
+- DO NOT use formats like "1. Foundation" or "1.1. Setup" - ALWAYS use "Milestone 1:", "Epic 1.0:", etc.
+- Provide ONLY titles - no descriptions, details, or content
 
 {idea_content}
 
@@ -17,61 +41,155 @@ Preferences:
 - Integration Count: {integration_count}
 - Deployment Environment: {deployment_environment}
 - Success Metric: {success_metric}
+- Scope Control: {scope_control}
 
-Generate ONLY the outline structure in this exact format:
+🎯 SCOPE CONTROL INSTRUCTIONS:
+{scope_control_guidance}
+
+🏷️ STRUCTURED METADATA REQUIREMENTS:
+Every detailed roadmap item (stories and tasks) must include structured metadata:
+
+**Work Type Field**: One of "implementation", "design", "research", "documentation", "deployment", "maintenance", "configuration"
+
+**Complexity Field**: One of "simple", "moderate", "complex"
+
+**Tags Field**: Focused tagging for scope and technical/functional areas:
+- Scope Tags (REQUIRED): "core-scope", "extended-scope", "out-of-scope"
+- Technical Areas: "frontend", "backend", "api", "database", "infrastructure", "devops", "testing", "security"
+- Functional Areas: "authentication", "user-management", "payments", "integrations", "analytics", "monitoring"
+
+Note: Priority is handled separately. Work Type and Complexity have dedicated fields. Tags focus on scope and technical/functional categorization only.
+
+{scaling_guidance}
+
+⚠️ MANDATORY FORMAT - THE PARSER WILL REJECT ANY OTHER FORMAT:
+```
+## Milestone 1: [Name]
+### Epic 1.0: [Name]
+#### Story 1.0.1: [Name]
+##### Task 1.0.1.1: [Name]
+##### Task 1.0.1.2: [Name]
+#### Story 1.0.2: [Name]
+##### Task 1.0.2.1: [Name]
+### Epic 1.1: [Name]
+...continue pattern...
+
+## Milestone 2: [Name]
+### Epic 2.0: [Name]
+...continue pattern...
+```
+
+DO NOT USE: "1. Foundation", "1.1 Setup", etc.
+MUST USE: "Milestone 1: Foundation", "Epic 1.0: Setup", etc.
+
+Generate the outline structure using this EXACT format:
 
 ===PROJECT_METADATA===
 PROJECT_NAME: [Concise project name]
 PROJECT_TYPE: [web app, mobile app, etc.]
 TECH_STACK: [primary technologies]
-ESTIMATED_DURATION: [timeline]
-TEAM_SIZE: [team size]
+ESTIMATED_DURATION: {timeline}
+TEAM_SIZE: {team_size}
 DESCRIPTION: [one sentence]
 ===END_METADATA===
 
 # [Project Name]
 
-## Milestone 1: [Milestone Name]
-### Epic 1.0: [Epic Name]
-#### Story 1.0.1: [Story Name]
-##### Task 1.0.1.1: [Task Name]
-##### Task 1.0.1.2: [Task Name]
-##### Task 1.0.1.3: [Task Name]
-#### Story 1.0.2: [Story Name]
-##### Task 1.0.2.1: [Task Name]
-##### Task 1.0.2.2: [Task Name]
-#### Story 1.0.3: [Story Name]
-##### Task 1.0.3.1: [Task Name]
-##### Task 1.0.3.2: [Task Name]
-### Epic 1.1: [Epic Name]
-#### Story 1.1.1: [Story Name]
-##### Task 1.1.1.1: [Task Name]
-##### Task 1.1.1.2: [Task Name]
-#### Story 1.1.2: [Story Name]
-##### Task 1.1.2.1: [Task Name]
-##### Task 1.1.2.2: [Task Name]
+## Milestone 1: Foundation and Infrastructure
+### Epic 1.0: Development Environment Setup
+#### Story 1.0.1: Repository Configuration
+##### Task 1.0.1.1: Initialize Git Repository
+##### Task 1.0.1.2: Setup Branch Strategy
+##### Task 1.0.1.3: Configure CI/CD Pipeline
+#### Story 1.0.2: Development Tools
+##### Task 1.0.2.1: Setup Development Environment
+##### Task 1.0.2.2: Install Dependencies
+##### Task 1.0.2.3: Configure Linters
+### Epic 1.1: Cloud Infrastructure
+#### Story 1.1.1: AWS Configuration
+##### Task 1.1.1.1: Create AWS Account
+##### Task 1.1.1.2: Setup VPC
+##### Task 1.1.1.3: Configure Security Groups
+##### Task 1.1.1.4: Setup IAM Roles
+#### Story 1.1.2: Kubernetes Setup
+##### Task 1.1.2.1: Create EKS Cluster
+##### Task 1.1.2.2: Configure Node Groups
+### Epic 1.2: Security Foundation
+#### Story 1.2.1: Basic Security
+##### Task 1.2.1.1: Setup SSL Certificates
 
-## Milestone 2: [Milestone Name]
-### Epic 2.0: [Epic Name]
-#### Story 2.0.1: [Story Name]
-##### Task 2.0.1.1: [Task Name]
-##### Task 2.0.1.2: [Task Name]
-#### Story 2.0.2: [Story Name]
-##### Task 2.0.2.1: [Task Name]
-##### Task 2.0.2.2: [Task Name]
-### Epic 2.1: [Epic Name]
-#### Story 2.1.1: [Story Name]
-##### Task 2.1.1.1: [Task Name]
-##### Task 2.1.1.2: [Task Name]
+## Milestone 2: Core Platform Development
+### Epic 2.0: Backend API Development
+#### Story 2.0.1: Authentication API
+##### Task 2.0.1.1: Implement Login Endpoint
+##### Task 2.0.1.2: Create Registration Endpoint
+##### Task 2.0.1.3: Setup Password Reset
+##### Task 2.0.1.4: Add OAuth Integration
+##### Task 2.0.1.5: Implement Session Management
+#### Story 2.0.2: User Management API
+##### Task 2.0.2.1: Create User CRUD Operations
+##### Task 2.0.2.2: Implement Profile Management
+### Epic 2.1: Frontend Development
+#### Story 2.1.1: Basic UI Components
+##### Task 2.1.1.1: Create Component Library
+##### Task 2.1.1.2: Setup Styling System
+##### Task 2.1.1.3: Implement Navigation
+##### Task 2.1.1.4: Add Responsive Design
+#### Story 2.1.2: User Interface
+##### Task 2.1.2.1: Build Login Forms
+##### Task 2.1.2.2: Create Dashboard Layout
+### Epic 2.2: Database Layer
+#### Story 2.2.1: Core Schema
+##### Task 2.2.1.1: Design User Tables
+##### Task 2.2.1.2: Implement Migrations
 
-## Milestone 3: [Milestone Name]
-### Epic 3.0: [Epic Name]
-#### Story 3.0.1: [Story Name]
-##### Task 3.0.1.1: [Task Name]
-##### Task 3.0.1.2: [Task Name]
+## Milestone 3: [Your milestone 3 name]
+### Epic 3.0: [Your Epic 3.0 name]
+#### Story 3.0.1: [Name]
+##### Task 3.0.1.1: [Name]
+[Continue with FULL DETAIL for ALL milestones]
 
-[Continue for all milestones...]
+⚠️ CRITICAL: GENERATE THE COMPLETE OUTLINE!
+
+Determine the appropriate structure based on:
+- Project timeline: {timeline}
+- Team size: {team_size}
+- Project complexity and scope
+- Industry best practices
+
+Each milestone should have appropriate detail.
+DO NOT use placeholders like "[Continue...]" or "[Note: I'll continue in next response...]"
+GENERATE THE ACTUAL CONTENT FOR ALL MILESTONES IN THIS SINGLE RESPONSE!
 
 === OUTLINE COMPLETE ===
 
-IMPORTANT: Generate COMPLETE outline with ALL milestones, epics, stories, AND tasks. Include proper numbering and hierarchy. Include 2-3 tasks per story minimum. No descriptions - titles only.
+CRITICAL REQUIREMENTS:
+1. EXACT FORMAT: "Milestone N:", "Epic N.N:", "Story N.N.N:", "Task N.N.N.N:"
+2. NEVER use "1. Name" or "1.1 Name" format - ALWAYS "Milestone 1: Name", "Epic 1.0: Name"
+3. Generate COMPLETE outline with ALL milestones, epics, stories, AND tasks
+4. EVERY milestone MUST have its epics fully detailed with stories and tasks
+5. EVERY epic MUST have its stories with tasks listed
+6. DO NOT skip details for later milestones - each should have appropriate detail for its scope
+7. Include proper numbering and hierarchy throughout
+8. Include as many tasks as needed per story - some may need 1-2 tasks, others may need 5+ tasks
+9. No descriptions - titles only
+10. Continue generating until you've completed the ENTIRE roadmap outline
+11. DO NOT use "[Continue...]" or similar placeholders - GENERATE ACTUAL CONTENT
+12. Generate as many milestones as appropriate for the timeline and scope
+13. Let the project requirements determine the number of items at each level
+14. Focus on completeness and appropriateness rather than hitting specific counts
+15. VARY the number of items based on scope - some milestones may need more epics, some epics more stories
+16. Avoid creating uniform patterns - let the natural complexity of each area determine the structure
+
+❌ WRONG FORMAT EXAMPLES (DO NOT USE):
+- "## 1. Foundation & Infrastructure"
+- "### 1.1. Technical Architecture"
+- "#### 1.1.1. Core Infrastructure"
+
+✅ CORRECT FORMAT EXAMPLES (USE THIS):
+- "## Milestone 1: Foundation & Infrastructure"
+- "### Epic 1.0: Technical Architecture"
+- "#### Story 1.0.1: Core Infrastructure"
+- "##### Task 1.0.1.1: Setup AWS Account"
+
+⚠️ The parser REQUIRES the exact keywords "Milestone", "Epic", "Story", "Task" followed by the numbering pattern!
