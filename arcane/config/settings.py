@@ -28,6 +28,13 @@ class GenerationSettings:
     max_retries: int = 3
     request_timeout: float = 30.0
 
+    # Prompt compression settings
+    compression_level: str = 'moderate'  # none, light, moderate, aggressive
+    show_compression_stats: bool = False
+
+    # Model selection settings
+    model_mode: str = 'tiered'  # tiered, premium, economy, standard
+
     # Roadmap generation defaults
     default_timeline: str = '6-months'
     default_complexity: str = 'moderate'

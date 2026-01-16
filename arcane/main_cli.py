@@ -23,16 +23,44 @@ from .engines.export import FileExporter
 from .engines.importers import NotionImporter
 from .items import Roadmap
 from .validation import PreferenceValidator, ValidationSeverity
+from .config.config_manager import get_config
 
 
 class ArcaneCLI:
     """Clean, modular CLI application for AI-powered roadmap generation."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        compression_level: Optional[str] = None,
+        model_mode: Optional[str] = None,
+        debug_mode: bool = False,
+        debug_report: Optional[str] = None
+    ):
         self.console = Console()
         self.logger = get_logger(__name__)
+        self.config = get_config()
+
+        # Get compression settings from config or override
+        self.compression_level = compression_level or self.config.get(
+            'generation.compression_level', 'moderate'
+        )
+        show_stats = self.config.get('generation.show_compression_stats', False)
+
+        # Get model mode setting
+        self.model_mode = model_mode or self.config.get(
+            'generation.model_mode', 'tiered'
+        )
+
+        # Debug mode settings
+        self.debug_mode = debug_mode
+        self.debug_report_path = debug_report
+        self.debug_generator = None
+
         self.question_builder = QuestionBuilder(self.console)
-        self.prompt_builder = RoadmapPromptBuilder()
+        self.prompt_builder = RoadmapPromptBuilder(
+            compression_level=self.compression_level,
+            show_compression_stats=show_stats
+        )
         self.validator = PreferenceValidator()
         self.export_engine = None
         self.import_engine = None
@@ -291,12 +319,54 @@ class ArcaneCLI:
             self.console.print(f"[red]❌ Error importing to Notion: {str(e)}[/red]")
             return False
 
-    def run(self, provider=None, idea_file=None, output_dir=None, **cli_flags):
-        """Main application entry point with clean, modular flow."""
+    def run(self, provider=None, idea_file=None, output_dir=None, compression=None, model_mode=None, debug=None, debug_report=None, **cli_flags):
+        """Main application entry point with clean, modular flow.
+
+        Args:
+            provider: LLM provider to use
+            idea_file: Path to idea file
+            output_dir: Output directory for exports
+            compression: Compression level ('none', 'light', 'moderate', 'aggressive')
+            model_mode: Model selection mode ('tiered', 'premium', 'economy', 'standard')
+            debug: Enable debug mode to capture LLM reasoning
+            debug_report: Path to save detailed debug report JSON
+            **cli_flags: Additional CLI flags
+        """
         try:
             # Initialize logging
             setup_logging(level="INFO", rich_console=True)
             self.logger.info("Arcane CLI started")
+
+            # Update compression level if provided
+            if compression:
+                self.compression_level = compression
+                self.prompt_builder = RoadmapPromptBuilder(
+                    compression_level=compression,
+                    show_compression_stats=self.config.get('generation.show_compression_stats', False)
+                )
+                self.logger.info("Compression level set to: %s", compression)
+
+            # Update model mode if provided
+            if model_mode:
+                self.model_mode = model_mode
+                self.logger.info("Model mode set to: %s", model_mode)
+
+            # Update debug mode if provided
+            if debug is not None:
+                self.debug_mode = debug
+            if debug_report:
+                self.debug_report_path = debug_report
+                self.debug_mode = True  # Enable debug mode if report path specified
+
+            if self.debug_mode:
+                self.logger.info("Debug mode enabled - LLM reasoning will be captured")
+                self.console.print("[dim]🔍 Debug mode enabled - capturing LLM reasoning[/dim]")
+                # Initialize debug generator (will be wired to generation process later)
+                from .engines.generation.debug_generator import DebugGenerator
+                self.debug_generator = DebugGenerator(
+                    llm_client=None,  # Will be set when generation starts
+                    debug_enabled=True
+                )
 
             # Display banner
             self.display_banner()
@@ -344,6 +414,17 @@ class ArcaneCLI:
 
             # Step 6: Display summary
             self._display_summary(roadmap, export_files, notion_success)
+
+            # Step 7: Display compression stats if enabled
+            if self.config.get('generation.show_compression_stats', False):
+                self._display_compression_stats()
+
+            # Step 8: Display debug report if enabled
+            if self.debug_mode and self.debug_generator:
+                self.console.print(self.debug_generator.get_debug_report())
+                if self.debug_report_path:
+                    self.debug_generator.save_debug_log(self.debug_report_path)
+                    self.console.print(f"\n[green]📝 Debug log saved to: {self.debug_report_path}[/green]")
 
         except KeyboardInterrupt:
             self.console.print("\n[yellow]⚠️  Operation cancelled by user[/yellow]")
@@ -437,6 +518,26 @@ class ArcaneCLI:
 
         self.console.print(table)
 
+    def _display_compression_stats(self):
+        """Display prompt compression statistics."""
+        stats = self.prompt_builder.get_total_savings()
+
+        if stats['prompt_count'] == 0:
+            return
+
+        from rich.panel import Panel
+
+        stats_text = (
+            f"[cyan]Compression Level:[/cyan] {self.compression_level}\n"
+            f"[cyan]Prompts Compressed:[/cyan] {stats['prompt_count']}\n"
+            f"[cyan]Original Tokens:[/cyan] {stats['total_original_tokens']:,}\n"
+            f"[cyan]Compressed Tokens:[/cyan] {stats['total_compressed_tokens']:,}\n"
+            f"[green]Tokens Saved:[/green] {stats['total_tokens_saved']:,}\n"
+            f"[green]Average Compression:[/green] {stats['average_compression_ratio']:.1f}%"
+        )
+
+        self.console.print(Panel(stats_text, title="📊 Compression Statistics", border_style="cyan"))
+
     def _display_validation_results(self, issues):
         """Display validation results in a user-friendly format."""
 
@@ -496,10 +597,27 @@ class ArcaneCLI:
                 self.console.print()
 
 
-def main():
-    """CLI entry point."""
-    cli = ArcaneCLI()
-    cli.run()
+def main(
+    compression: Optional[str] = None,
+    model_mode: Optional[str] = None,
+    debug: bool = False,
+    debug_report: Optional[str] = None
+):
+    """CLI entry point.
+
+    Args:
+        compression: Optional compression level override
+        model_mode: Optional model mode override ('tiered', 'premium', 'economy', 'standard')
+        debug: Enable debug mode to capture LLM reasoning
+        debug_report: Path to save detailed debug report JSON
+    """
+    cli = ArcaneCLI(
+        compression_level=compression,
+        model_mode=model_mode,
+        debug_mode=debug,
+        debug_report=debug_report
+    )
+    cli.run(compression=compression, model_mode=model_mode, debug=debug, debug_report=debug_report)
 
 
 if __name__ == "__main__":

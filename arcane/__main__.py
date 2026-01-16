@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from .main_cli import ArcaneCLI
+from .commands.refine import RefineCommand
 
 
 def main():
@@ -23,9 +24,10 @@ def main():
         epilog="""
 Commands:
   interactive    Full interactive roadmap generation workflow
-  generate       Generate roadmap from idea (requires --idea)
-  export         Export existing roadmap to files (requires --roadmap)
-  import         Import roadmap to Notion (requires --roadmap)
+  refine         Interactive refinement of roadmap items (requires --roadmap)
+  generate       Generate roadmap from idea (requires --idea) [deprecated]
+  export         Export existing roadmap to files (requires --roadmap) [deprecated]
+  import         Import roadmap to Notion (requires --roadmap) [deprecated]
 
 Interactive Mode Examples:
   python -m arcane interactive                                    # Full interactive workflow with guided generation
@@ -76,7 +78,16 @@ Interactive Mode Examples:
   python -m arcane interactive --idea-file myidea.txt --no-export # Use idea file, skip export
   python -m arcane interactive --output-dir ./generated          # Use specific output directory
 
-Other Commands:
+Refine Command (interactive refinement of roadmap items):
+  python -m arcane refine --roadmap roadmap.json                 # Interactive mode
+  python -m arcane refine --roadmap roadmap.json -i 1.0.1        # Refine specific item
+  python -m arcane refine --roadmap roadmap.json -i 1.0.1 --feedback "Add more detail"  # Direct refinement
+  python -m arcane refine --roadmap roadmap.json -i 1.0.1 --revert 0   # Revert to original
+  python -m arcane refine --roadmap roadmap.json --history       # Show refinement history
+  python -m arcane refine --roadmap roadmap.json -i 1.0.1 --compare    # Compare versions
+  python -m arcane refine --roadmap roadmap.json --history-file history.json  # Persist history
+
+Other Commands (deprecated):
   python -m arcane generate --idea "Task manager"                # Generate only
   python -m arcane export --roadmap roadmap.json                 # Export only
   python -m arcane import --roadmap roadmap.json                 # Import only
@@ -85,7 +96,7 @@ Other Commands:
 
     parser.add_argument(
         'command',
-        choices=['interactive', 'generate', 'export', 'import'],
+        choices=['interactive', 'generate', 'export', 'import', 'refine'],
         help='Command to execute'
     )
 
@@ -329,6 +340,47 @@ Other Commands:
         help='Export formats (default: csv only)'
     )
 
+    # Refine command arguments
+    parser.add_argument(
+        '--item', '-i',
+        help='Item ID to refine (for refine command, e.g., 1.0.1)'
+    )
+
+    parser.add_argument(
+        '--feedback',
+        help='Feedback for refinement (for refine command, non-interactive mode)'
+    )
+
+    parser.add_argument(
+        '--revert',
+        type=int,
+        metavar='VERSION',
+        help='Revert item to specific version (for refine command, 0 = original)'
+    )
+
+    parser.add_argument(
+        '--history',
+        action='store_true',
+        help='Show refinement history (for refine command)'
+    )
+
+    parser.add_argument(
+        '--compare',
+        action='store_true',
+        help='Compare all versions of an item (for refine command)'
+    )
+
+    parser.add_argument(
+        '--history-file',
+        help='Path to save/load refinement history (for refine command)'
+    )
+
+    parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Preview changes without saving (for refine command)'
+    )
+
     # Parse arguments
     if len(sys.argv) == 1:
         # No arguments provided, run interactive mode
@@ -379,6 +431,31 @@ Other Commands:
                 no_export=getattr(args, 'no_export', False),
                 formats=getattr(args, 'formats', ['csv'])
             )
+
+        elif args.command == 'refine':
+            # Refine command - interactive refinement of roadmap items
+            if not args.roadmap:
+                print("Error: --roadmap is required for the refine command")
+                print("Usage: arcane refine --roadmap roadmap.json")
+                sys.exit(1)
+
+            # Create args namespace for RefineCommand
+            refine_args = argparse.Namespace(
+                roadmap_file=args.roadmap,
+                item=getattr(args, 'item', None),
+                interactive=not args.item,  # Default to interactive if no item specified
+                feedback=getattr(args, 'feedback', None),
+                revert=getattr(args, 'revert', None),
+                history=getattr(args, 'history', False),
+                compare=getattr(args, 'compare', False),
+                provider=getattr(args, 'provider', 'claude'),
+                output=getattr(args, 'output_dir', None),
+                history_file=getattr(args, 'history_file', None),
+                dry_run=getattr(args, 'dry_run', False),
+            )
+
+            refine_cmd = RefineCommand()
+            sys.exit(refine_cmd.execute(refine_args))
 
         elif args.command in ['generate', 'export', 'import']:
             print(f"Note: The '{args.command}' command has been deprecated.")

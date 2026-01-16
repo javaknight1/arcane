@@ -64,6 +64,13 @@ class Item(ABC):
         self.content = None  # Raw LLM response
         self.generation_status = ItemStatus.NOT_STARTED
 
+        # Semantic outline fields
+        self.outline_description: str = ''  # Brief description from semantic outline
+        self.outline_what: str = ''  # What this item accomplishes
+        self.outline_why: str = ''  # Why it's needed / its purpose
+        self.dependency_ids: List[str] = []  # IDs of items this depends on
+        self.depends_on_items: List['Item'] = []  # Linked dependency Item objects
+
         # If this item has a parent, add it to parent's children
         if parent:
             parent.add_child(self)
@@ -103,7 +110,10 @@ class Item(ABC):
             'Benefits': self.benefits,
             'Prerequisites': self.prerequisites,
             'Technical Requirements': self.technical_requirements,
-            'Claude Code Prompt': self.claude_code_prompt
+            'Claude Code Prompt': self.claude_code_prompt,
+            'Work Type': self.work_type,
+            'Complexity': self.complexity,
+            'Tags': ', '.join(self.tags) if self.tags else ''
         }
 
     def update_status(self, new_status: str) -> None:
@@ -216,6 +226,70 @@ class Item(ABC):
     def get_tags_display(self) -> str:
         """Get tags as a comma-separated string for display."""
         return ', '.join(self.tags) if self.tags else 'None'
+
+    def get_semantic_context(self) -> str:
+        """Get semantic context string for prompt injection."""
+        lines = []
+
+        if self.outline_description:
+            lines.append(f"Purpose: {self.outline_description}")
+
+        if self.outline_what:
+            lines.append(f"What it does: {self.outline_what}")
+
+        if self.outline_why:
+            lines.append(f"Why it's needed: {self.outline_why}")
+
+        if self.depends_on_items:
+            dep_strs = [f"{d.item_type} {d.id}" for d in self.depends_on_items]
+            lines.append(f"Dependencies: {', '.join(dep_strs)}")
+
+        return "\n".join(lines) if lines else "No semantic context available"
+
+    def get_dependency_context(self) -> str:
+        """Get context from dependency items for prompt injection."""
+        if not self.depends_on_items:
+            return "No dependencies - this item can be started independently"
+
+        contexts = []
+        for dep in self.depends_on_items:
+            ctx = f"{dep.item_type} {dep.id}: {dep.name}"
+            if dep.outline_description:
+                ctx += f"\n  → Purpose: {dep.outline_description}"
+            if hasattr(dep, 'description') and dep.description:
+                desc_preview = dep.description[:200] + "..." if len(dep.description) > 200 else dep.description
+                ctx += f"\n  → Output: {desc_preview}"
+            contexts.append(ctx)
+
+        return "\n".join(contexts)
+
+    def has_semantic_context(self) -> bool:
+        """Check if this item has semantic context from outline."""
+        return bool(self.outline_description or self.outline_what or self.outline_why)
+
+    def get_generation_instructions(self) -> str:
+        """Get generation instructions specific to this item type.
+
+        Returns:
+            Instructions string for the LLM
+        """
+        instructions = [f"Generate detailed content for this {self.item_type}."]
+
+        if self.outline_description:
+            instructions.append(f"Purpose: {self.outline_description}")
+
+        if self.outline_what:
+            instructions.append(f"Scope: {self.outline_what}")
+
+        if self.outline_why:
+            instructions.append(f"Rationale: {self.outline_why}")
+
+        instructions.append(f"\nOutput requirements:")
+        instructions.append(f"- Provide a clear description")
+        instructions.append(f"- Include technical details where appropriate")
+        instructions.append(f"- Maintain consistency with the roadmap context")
+
+        return "\n".join(instructions)
 
     def __repr__(self) -> str:
         return f"{self.item_type}(name='{self.name}', status='{self.status}')"

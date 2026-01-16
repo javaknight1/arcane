@@ -1,42 +1,98 @@
-Generate ONLY the header section for Milestone {milestone_number}.
+Generate detailed content for Milestone {milestone_number}: {milestone_title}
 
-PROJECT CONTEXT:
-{project_context}
+=== PROJECT CONTEXT ===
+Project: {project_context}
 
-ROADMAP CONTEXT:
-{roadmap_context}
+=== CASCADING CONTEXT ===
+The following context shows decisions and outputs from previously generated items.
+Your generation MUST be consistent with this context.
+{cascading_context}
 
-MILESTONE TO GENERATE HEADER FOR:
-Milestone {milestone_number}: {milestone_title}
+=== ROADMAP OVERVIEW ===
+{roadmap_overview}
 
-EXPECTED EPICS IN THIS MILESTONE:
+=== CONSISTENCY REQUIREMENTS ===
+Based on the above context:
+- Maintain consistency with decisions from previous milestones
+- Reference and build upon earlier work when applicable
+- Ensure technical choices align with project-wide decisions
+
+=== MILESTONE REQUIREMENTS ===
+This milestone represents a major phase in the project roadmap.
+It should have clear goals, deliverables, and success criteria.
+Epics listed below will be generated separately.
+
+=== EXPECTED EPICS IN THIS MILESTONE ===
 {expected_epics}
 
-CRITICAL INSTRUCTIONS:
-1. Generate ONLY the milestone header information - NO epic, story, or task details
-2. The epics listed above will be generated separately
-3. Focus on high-level milestone overview and planning
-4. Use the roadmap context to understand how this milestone fits into the overall project
-5. Use the exact format below
-6. Do NOT include any epic content - just reference them
+=== REQUIRED OUTPUT FORMAT ===
+Provide ALL fields using EXACT markers below. Do not skip any section.
 
-FORMAT REQUIREMENTS:
-## Milestone {milestone_number}: {milestone_title}
+:::MILESTONE_DESCRIPTION:::
+[3-5 sentences describing what this milestone achieves and why it's a critical phase. Explain its position in the overall project timeline and what completing it means for the project.]
 
-**Duration:** [X hours total for entire milestone]
-**Priority:** [Critical/High/Medium/Low]
-**Goal:** [Clear objective statement for this milestone]
+:::MILESTONE_GOAL:::
+[1-2 sentences stating the clear objective of this milestone - what will be true when it's complete.]
 
-### **What it is and why we need it:**
-[Detailed explanation of this milestone's purpose and importance in the overall project]
+:::KEY_DELIVERABLES:::
+[List 4-6 specific deliverables that will be completed in this milestone]
+- Deliverable 1: [Specific, tangible output]
+- Deliverable 2: [Specific, tangible output]
+- Deliverable 3: [Specific, tangible output]
+- Deliverable 4: [Specific, tangible output]
 
-### **Benefits:**
-- [Specific business benefit of completing this milestone]
-- [Specific technical benefit of completing this milestone]
-- [Specific operational benefit of completing this milestone]
+:::BENEFITS:::
+[List 4-6 specific benefits of completing this milestone]
+- Business benefit
+- Technical benefit
+- User benefit
+- Operational benefit
 
-### **What happens if we don't have it:**
-- [Specific consequence of not completing this milestone]
-- [Business impact of missing this milestone]
+:::PREREQUISITES:::
+[List dependencies on other milestones or external factors. Use IDs when possible. Write "None" if this is the first milestone.]
+- Milestone X: [Name] - [Why it's needed]
+- External dependency: [Description]
 
-Generate ONLY this header content - do not include epic details.
+:::SUCCESS_CRITERIA:::
+[List 4-6 measurable criteria for milestone completion]
+- Criterion 1: [Quantifiable success indicator]
+- Criterion 2: [Quantifiable success indicator]
+- Criterion 3: [Quantifiable success indicator]
+- Criterion 4: [Quantifiable success indicator]
+
+:::RISKS_IF_DELAYED:::
+[List consequences of not completing this milestone on time]
+- Risk 1: [Business/technical impact]
+- Risk 2: [User/operational impact]
+
+:::TECHNICAL_REQUIREMENTS:::
+[List key technical decisions or requirements for this phase]
+- Architecture decision
+- Technology choice
+- Infrastructure need
+
+:::WORK_TYPE:::
+[Choose exactly ONE: implementation | design | research | testing | documentation | configuration | deployment]
+
+:::COMPLEXITY:::
+[Choose exactly ONE: simple | moderate | complex]
+
+:::PRIORITY:::
+[Choose exactly ONE: Critical | High | Medium | Low]
+
+:::DURATION_HOURS:::
+[Total estimated hours for the entire milestone including all epics. Just the number.]
+
+:::TAGS:::
+[Comma-separated tags: scope tags (core-scope, extended-scope), technical tags (frontend, backend, etc.), phase tags (phase-1, mvp, launch, etc.)]
+
+=== QUALITY CHECKLIST ===
+Before submitting, verify:
+1. All milestone fields are filled with meaningful content
+2. Goal is clear and measurable
+3. Deliverables are specific and tangible
+4. Success criteria are quantifiable
+5. Duration estimate accounts for all expected epics
+6. No placeholder or truncated content
+
+NOTE: Do NOT include epic, story, or task details - those will be generated separately.

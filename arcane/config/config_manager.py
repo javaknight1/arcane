@@ -136,6 +136,9 @@ class ConfigManager(ConfigurationProtocol):
             'ARCANE_MAX_TOKENS': ('llm', 'max_tokens', int),
             'ARCANE_TEMPERATURE': ('llm', 'temperature', float),
             'ARCANE_COST_WARNING': ('llm', 'cost_threshold_warning', float),
+            'ARCANE_COMPRESSION_LEVEL': ('generation', 'compression_level', str),
+            'ARCANE_SHOW_COMPRESSION_STATS': ('generation', 'show_compression_stats', bool),
+            'ARCANE_MODEL_MODE': ('generation', 'model_mode', str),
         }
 
         for env_var, (section, key, value_type) in env_mappings.items():

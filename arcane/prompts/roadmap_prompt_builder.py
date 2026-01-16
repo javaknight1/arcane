@@ -2,13 +2,92 @@
 """Roadmap generation prompt builder."""
 
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Tuple
 from .base_prompt_builder import BasePromptBuilder
 from ..constants.templates import PROMPT_TEMPLATES
+from ..templates import TemplateLoader
+from .compression import PromptCompressor
 
 
 class RoadmapPromptBuilder(BasePromptBuilder):
     """Builds comprehensive prompts for roadmap generation."""
+
+    def __init__(
+        self,
+        compression_level: str = 'moderate',
+        show_compression_stats: bool = False
+    ):
+        """Initialize the prompt builder.
+
+        Args:
+            compression_level: Compression level ('none', 'light', 'moderate', 'aggressive')
+            show_compression_stats: Whether to track compression statistics
+        """
+        super().__init__()
+        self.compressor = PromptCompressor()
+        self.compression_level = compression_level
+        self.show_compression_stats = show_compression_stats
+        self._compression_stats: List[Dict[str, Any]] = []
+
+    def _compress_prompt(self, prompt: str) -> str:
+        """Compress a prompt and optionally track stats.
+
+        Args:
+            prompt: The prompt to compress
+
+        Returns:
+            Compressed prompt
+        """
+        if self.compression_level == 'none':
+            return prompt
+
+        if self.show_compression_stats:
+            compressed, stats = self.compressor.compress_with_stats(
+                prompt, self.compression_level
+            )
+            self._compression_stats.append(stats)
+            return compressed
+        else:
+            return self.compressor.compress(prompt, self.compression_level)
+
+    def get_compression_stats(self) -> List[Dict[str, Any]]:
+        """Get accumulated compression statistics.
+
+        Returns:
+            List of compression stats for each prompt built
+        """
+        return self._compression_stats.copy()
+
+    def get_total_savings(self) -> Dict[str, Any]:
+        """Get total token savings across all prompts.
+
+        Returns:
+            Dictionary with total savings statistics
+        """
+        if not self._compression_stats:
+            return {
+                'total_original_tokens': 0,
+                'total_compressed_tokens': 0,
+                'total_tokens_saved': 0,
+                'average_compression_ratio': 0.0,
+                'prompt_count': 0,
+            }
+
+        total_orig = sum(s['original_tokens'] for s in self._compression_stats)
+        total_comp = sum(s['compressed_tokens'] for s in self._compression_stats)
+        avg_ratio = sum(s['compression_ratio'] for s in self._compression_stats) / len(self._compression_stats)
+
+        return {
+            'total_original_tokens': total_orig,
+            'total_compressed_tokens': total_comp,
+            'total_tokens_saved': total_orig - total_comp,
+            'average_compression_ratio': round(avg_ratio, 2),
+            'prompt_count': len(self._compression_stats),
+        }
+
+    def reset_stats(self) -> None:
+        """Reset compression statistics."""
+        self._compression_stats = []
 
     def build_prompt(self, idea_content: str, preferences: Dict[str, Any],
                     idea_file_path: Optional[str] = None) -> str:
@@ -28,8 +107,9 @@ class RoadmapPromptBuilder(BasePromptBuilder):
         # Add contextual analysis
         variables.update(self._generate_contextual_analysis(preferences))
 
-        # Format the template
-        return self._format_template(self.template, variables)
+        # Format the template and compress
+        prompt = self._format_template(self.template, variables)
+        return self._compress_prompt(prompt)
 
     def build_outline_prompt(self, idea_content: str, preferences: Dict[str, Any]) -> str:
         """Build outline generation prompt specifically.
@@ -51,8 +131,144 @@ class RoadmapPromptBuilder(BasePromptBuilder):
         # Prepare all variables including scaling guidance
         variables = self._prepare_all_variables(idea_content, preferences)
 
-        # Format the outline template
-        return self._format_template(outline_template, variables)
+        # Format the outline template and compress
+        prompt = self._format_template(outline_template, variables)
+        return self._compress_prompt(prompt)
+
+    def build_semantic_outline_prompt(
+        self,
+        idea_content: str,
+        preferences: Dict[str, Any]
+    ) -> str:
+        """Build semantic outline generation prompt.
+
+        This generates an outline with descriptions and dependencies,
+        not just titles.
+
+        Args:
+            idea_content: The project idea description
+            preferences: Dictionary of user preferences
+
+        Returns:
+            Complete formatted semantic outline prompt for LLM
+        """
+        # Load the semantic outline template
+        template_loader = TemplateLoader()
+        template = template_loader.load_template('semantic_outline_generation')
+
+        # Mark this as outline generation for proper scaling guidance
+        preferences = preferences.copy()
+        preferences['generation_type'] = 'semantic_outline'
+
+        # Prepare all variables including scaling guidance
+        variables = self._prepare_all_variables(idea_content, preferences)
+
+        # Format and compress
+        prompt = self._format_template(template, variables)
+        return self._compress_prompt(prompt)
+
+    def build_item_prompt_with_semantic_context(
+        self,
+        item_type: str,
+        item_id: str,
+        item_title: str,
+        semantic_description: str,
+        semantic_dependencies: List,
+        project_context: str,
+        parent_context: str,
+        sibling_context: str,
+        roadmap_context: str
+    ) -> str:
+        """Build prompt for individual item with semantic context.
+
+        This uses the description and dependencies from the semantic outline
+        to provide richer context for item generation.
+
+        Args:
+            item_type: Type of item (Milestone, Epic, Story, Task)
+            item_id: The item's hierarchical ID
+            item_title: The item's title
+            semantic_description: Description from semantic outline
+            semantic_dependencies: List of dependency items
+            project_context: Overall project context
+            parent_context: Context from parent item
+            sibling_context: Context from sibling items
+            roadmap_context: Full roadmap context
+
+        Returns:
+            Complete formatted prompt for LLM
+        """
+        # Format dependencies for prompt
+        if semantic_dependencies:
+            deps_formatted = "\n".join([
+                f"  - {dep.item_type} {dep.id}: {dep.name}"
+                for dep in semantic_dependencies
+            ])
+        else:
+            deps_formatted = "  None - this item can be started independently"
+
+        # Get the appropriate template
+        template_name = f'{item_type.lower()}_generation_individual'
+
+        try:
+            template = PROMPT_TEMPLATES[template_name]
+        except KeyError:
+            # Fall back to a generic template if specific one not found
+            template = self._get_semantic_item_template(item_type)
+
+        variables = {
+            f'{item_type.lower()}_number': item_id,
+            f'{item_type.lower()}_title': item_title,
+            'item_number': item_id,
+            'item_title': item_title,
+            'item_type': item_type,
+            'semantic_description': semantic_description or 'No description provided',
+            'semantic_dependencies': deps_formatted,
+            'project_context': project_context,
+            'parent_context': parent_context or 'No parent context',
+            'sibling_context': sibling_context or 'No sibling context',
+            'roadmap_context': roadmap_context or 'No roadmap context',
+        }
+
+        prompt = self._format_template(template, variables)
+        return self._compress_prompt(prompt)
+
+    def _get_semantic_item_template(self, item_type: str) -> str:
+        """Get a generic semantic-aware template for item generation."""
+        return f"""# Generate {item_type} Content
+
+## Context
+**{item_type} ID:** {{item_number}}
+**{item_type} Title:** {{item_title}}
+
+### Semantic Context (from outline)
+{{semantic_description}}
+
+### Dependencies
+{{semantic_dependencies}}
+
+### Project Context
+{{project_context}}
+
+### Parent Context
+{{parent_context}}
+
+### Sibling Context
+{{sibling_context}}
+
+### Roadmap Context
+{{roadmap_context}}
+
+## Instructions
+Generate comprehensive content for this {item_type.lower()} that:
+1. Fulfills the purpose described in the semantic context
+2. Respects and builds upon any dependencies
+3. Fits coherently within the parent context
+4. Complements the sibling items
+5. Aligns with the overall roadmap structure
+
+Provide detailed, actionable content appropriate for a {item_type.lower()}.
+"""
 
     def _prepare_all_variables(self, idea_content: str, preferences: Dict[str, Any]) -> Dict[str, str]:
         """Prepare all variables for the template."""
@@ -303,7 +519,8 @@ class RoadmapPromptBuilder(BasePromptBuilder):
             raise ValueError(f"Template '{template_name}' not found in PROMPT_TEMPLATES")
 
         template = PROMPT_TEMPLATES[template_name]
-        return self._format_template(template, kwargs)
+        prompt = self._format_template(template, kwargs)
+        return self._compress_prompt(prompt)
 
     def _get_template(self) -> str:
         """Get the comprehensive roadmap generation template."""

@@ -1,47 +1,86 @@
-Generate detailed content for Task {task_number}.
+Generate detailed content for Task {task_number}: {task_title}
 
-PROJECT CONTEXT:
-{project_context}
+=== PROJECT CONTEXT ===
+Project: {project_context}
+Story: {story_context}
 
-ROADMAP CONTEXT:
-{roadmap_context}
+=== CASCADING CONTEXT ===
+The following context shows decisions and outputs from previously generated items.
+Your generation MUST be consistent with this context.
+{cascading_context}
 
-STORY CONTEXT:
-{story_context}
+=== ROADMAP OVERVIEW ===
+{roadmap_overview}
 
-TASK TO DETAIL:
-Task {task_number}: {task_title}
+=== CONSISTENCY REQUIREMENTS ===
+Based on the above context:
+- Use the same technologies and patterns as related items
+- Reference and build upon work from parent story
+- Ensure implementation aligns with earlier technical decisions
 
-INSTRUCTIONS:
-1. Generate comprehensive task details
-2. Focus on specific implementation work
-3. Include clear acceptance criteria
-4. Provide technical requirements if applicable
+=== TASK REQUIREMENTS ===
+This task must contribute to completing its parent story.
+Ensure the task is specific, actionable, and has clear completion criteria.
 
-FORMAT YOUR RESPONSE EXACTLY AS:
+=== REQUIRED OUTPUT FORMAT ===
+You MUST provide ALL of the following fields. Do not skip any field.
+Use EXACTLY these field markers for parsing:
 
-## Task {task_number}: {task_title}
+:::GOAL_DESCRIPTION:::
+[Write 2-3 sentences describing what this task accomplishes and why it matters. Be specific about the outcome.]
 
-**What to Do:**
-- [Specific implementation step 1]
-- [Specific implementation step 2]
-- [Specific implementation step 3]
+:::BENEFITS:::
+[List 2-4 specific benefits of completing this task. Format as bullet points.]
+- Benefit 1
+- Benefit 2
+- Benefit 3
 
-**Success Criteria:**
-- [Measurable criterion 1]
-- [Measurable criterion 2]
-- [Measurable criterion 3]
+:::TECHNICAL_REQUIREMENTS:::
+[List the technical requirements and specifications for this task.]
+- Requirement 1
+- Requirement 2
+- Requirement 3
 
-**Technical Requirements:**
-[Any specific technical considerations, dependencies, or constraints]
+:::PREREQUISITES:::
+[List any tasks, stories, or conditions that must be completed before this task can start. Write "None" if no prerequisites.]
+- Prerequisite 1
+- Prerequisite 2
 
-**Prerequisites:**
-[Any tasks or conditions that must be completed first]
+:::CLAUDE_CODE_PROMPT:::
+[Write a detailed prompt that could be given to Claude Code to implement this task. Include:
+- Specific files to create or modify
+- Code structure expectations
+- Testing requirements
+- Edge cases to handle
+Be detailed enough that an AI coding assistant could execute this task.]
 
-**Benefits:**
-[Why this task is important and what value it provides]
+:::WORK_TYPE:::
+[Choose exactly ONE: implementation | design | research | testing | documentation | configuration | deployment]
 
-**Claude Code Prompt:**
-[If applicable, provide a specific prompt for Claude Code to implement this task]
+:::COMPLEXITY:::
+[Choose exactly ONE: simple | moderate | complex]
+Simple: <2 hours, straightforward, minimal dependencies
+Moderate: 2-8 hours, some complexity, few dependencies
+Complex: >8 hours, significant complexity, multiple dependencies
 
-IMPORTANT: Keep task details focused and actionable. This should be specific implementation work that can be completed by a developer.
+:::DURATION_HOURS:::
+[Provide a number representing estimated hours to complete. Just the number, e.g., "4"]
+
+:::PRIORITY:::
+[Choose exactly ONE: Critical | High | Medium | Low]
+
+:::TAGS:::
+[Provide comma-separated tags from these categories:
+- Scope: core-scope, extended-scope, nice-to-have
+- Technical: frontend, backend, api, database, infrastructure, devops, testing, security
+- Functional: authentication, user-management, payments, integrations, analytics, monitoring]
+
+=== END OUTPUT FORMAT ===
+
+IMPORTANT REMINDERS:
+1. Fill in EVERY field above - no empty fields allowed
+2. Use the exact field markers (:::FIELD_NAME:::) for parsing
+3. The Claude Code Prompt should be detailed and actionable
+4. Tags should be relevant to this specific task
+5. Duration should be realistic based on complexity
+6. Prerequisites should reference actual task/story IDs when applicable

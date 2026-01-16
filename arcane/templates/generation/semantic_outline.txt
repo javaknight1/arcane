@@ -1,0 +1,234 @@
+Generate a SEMANTIC OUTLINE for the following project that includes brief descriptions and dependencies.
+
+⚠️ CRITICAL REQUIREMENTS:
+- Determine the appropriate number of milestones based on the timeline and project scope
+- Each milestone should represent a meaningful phase of development
+- Include as many epics, stories, and tasks as needed to properly decompose the work
+- DO NOT stop early - generate the COMPLETE outline
+- DO NOT use placeholders like "[Continue...]" or "[Note: I'll continue...]"
+- GENERATE THE COMPLETE OUTLINE IN A SINGLE RESPONSE
+
+🚨 STOP! READ THIS FIRST - MANDATORY FORMAT REQUIREMENTS 🚨
+YOU MUST USE THESE EXACT FORMATS OR YOUR OUTPUT WILL BE REJECTED:
+- ## Milestone 1: [Name]  ← USE THIS
+- ### Epic 1.0: [Name]   ← USE THIS
+- #### Story 1.0.1: [Name]  ← USE THIS
+- ##### Task 1.0.1.1: [Name]  ← USE THIS
+
+❌ NEVER USE: "1. Name", "1.1 Name", "1.1.1 Name" ❌
+
+📝 SEMANTIC OUTLINE ADDITIONS:
+For EACH item in the outline, you MUST provide:
+1. The item title (using exact heading format above)
+2. A description block starting with "> " explaining:
+   - WHAT this item accomplishes (1 sentence)
+   - WHY it's needed / its purpose (1 sentence)
+3. A dependencies line starting with "> Dependencies: " listing:
+   - Item IDs this depends on (e.g., "1.0.1, 1.0.2"), OR
+   - "None" if no dependencies
+
+⚠️ CRITICAL FORMAT REQUIREMENTS:
+- Use EXACT heading format: ## Milestone N:, ### Epic N.N:, #### Story N.N.N:, ##### Task N.N.N.N:
+- The word "Milestone" must be followed by number and colon (e.g., "Milestone 1:")
+- The word "Epic" must be followed by decimal number and colon (e.g., "Epic 1.0:")
+- The word "Story" must be followed by three-part number and colon (e.g., "Story 1.0.1:")
+- The word "Task" must be followed by four-part number and colon (e.g., "Task 1.0.1.1:")
+- DO NOT use formats like "1. Foundation" or "1.1. Setup" - ALWAYS use "Milestone 1:", "Epic 1.0:", etc.
+- EVERY item MUST have a description block AND dependencies line
+
+{idea_content}
+
+Preferences:
+- Timeline: {timeline}
+- Complexity: {complexity}
+- Team Size: {team_size}
+- Focus: {focus}
+- Industry: {industry}
+- Budget Range: {budget_range}
+- Technical Challenges: {technical_challenges}
+- Regulatory Requirements: {regulatory_requirements}
+- Team Expertise: {team_expertise}
+- Integration Count: {integration_count}
+- Deployment Environment: {deployment_environment}
+- Success Metric: {success_metric}
+- Scope Control: {scope_control}
+
+🎯 SCOPE CONTROL INSTRUCTIONS:
+{scope_control_guidance}
+
+🏷️ STRUCTURED METADATA REQUIREMENTS:
+Every detailed roadmap item (stories and tasks) must include structured metadata:
+
+**Work Type Field**: One of "implementation", "design", "research", "documentation", "deployment", "maintenance", "configuration"
+
+**Complexity Field**: One of "simple", "moderate", "complex"
+
+**Tags Field**: Focused tagging for scope and technical/functional areas:
+- Scope Tags (REQUIRED): "core-scope", "extended-scope", "out-of-scope"
+- Technical Areas: "frontend", "backend", "api", "database", "infrastructure", "devops", "testing", "security"
+- Functional Areas: "authentication", "user-management", "payments", "integrations", "analytics", "monitoring"
+
+Note: Priority is handled separately. Work Type and Complexity have dedicated fields. Tags focus on scope and technical/functional categorization only.
+
+{scaling_guidance}
+
+⚠️ MANDATORY FORMAT - THE PARSER WILL REJECT ANY OTHER FORMAT:
+```
+===PROJECT_METADATA===
+PROJECT_NAME: [Concise project name]
+PROJECT_TYPE: [web app, mobile app, etc.]
+TECH_STACK: [primary technologies]
+ESTIMATED_DURATION: {timeline}
+TEAM_SIZE: {team_size}
+DESCRIPTION: [one sentence]
+===END_METADATA===
+
+# [Project Name]
+
+## Milestone 1: Foundation and Infrastructure
+> Establishes the foundational architecture and development environment. Required before any feature development can begin.
+> Dependencies: None
+
+### Epic 1.0: Development Environment Setup
+> Sets up the complete development toolchain and repository structure. Enables consistent development across the team.
+> Dependencies: None
+
+#### Story 1.0.1: Repository Configuration
+> Configures version control and branching strategy. Ensures code collaboration and history tracking.
+> Dependencies: None
+
+##### Task 1.0.1.1: Initialize Git Repository
+> Creates the main repository with initial structure and .gitignore. Foundation for all version control.
+> Dependencies: None
+
+##### Task 1.0.1.2: Setup Branch Strategy
+> Defines main/develop/feature branch workflow. Enables parallel development without conflicts.
+> Dependencies: 1.0.1.1
+
+##### Task 1.0.1.3: Configure CI/CD Pipeline
+> Sets up automated testing and deployment triggers. Ensures code quality and deployment consistency.
+> Dependencies: 1.0.1.1, 1.0.1.2
+
+#### Story 1.0.2: Development Tools
+> Installs and configures development dependencies and tooling. Standardizes the development experience.
+> Dependencies: 1.0.1
+
+##### Task 1.0.2.1: Setup Development Environment
+> Configures local development with containers or virtual environments. Ensures reproducible development setup.
+> Dependencies: 1.0.1.1
+
+##### Task 1.0.2.2: Install Dependencies
+> Adds core framework and library dependencies. Provides necessary building blocks for development.
+> Dependencies: 1.0.2.1
+
+##### Task 1.0.2.3: Configure Linters
+> Sets up code formatting and linting rules. Maintains consistent code style across the codebase.
+> Dependencies: 1.0.2.1
+
+### Epic 1.1: Cloud Infrastructure
+> Provisions cloud resources and networking. Provides the runtime environment for the application.
+> Dependencies: 1.0
+
+#### Story 1.1.1: AWS Configuration
+> Sets up core AWS services and security. Creates the cloud foundation for deployment.
+> Dependencies: 1.0.1
+
+##### Task 1.1.1.1: Create AWS Account
+> Establishes AWS organization and account structure. Required for all cloud resource provisioning.
+> Dependencies: None
+
+##### Task 1.1.1.2: Setup VPC
+> Creates isolated network environment with subnets. Provides network isolation and security.
+> Dependencies: 1.1.1.1
+
+##### Task 1.1.1.3: Configure Security Groups
+> Defines firewall rules for resource access. Controls network traffic flow.
+> Dependencies: 1.1.1.2
+
+##### Task 1.1.1.4: Setup IAM Roles
+> Creates identity and access policies. Manages permissions for services and users.
+> Dependencies: 1.1.1.1
+
+## Milestone 2: Core Platform Development
+> Builds the core application features and functionality. Delivers primary user value.
+> Dependencies: 1
+
+### Epic 2.0: Backend API Development
+> Implements server-side business logic and APIs. Provides data processing and storage.
+> Dependencies: 1.1
+
+#### Story 2.0.1: Authentication API
+> Creates user authentication endpoints. Enables secure user identity verification.
+> Dependencies: 1.1.1
+
+##### Task 2.0.1.1: Implement Login Endpoint
+> Builds POST /auth/login with credential validation. Allows users to authenticate.
+> Dependencies: 1.1.1.4
+
+...continue pattern with descriptions and dependencies for ALL items...
+```
+
+DO NOT USE: "1. Foundation", "1.1 Setup", etc.
+MUST USE: "Milestone 1: Foundation", "Epic 1.0: Setup", etc.
+EVERY ITEM MUST HAVE: Description block ("> ...") and Dependencies line ("> Dependencies: ...")
+
+Generate the semantic outline structure using this EXACT format.
+
+⚠️ CRITICAL: GENERATE THE COMPLETE OUTLINE WITH DESCRIPTIONS AND DEPENDENCIES!
+
+Determine the appropriate structure based on:
+- Project timeline: {timeline}
+- Team size: {team_size}
+- Project complexity and scope
+- Industry best practices
+
+Each item must have its description and dependencies specified.
+DO NOT use placeholders like "[Continue...]" or "[Note: I'll continue in next response...]"
+GENERATE THE ACTUAL CONTENT FOR ALL ITEMS IN THIS SINGLE RESPONSE!
+
+=== OUTLINE COMPLETE ===
+
+CRITICAL REQUIREMENTS:
+1. EXACT FORMAT: "Milestone N:", "Epic N.N:", "Story N.N.N:", "Task N.N.N.N:"
+2. NEVER use "1. Name" or "1.1 Name" format - ALWAYS "Milestone 1: Name", "Epic 1.0: Name"
+3. Generate COMPLETE outline with ALL milestones, epics, stories, AND tasks
+4. EVERY item MUST have a description block AND dependencies line
+5. EVERY milestone MUST have its epics fully detailed with stories and tasks
+6. EVERY epic MUST have its stories with tasks listed
+7. DO NOT skip details for later milestones - each should have appropriate detail for its scope
+8. Include proper numbering and hierarchy throughout
+9. Include as many tasks as needed per story - some may need 1-2 tasks, others may need 5+ tasks
+10. Continue generating until you've completed the ENTIRE roadmap outline
+11. DO NOT use "[Continue...]" or similar placeholders - GENERATE ACTUAL CONTENT
+12. Generate as many milestones as appropriate for the timeline and scope
+13. Let the project requirements determine the number of items at each level
+14. Focus on completeness and appropriateness rather than hitting specific counts
+15. VARY the number of items based on scope - some milestones may need more epics, some epics more stories
+16. Avoid creating uniform patterns - let the natural complexity of each area determine the structure
+17. Dependencies should reference valid item IDs that appear earlier in the outline
+18. Use "None" for items with no dependencies (typically first items in each section)
+
+❌ WRONG FORMAT EXAMPLES (DO NOT USE):
+- "## 1. Foundation & Infrastructure"
+- "### 1.1. Technical Architecture"
+- Missing description block
+- Missing dependencies line
+
+✅ CORRECT FORMAT EXAMPLES (USE THIS):
+- "## Milestone 1: Foundation & Infrastructure"
+- "> Establishes core architecture. Required for all subsequent development."
+- "> Dependencies: None"
+- "### Epic 1.0: Technical Architecture"
+- "> Defines system design and patterns. Guides implementation decisions."
+- "> Dependencies: None"
+- "#### Story 1.0.1: Core Infrastructure"
+- "> Sets up base infrastructure components. Enables application deployment."
+- "> Dependencies: None"
+- "##### Task 1.0.1.1: Setup AWS Account"
+- "> Creates AWS account and organization. Required for cloud resources."
+- "> Dependencies: None"
+
+⚠️ The parser REQUIRES:
+1. The exact keywords "Milestone", "Epic", "Story", "Task" followed by the numbering pattern
+2. A description block starting with "> " for every item
+3. A dependencies line starting with "> Dependencies: " for every item

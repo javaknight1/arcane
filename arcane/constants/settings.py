@@ -70,5 +70,8 @@ CSV_FIELDNAMES = [
     'Benefits',
     'Prerequisites',
     'Technical Requirements',
-    'Claude Code Prompt'
+    'Claude Code Prompt',
+    'Work Type',
+    'Complexity',
+    'Tags'
 ]

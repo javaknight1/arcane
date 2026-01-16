@@ -1,23 +1,38 @@
 """Gemini LLM Client - Implementation for Google's Gemini API."""
 
 import os
+from typing import Optional
 from .base import BaseLLMClient
+
+# Default models for Gemini
+DEFAULT_GEMINI_MODEL = "gemini-1.5-pro"
+GEMINI_FLASH_MODEL = "gemini-1.5-flash"
 
 
 class GeminiLLMClient(BaseLLMClient):
     """Google Gemini LLM client."""
 
-    def __init__(self):
-        super().__init__("gemini")
+    def __init__(self, model: Optional[str] = None):
+        """Initialize Gemini client.
+
+        Args:
+            model: Optional model name (e.g., 'gemini-1.5-pro', 'gemini-1.5-flash')
+        """
+        super().__init__("gemini", model)
         self._validate_api_key("GOOGLE_API_KEY")
         self.client = self._initialize_client()
+
+    def _get_default_model(self) -> str:
+        """Get the default Gemini model."""
+        return DEFAULT_GEMINI_MODEL
 
     def _initialize_client(self):
         """Initialize the Gemini client."""
         try:
             import google.generativeai as genai
             genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-            return genai.GenerativeModel('gemini-1.5-pro')
+            model_name = self.get_model_name()
+            return genai.GenerativeModel(model_name)
         except ImportError:
             raise ImportError("google-generativeai package not installed. Run: pip install google-generativeai")
 

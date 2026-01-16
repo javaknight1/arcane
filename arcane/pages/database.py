@@ -52,6 +52,7 @@ class DatabaseCreator(BasePage):
         ]
 
         database_properties = {
+            # Core fields
             "Name": {"title": {}},
             "Type": {"select": {"options": type_options}},
             "Status": {"select": {"options": status_options}},
@@ -59,12 +60,20 @@ class DatabaseCreator(BasePage):
             "Work Type": {"select": {"options": work_type_options}},
             "Complexity": {"select": {"options": complexity_options}},
             "Duration": {"number": {"format": "number"}},
+            # Text fields - common
             "Goal/Description": {"rich_text": {}},
             "Benefits": {"rich_text": {}},
             "Prerequisites": {"rich_text": {}},
             "Technical Requirements": {"rich_text": {}},
             "Tags": {"multi_select": {"options": []}},
-            "Claude Code Prompt": {"rich_text": {}}
+            # Task-specific
+            "Claude Code Prompt": {"rich_text": {}},
+            # Story-specific
+            "User Value": {"rich_text": {}},
+            # Milestone-specific
+            "Milestone Goal": {"rich_text": {}},
+            # Epic/Milestone risks
+            "Risks": {"rich_text": {}},
         }
 
         response = self.notion.databases.create(

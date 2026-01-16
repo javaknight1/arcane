@@ -53,12 +53,20 @@ class TemplateLoader:
             # Generation templates
             'roadmap_generation': 'generation/roadmap.txt',
             'outline_generation': 'generation/outline.txt',
+            'semantic_outline_generation': 'generation/semantic_outline.txt',
 
             # Individual item templates
             'milestone_header_generation': 'individual_items/milestone.txt',
             'epic_generation_individual': 'individual_items/epic.txt',
             'story_with_tasks_generation': 'individual_items/story.txt',
             'task_generation_individual': 'individual_items/task.txt',
+
+            # Two-pass story generation templates
+            'story_description_generation': 'individual_items/story_description.txt',
+            'story_tasks_generation': 'individual_items/story_tasks.txt',
+
+            # Batch generation templates
+            'epic_tasks_batch_generation': 'individual_items/epic_tasks_batch.txt',
 
             # Legacy template names for backward compatibility
             'milestone_generation_initial': 'individual_items/milestone.txt',

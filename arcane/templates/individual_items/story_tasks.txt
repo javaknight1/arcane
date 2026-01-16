@@ -1,0 +1,131 @@
+Generate the complete task breakdown for this story.
+Use the story details from Pass 1 to ensure tasks fully satisfy acceptance criteria.
+
+=== STORY DETAILS (from Pass 1) ===
+Story ID: {story_number}
+Story Title: {story_title}
+
+Description:
+{story_description}
+
+User Value:
+{user_value}
+
+Acceptance Criteria:
+{acceptance_criteria}
+
+Technical Considerations:
+{technical_considerations}
+
+Scope Boundaries:
+{scope_boundaries}
+
+Estimated Duration: {duration_hours} hours
+
+=== SIBLING STORIES IN THIS EPIC ===
+The following stories are siblings in the same epic. Avoid duplicating their work.
+{sibling_stories}
+
+=== CASCADING CONTEXT ===
+Decisions and outputs from previously generated items. Tasks MUST be consistent with this.
+{cascading_context}
+
+=== ROADMAP OVERVIEW ===
+{roadmap_overview}
+
+=== EXPECTED TASKS ===
+The outline specifies these tasks for this story:
+{expected_tasks}
+
+=== TASK GENERATION REQUIREMENTS ===
+Generate tasks that:
+1. Collectively satisfy ALL acceptance criteria listed above
+2. Stay within the defined scope boundaries
+3. Don't duplicate work from sibling stories
+4. Include appropriate testing tasks for complex functionality
+5. Follow the technical considerations from the story
+6. Use technologies consistent with cascading context
+7. Cover all expected tasks from the outline
+
+=== OUTPUT FORMAT ===
+For EACH task, use this exact format:
+
+###TASK_START### {task_id}
+:::TASK_TITLE:::
+[Clear, action-oriented title that describes what this task accomplishes]
+
+:::TASK_GOAL:::
+[2-3 sentences describing what this specific task accomplishes and why it matters for the story. Be specific about the deliverable.]
+
+:::TASK_SATISFIES_AC:::
+[List which acceptance criteria this task helps satisfy. Use the AC numbers from the story.]
+- AC1: [Brief explanation of how this task contributes]
+- AC3: [Brief explanation of how this task contributes]
+
+:::TASK_CLAUDE_CODE_PROMPT:::
+[Detailed implementation instructions that could be given to an AI coding assistant. Include:
+- Specific files to create or modify (with paths)
+- Code structure and patterns to follow
+- Key functions/classes to implement
+- Testing requirements (unit tests, integration tests)
+- Edge cases to handle
+- Integration points with other tasks
+- Error handling requirements
+- Any configuration or environment setup needed]
+
+:::TASK_TECHNICAL_REQUIREMENTS:::
+[Specific technical requirements for this task]
+- Requirement 1: [Detail]
+- Requirement 2: [Detail]
+- Requirement 3: [Detail]
+
+:::TASK_PREREQUISITES:::
+[List task IDs that must be completed before this task, or "None"]
+- Task X.X.X.X: [Why it's needed]
+
+:::TASK_WORK_TYPE:::
+[Choose exactly ONE: implementation | design | research | testing | documentation | configuration | deployment]
+
+:::TASK_COMPLEXITY:::
+[Choose exactly ONE: simple | moderate | complex]
+- simple: <2 hours, straightforward, minimal dependencies
+- moderate: 2-8 hours, some complexity, few dependencies
+- complex: >8 hours, significant complexity, multiple dependencies
+
+:::TASK_DURATION_HOURS:::
+[Number only - estimated hours to complete this task]
+
+:::TASK_PRIORITY:::
+[Choose exactly ONE: Critical | High | Medium | Low]
+
+:::TASK_TAGS:::
+[Comma-separated tags relevant to this task]
+
+###TASK_END###
+
+[Generate a ###TASK_START### to ###TASK_END### block for EVERY expected task listed above]
+
+=== VERIFICATION CHECKLIST ===
+Before finishing, verify:
+- [ ] Every acceptance criterion (AC1-AC6) is covered by at least one task
+- [ ] Tasks don't overlap with or duplicate sibling stories
+- [ ] Total task hours approximately match story duration ({duration_hours} hours)
+- [ ] All expected tasks from the outline are included
+- [ ] Testing tasks are included for user-facing functionality
+- [ ] Claude Code prompts are detailed enough to implement
+- [ ] Prerequisites form a valid dependency chain (no circular deps)
+- [ ] Technical requirements are consistent with cascading context
+
+=== AC COVERAGE SUMMARY ===
+After generating all tasks, provide this summary:
+
+:::AC_COVERAGE:::
+- AC1: Covered by Task(s) [X.X.X.X, X.X.X.X]
+- AC2: Covered by Task(s) [X.X.X.X]
+- AC3: Covered by Task(s) [X.X.X.X, X.X.X.X]
+- AC4: Covered by Task(s) [X.X.X.X]
+- AC5: Covered by Task(s) [X.X.X.X]
+- AC6: Covered by Task(s) [X.X.X.X]
+
+:::UNCOVERED_AC:::
+[List any acceptance criteria NOT covered by tasks, or "None - all AC covered"]

@@ -1,0 +1,109 @@
+Generate ALL tasks for ALL stories in this epic in a single response.
+This is a batch generation for efficiency - generate complete task breakdowns for every story.
+
+=== EPIC CONTEXT ===
+Epic ID: {epic_id}
+Epic Title: {epic_title}
+Epic Description: {epic_description}
+
+=== CASCADING CONTEXT ===
+Decisions and outputs from previously generated items. All tasks MUST be consistent with this.
+{cascading_context}
+
+=== ROADMAP OVERVIEW ===
+{roadmap_overview}
+
+=== STORIES IN THIS EPIC ===
+Generate tasks for EACH of the following stories:
+
+{stories_with_details}
+
+=== BATCH OUTPUT FORMAT ===
+For EACH story, generate its complete task breakdown using this structure:
+
+###STORY_TASKS_START### [story_id like 1.0.1]
+
+For each task in this story:
+
+###TASK_START### [task_id like 1.0.1.1]
+:::TASK_TITLE:::
+[Clear, action-oriented title describing what this task accomplishes]
+
+:::TASK_GOAL:::
+[2-3 sentences describing what this task accomplishes and why it matters. Be specific about the deliverable.]
+
+:::TASK_SATISFIES_AC:::
+[List which acceptance criteria this task helps satisfy, using AC numbers from the story]
+- AC1: [Brief explanation of how this task contributes]
+- AC2: [Brief explanation of how this task contributes]
+
+:::TASK_CLAUDE_CODE_PROMPT:::
+[Detailed implementation instructions for an AI coding assistant. Include:
+- Specific files to create or modify (with paths)
+- Code structure and patterns to follow
+- Key functions/classes to implement
+- Testing requirements (unit tests, integration tests)
+- Edge cases to handle
+- Integration points with other tasks
+- Error handling requirements
+- Any configuration or environment setup needed]
+
+:::TASK_TECHNICAL_REQUIREMENTS:::
+[Specific technical requirements for this task]
+- Requirement 1: [Detail]
+- Requirement 2: [Detail]
+
+:::TASK_PREREQUISITES:::
+[List task IDs that must be completed before this task, or "None"]
+- Task X.X.X.X: [Why it's needed]
+
+:::TASK_WORK_TYPE:::
+[Choose exactly ONE: implementation | design | research | testing | documentation | configuration | deployment]
+
+:::TASK_COMPLEXITY:::
+[Choose exactly ONE: simple | moderate | complex]
+
+:::TASK_DURATION_HOURS:::
+[Number only - estimated hours]
+
+:::TASK_PRIORITY:::
+[Choose exactly ONE: Critical | High | Medium | Low]
+
+:::TASK_TAGS:::
+[Comma-separated tags relevant to this task]
+
+###TASK_END###
+
+[Continue for all tasks in this story]
+
+:::STORY_AC_COVERAGE:::
+- AC1: Covered by Task(s) [X.X.X.X, X.X.X.X]
+- AC2: Covered by Task(s) [X.X.X.X]
+[List coverage for all ACs]
+
+###STORY_TASKS_END###
+
+[Continue with ###STORY_TASKS_START### for next story]
+
+=== BATCH GENERATION REQUIREMENTS ===
+1. Generate tasks for EVERY story listed above
+2. Ensure tasks across stories don't duplicate work
+3. Cross-story prerequisites should reference correct task IDs
+4. Technical consistency across all stories in the epic
+5. Each story's tasks must satisfy ALL its acceptance criteria
+6. Task IDs follow pattern: story_id.1, story_id.2, etc. (e.g., 1.0.1.1, 1.0.1.2)
+
+=== CROSS-STORY CONSIDERATIONS ===
+- Shared infrastructure tasks should appear in the earliest relevant story
+- Later stories can reference earlier tasks as prerequisites
+- Avoid duplicate implementations of similar functionality
+- Ensure consistent technology choices across all stories
+
+=== VERIFICATION ===
+Before finishing, verify:
+- [ ] Every story has at least one task
+- [ ] Every story's acceptance criteria are covered
+- [ ] No duplicate work across stories
+- [ ] Prerequisites form valid dependency chains (no circular deps)
+- [ ] Task numbering is sequential within each story
+- [ ] All Claude Code prompts are detailed enough to implement

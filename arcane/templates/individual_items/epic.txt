@@ -1,49 +1,95 @@
-Generate COMPLETE detailed content for Epic {epic_number} ONLY.
+Generate detailed content for Epic {epic_number}: {epic_title}
 
-PROJECT CONTEXT:
-{project_context}
+=== PROJECT CONTEXT ===
+Project: {project_context}
+Milestone: {milestone_context}
 
-ROADMAP CONTEXT:
-{roadmap_context}
+=== CASCADING CONTEXT ===
+The following context shows decisions and outputs from previously generated items.
+Your generation MUST be consistent with this context.
+{cascading_context}
 
-MILESTONE CONTEXT:
-{milestone_context}
+=== ROADMAP OVERVIEW ===
+{roadmap_overview}
 
-EPIC TO DETAIL:
-Epic {epic_number}: {epic_title}
+=== CONSISTENCY REQUIREMENTS ===
+Based on the above context:
+- Maintain consistency with decisions listed in cascading context
+- Reference and build upon work from parent milestone
+- Avoid contradicting or duplicating sibling epics
+- Ensure technical choices align with earlier decisions
 
-EXPECTED STORIES IN THIS EPIC:
+=== EPIC REQUIREMENTS ===
+This epic represents a major feature area or technical component.
+It should have clear goals, benefits, and technical requirements.
+Stories listed below will be generated separately.
+
+=== EXPECTED STORIES IN THIS EPIC ===
 {expected_stories}
 
-CRITICAL INSTRUCTIONS:
-1. Generate ONLY this epic's content - NO story or task details
-2. The stories listed above will be generated separately
-3. Focus on epic-level planning and requirements
-4. Use the roadmap context to understand how this epic relates to other milestones and epics
-5. Use the exact format below
-6. Do NOT include story/task content - just reference them
+=== REQUIRED OUTPUT FORMAT ===
+Provide ALL fields using EXACT markers below. Do not skip any section.
 
-FORMAT REQUIREMENTS:
-### Epic {epic_number}: {epic_title}
+:::EPIC_DESCRIPTION:::
+[3-5 sentences describing what this epic encompasses and why it's important. Explain its purpose within the milestone and how it contributes to project goals.]
 
-**Duration:** [X hours total for entire epic]
-**Priority:** [Critical/High/Medium]
+:::EPIC_GOALS:::
+[List 3-5 specific goals this epic will achieve]
+- Goal 1: [Specific, measurable goal]
+- Goal 2: [Specific, measurable goal]
+- Goal 3: [Specific, measurable goal]
 
-#### **What it is and why we need it:**
-[Detailed explanation of this epic's purpose and how it fits into the milestone]
+:::BENEFITS:::
+[List 4-6 specific benefits of completing this epic]
+- Business benefit 1
+- Technical benefit 1
+- User benefit 1
+- Operational benefit 1
 
-#### **Benefits:**
-- [Specific business benefit of this epic]
-- [Specific technical benefit of this epic]
-- [Specific user benefit of this epic]
+:::TECHNICAL_REQUIREMENTS:::
+[List key technical specifications and architecture decisions]
+- Technical requirement 1
+- Technology/framework choice
+- Integration requirement
+- Infrastructure need
 
-#### **Prerequisites:**
-- [What must be completed before starting this epic]
-- [Dependencies and requirements]
+:::PREREQUISITES:::
+[List dependencies on other epics, milestones, or external factors. Use IDs when possible. Write "None" if no prerequisites.]
+- Epic X.X: [Name] - [Why it's needed]
+- Milestone X: [Name] - [Why it's needed]
 
-#### **Technical Requirements:**
-- [Key technical specifications for this epic]
-- [Architecture or technology decisions needed]
-- [Integration requirements]
+:::SUCCESS_METRICS:::
+[List 3-5 measurable criteria for epic completion]
+- Metric 1: [Quantifiable success indicator]
+- Metric 2: [Quantifiable success indicator]
+- Metric 3: [Quantifiable success indicator]
 
-Generate ONLY this epic header content - stories will be generated separately.
+:::RISKS_AND_MITIGATIONS:::
+[List potential risks and how they will be addressed]
+- Risk 1: [Description] → Mitigation: [Strategy]
+- Risk 2: [Description] → Mitigation: [Strategy]
+
+:::WORK_TYPE:::
+[Choose exactly ONE: implementation | design | research | testing | documentation | configuration | deployment]
+
+:::COMPLEXITY:::
+[Choose exactly ONE: simple | moderate | complex]
+
+:::PRIORITY:::
+[Choose exactly ONE: Critical | High | Medium | Low]
+
+:::DURATION_HOURS:::
+[Total estimated hours for the entire epic including all stories. Just the number.]
+
+:::TAGS:::
+[Comma-separated tags: scope tags (core-scope, extended-scope), technical tags (frontend, backend, etc.), functional tags (authentication, payments, etc.)]
+
+=== QUALITY CHECKLIST ===
+Before submitting, verify:
+1. All epic fields are filled with meaningful content
+2. Goals are specific and achievable
+3. Technical requirements are clear
+4. Duration estimate accounts for all expected stories
+5. No placeholder or truncated content
+
+NOTE: Do NOT include story or task details - those will be generated separately.

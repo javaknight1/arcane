@@ -3,19 +3,33 @@
 import os
 import time
 import random
+from typing import Optional
 from .base import BaseLLMClient
 from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+# Default models for OpenAI
+DEFAULT_OPENAI_MODEL = "gpt-4o"
+OPENAI_MINI_MODEL = "gpt-4o-mini"
+
 
 class OpenAILLMClient(BaseLLMClient):
     """OpenAI (ChatGPT) LLM client."""
 
-    def __init__(self):
-        super().__init__("openai")
+    def __init__(self, model: Optional[str] = None):
+        """Initialize OpenAI client.
+
+        Args:
+            model: Optional model name (e.g., 'gpt-4o', 'gpt-4o-mini')
+        """
+        super().__init__("openai", model)
         self._validate_api_key("OPENAI_API_KEY")
         self.client = self._initialize_client()
+
+    def _get_default_model(self) -> str:
+        """Get the default OpenAI model."""
+        return DEFAULT_OPENAI_MODEL
 
     def _initialize_client(self):
         """Initialize the OpenAI client."""
@@ -33,8 +47,9 @@ class OpenAILLMClient(BaseLLMClient):
 
         for attempt in range(max_retries + 1):
             try:
+                model_name = self.get_model_name()
                 response = self.client.chat.completions.create(
-                    model="gpt-4-turbo-preview",
+                    model=model_name,
                     messages=[
                         {"role": "system", "content": "You are a senior technical product manager and architect."},
                         {"role": "user", "content": prompt}

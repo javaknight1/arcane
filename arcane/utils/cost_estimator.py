@@ -128,17 +128,23 @@ class LLMCostEstimator:
             'milestone': {
                 'input_base': 800,     # Template + context
                 'output_avg': 400,     # Just header content
-                'description': 'Milestone header only'
+                'description': 'Milestone header only',
+                'api_calls': 1
             },
             'epic': {
                 'input_base': 1200,    # Template + context + milestone context
                 'output_avg': 800,     # Epic details
-                'description': 'Epic details only'
+                'description': 'Epic details only',
+                'api_calls': 1
             },
             'story': {
-                'input_base': 1500,    # Template + context + epic context + task list
-                'output_avg': 1200,    # Story + all its tasks
-                'description': 'Story with all tasks'
+                'input_base': 2000,    # Combined: Pass 1 + Pass 2 prompts
+                'output_avg': 1800,    # Combined: description + tasks
+                'description': 'Two-pass: description + tasks',
+                'api_calls': 2,        # Two API calls per story
+                # Breakdown for reference:
+                # Pass 1 (description): ~1000 input, ~600 output
+                # Pass 2 (tasks): ~1500 input (includes story context), ~1200 output
             }
         }
 
@@ -174,12 +180,15 @@ class LLMCostEstimator:
             cost_per_item = self.estimate_cost(provider, " " * (input_tokens * 4), output_tokens)
             item_total_cost = cost_per_item.total_cost * count
 
+            api_calls_per_item = est.get('api_calls', 1)
+
             estimates.append({
                 'item_type': item_type,
                 'count': count,
                 'cost_per_item': cost_per_item.total_cost,
                 'total_cost': item_total_cost,
                 'description': est['description'],
+                'api_calls_per_item': api_calls_per_item,
                 'tokens_per_item': {
                     'input': input_tokens,
                     'output': output_tokens
@@ -187,7 +196,7 @@ class LLMCostEstimator:
             })
 
             total_cost += item_total_cost
-            total_api_calls += count
+            total_api_calls += count * api_calls_per_item
 
         # Add task generation note (tasks are included in story generation)
         if item_counts.get('tasks', 0) > 0:
@@ -225,8 +234,10 @@ class LLMCostEstimator:
         lines.append("Cost Breakdown by Generation:")
         for item in cost_data['item_estimates']:
             if item['cost_per_item'] > 0:
+                api_calls = item.get('api_calls_per_item', 1)
+                call_suffix = f" ({api_calls} API calls each)" if api_calls > 1 else ""
                 lines.append(f"  • {item['count']} {item['item_type']}: "
-                           f"${item['cost_per_item']:.4f} each → ${item['total_cost']:.3f} total")
+                           f"${item['cost_per_item']:.4f} each → ${item['total_cost']:.3f} total{call_suffix}")
                 lines.append(f"    ({item['description']})")
             else:
                 lines.append(f"  • {item['count']} {item['item_type']}: ${item['total_cost']:.3f}")
@@ -235,6 +246,7 @@ class LLMCostEstimator:
         lines.append("")
         lines.append(f"💰 Total Estimated Cost: ${cost_data['total_cost']:.3f}")
         lines.append("")
-        lines.append("ℹ️  Note: Tasks are generated together with stories to maintain coherence")
+        lines.append("ℹ️  Note: Stories use two-pass generation (Pass 1: description/AC, Pass 2: tasks)")
+        lines.append("         Tasks are generated with full story context for better AC coverage")
 
         return "\n".join(lines)

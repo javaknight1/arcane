@@ -5,6 +5,7 @@ from typing import Dict, List, Any, Optional
 from notion_client import Client
 
 from arcane.items import Roadmap
+from arcane.engines.export.notion_field_mapper import NotionFieldMapper
 from arcane.pages import (
     AnalyticsHubPage,
     BurndownPage,
@@ -35,8 +36,9 @@ class NotionImporter:
         self.database_id = None
         self.page_ids = {}
         self.page_mapping = {}
+        self.field_mapper = NotionFieldMapper()
 
-    def import_roadmap(self, roadmap: Roadmap) -> Dict[str, str]:
+    def import_roadmap(self, roadmap: Roadmap) -> Dict[str, Any]:
         """Import a complete roadmap into Notion."""
         print("🚀 Starting Notion import...")
 
@@ -54,6 +56,9 @@ class NotionImporter:
 
         # Print summary
         self._print_import_summary(container_page_id)
+
+        # Print field mapping reports
+        self._print_field_mapping_reports()
 
         return {
             'container_page_id': container_page_id,
@@ -139,81 +144,38 @@ class NotionImporter:
         for i, item in enumerate(items, 1):
             print(f"Creating page {i}/{total_items}: {item.name}")
 
-            properties = self._build_item_properties(item)
+            # Use field mapper for properties
+            properties = self.field_mapper.item_to_notion_properties(item)
+
+            # Build page content blocks
+            children_blocks = self.field_mapper.build_page_content_blocks(item)
+
             item_icon = icon_mapping.get(item.item_type, "📄")
 
-            response = self.notion.pages.create(
-                parent={"database_id": self.database_id},
-                icon={"type": "emoji", "emoji": item_icon},
-                properties=properties
-            )
+            try:
+                if children_blocks:
+                    response = self.notion.pages.create(
+                        parent={"database_id": self.database_id},
+                        icon={"type": "emoji", "emoji": item_icon},
+                        properties=properties,
+                        children=children_blocks
+                    )
+                else:
+                    response = self.notion.pages.create(
+                        parent={"database_id": self.database_id},
+                        icon={"type": "emoji", "emoji": item_icon},
+                        properties=properties
+                    )
 
-            self.page_mapping[item.name] = response["id"]
-            print(f"✅ Created: {item.name}")
+                self.page_mapping[item.name] = response["id"]
+                print(f"✅ Created: {item.name}")
+            except Exception as e:
+                print(f"❌ Failed to create {item.name}: {e}")
+                # Log the properties for debugging
+                print(f"   Properties: {list(properties.keys())}")
 
         # Set up parent relationships
         self._setup_parent_relationships(items)
-
-    def _build_item_properties(self, item: Any) -> Dict[str, Any]:
-        """Build properties dictionary for a database page."""
-        # Truncate title to fit Notion's 2000 char limit, but preserve full content elsewhere
-        truncated_name = self._truncate_text(item.name, 1990)  # Leave room for "..."
-
-        properties = {
-            "Name": {"title": [{"type": "text", "text": {"content": truncated_name}}]},
-            "Type": {"select": {"name": item.item_type}},
-            "Status": {"select": {"name": item.status}},
-            "Priority": {"select": {"name": item.priority}}
-        }
-
-        # Add Work Type if present
-        if hasattr(item, 'work_type') and item.work_type:
-            # Capitalize first letter to match the select options
-            work_type_display = item.work_type.capitalize()
-            properties["Work Type"] = {"select": {"name": work_type_display}}
-
-        # Add Complexity if present
-        if hasattr(item, 'complexity') and item.complexity:
-            # Capitalize first letter to match the select options
-            complexity_display = item.complexity.capitalize()
-            properties["Complexity"] = {"select": {"name": complexity_display}}
-
-        # Add Tags if present
-        if hasattr(item, 'tags') and item.tags:
-            # Create multi_select options for tags
-            tag_options = []
-            for tag in item.tags:
-                if tag.strip():  # Only add non-empty tags
-                    tag_options.append({"name": tag.strip()})
-            if tag_options:
-                properties["Tags"] = {"multi_select": tag_options}
-
-        # Add duration if present
-        if item.duration:
-            properties["Duration"] = {"number": item.duration}
-
-        # Add text fields
-        if item.description:
-            content = item.description[:2000] if len(item.description) > 2000 else item.description
-            properties["Goal/Description"] = {"rich_text": [{"type": "text", "text": {"content": content}}]}
-
-        if item.benefits:
-            content = item.benefits[:2000] if len(item.benefits) > 2000 else item.benefits
-            properties["Benefits"] = {"rich_text": [{"type": "text", "text": {"content": content}}]}
-
-        if item.prerequisites:
-            content = item.prerequisites[:2000] if len(item.prerequisites) > 2000 else item.prerequisites
-            properties["Prerequisites"] = {"rich_text": [{"type": "text", "text": {"content": content}}]}
-
-        if item.technical_requirements:
-            content = item.technical_requirements[:2000] if len(item.technical_requirements) > 2000 else item.technical_requirements
-            properties["Technical Requirements"] = {"rich_text": [{"type": "text", "text": {"content": content}}]}
-
-        if item.claude_code_prompt:
-            content = item.claude_code_prompt[:2000] if len(item.claude_code_prompt) > 2000 else item.claude_code_prompt
-            properties["Claude Code Prompt"] = {"rich_text": [{"type": "text", "text": {"content": content}}]}
-
-        return properties
 
     def _setup_parent_relationships(self, items: List[Any]) -> None:
         """Set up parent-child relationships between database pages."""
@@ -325,6 +287,19 @@ class NotionImporter:
         print("  2. Customize database views")
         print("  3. Start managing your roadmap!")
         print("=" * 60)
+
+    def _print_field_mapping_reports(self) -> None:
+        """Print field mapping and truncation reports."""
+        missing_report = self.field_mapper.get_missing_fields_report()
+        truncation_report = self.field_mapper.get_truncation_report()
+
+        if "All fields mapped successfully" not in missing_report:
+            print("\n⚠️  Field Mapping Issues:")
+            print(missing_report)
+
+        if "No fields truncated" not in truncation_report:
+            print("\n📝 Truncation Notes:")
+            print(truncation_report)
 
     def _truncate_text(self, text: str, max_length: int) -> str:
         """Truncate text to fit Notion's character limits."""
