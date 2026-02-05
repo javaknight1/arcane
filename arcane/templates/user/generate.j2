@@ -1,0 +1,47 @@
+## Project Context
+Project: {{ project.project_name }}
+Vision: {{ project.vision }}
+Problem: {{ project.problem_statement }}
+Target Users: {{ project.target_users | join(", ") }}
+Timeline: {{ project.timeline }}
+Team: {{ project.team_size }} developer(s), {{ project.developer_experience }} level
+Budget: {{ project.budget_constraints }}
+{% if project.tech_stack %}
+Tech Stack: {{ project.tech_stack | join(", ") }}
+{% endif %}
+{% if project.infrastructure_preferences != "No preference" %}
+Infrastructure: {{ project.infrastructure_preferences }}
+{% endif %}
+Must-Have Features: {{ project.must_have_features | join(", ") }}
+{% if project.nice_to_have_features %}
+Nice-to-Have: {{ project.nice_to_have_features | join(", ") }}
+{% endif %}
+{% if project.out_of_scope %}
+Out of Scope: {{ project.out_of_scope | join(", ") }}
+{% endif %}
+{% if project.similar_products %}
+Similar Products: {{ project.similar_products | join(", ") }}
+{% endif %}
+{% if project.notes %}
+Additional Notes: {{ project.notes }}
+{% endif %}
+
+{% if parent %}
+## Parent Context
+This item belongs to:
+{% for level, data in parent.items() %}
+- {{ level | capitalize }}: {{ data.name }} — {{ data.goal | default(data.description, true) }}
+{% endfor %}
+{% endif %}
+
+{% if siblings %}
+## Already Generated (Do NOT Duplicate)
+{% for sibling in siblings %}
+- {{ sibling }}
+{% endfor %}
+{% endif %}
+
+{% if guidance %}
+## Additional Guidance
+{{ guidance }}
+{% endif %}
