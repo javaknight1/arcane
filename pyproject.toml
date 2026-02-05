@@ -1,0 +1,130 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "arcane-roadmap"
+version = "0.1.0"
+description = "AI-powered roadmap generator - transform app ideas into detailed, importable project plans"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "Rob", email = "rob@example.com" }
+]
+keywords = [
+    "roadmap",
+    "project-management",
+    "ai",
+    "claude",
+    "jira",
+    "linear",
+    "notion",
+    "cli"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Office/Business :: Scheduling",
+]
+dependencies = [
+    "typer[all]>=0.9.0",
+    "rich>=13.0.0",
+    "anthropic>=0.40.0",
+    "instructor>=1.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "httpx>=0.25.0",
+    "pyyaml>=6.0.0",
+    "jinja2>=3.1.0",
+    "python-slugify>=8.0.0",
+    "python-ulid>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "types-PyYAML>=6.0.0",
+    "pre-commit>=3.0.0",
+]
+
+[project.scripts]
+arcane = "arcane.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/arcane"
+Documentation = "https://github.com/yourusername/arcane#readme"
+Repository = "https://github.com/yourusername/arcane"
+Issues = "https://github.com/yourusername/arcane/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["arcane"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["arcane", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["arcane"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "instructor.*",
+    "slugify.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --cov=arcane --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["arcane"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
