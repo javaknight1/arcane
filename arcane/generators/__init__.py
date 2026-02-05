@@ -17,6 +17,7 @@ from .milestone import MilestoneGenerator
 from .epic import EpicGenerator
 from .story import StoryGenerator
 from .task import TaskGenerator, TaskList
+from .orchestrator import RoadmapOrchestrator
 
 __all__ = [
     "BaseGenerator",
@@ -32,4 +33,5 @@ __all__ = [
     "StoryGenerator",
     "TaskGenerator",
     "TaskList",
+    "RoadmapOrchestrator",
 ]
