@@ -1,7 +1,8 @@
 """Discovery questions for gathering project context.
 
-This module provides the Question interface and concrete question
-implementations used to gather information before roadmap generation.
+This module provides the Question interface, registry, conductor, and
+concrete question implementations used to gather information before
+roadmap generation.
 """
 
 from .base import Question, QuestionType
@@ -29,11 +30,16 @@ from .requirements import (
     SimilarProductsQuestion,
     NotesQuestion,
 )
+from .registry import QuestionRegistry
+from .conductor import QuestionConductor
 
 __all__ = [
     # Base
     "Question",
     "QuestionType",
+    # Registry and Conductor
+    "QuestionRegistry",
+    "QuestionConductor",
     # Basic
     "ProjectNameQuestion",
     "VisionQuestion",
