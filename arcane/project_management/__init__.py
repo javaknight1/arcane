@@ -2,16 +2,22 @@
 
 Provides exporters for various PM tools:
 - CSV: Universal format for any tool that accepts CSV import
-- Linear: (Coming soon) Native GraphQL integration
-- Jira: (Coming soon) Native REST API integration
-- Notion: (Coming soon) Native API integration
+- Linear: Native GraphQL integration (stub - coming Sprint 9)
+- Jira: Native REST API integration (stub - coming Sprint 9)
+- Notion: Native API integration (stub - coming Sprint 9)
 """
 
 from .base import BasePMClient, ExportResult
 from .csv import CSVClient
+from .jira import JiraClient
+from .linear import LinearClient
+from .notion import NotionClient
 
 __all__ = [
     "BasePMClient",
     "ExportResult",
     "CSVClient",
+    "JiraClient",
+    "LinearClient",
+    "NotionClient",
 ]
