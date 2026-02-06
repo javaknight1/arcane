@@ -20,6 +20,7 @@ from arcane.clients import create_client
 from arcane.config import Settings
 from arcane.generators import RoadmapOrchestrator
 from arcane.items import Roadmap
+from arcane.project_management import CSVClient
 from arcane.questions import QuestionConductor
 from arcane.storage import StorageManager
 
@@ -127,14 +128,31 @@ async def _export(path: str, to: str, workspace: str | None) -> None:
     to_lower = to.lower()
 
     if to_lower == "csv":
-        # CSV export will be implemented in Step 14
-        console.print("[dim]CSV export coming soon (Step 14)...[/dim]")
+        # Determine output path - put CSV next to roadmap.json
+        if path_obj.is_file():
+            output_path = path_obj.parent / "roadmap.csv"
+        else:
+            output_path = path_obj / "roadmap.csv"
+
+        console.print(f"[dim]Exporting to CSV...[/dim]")
+        client = CSVClient()
+        result = await client.export(roadmap, output_path=str(output_path))
+
+        if result.success:
+            console.print(f"[green]✓[/green] Exported {result.items_created} items to CSV")
+            console.print(f"[bold]📁 Saved to:[/bold] {result.url}")
+        else:
+            console.print(f"[red]Error:[/red] Export failed")
+            for error in result.errors:
+                console.print(f"  {error}")
+            raise typer.Exit(1)
+
     elif to_lower == "linear":
-        console.print("[dim]Linear export coming soon (Step 15)...[/dim]")
+        console.print("[dim]Linear export coming soon...[/dim]")
     elif to_lower == "jira":
-        console.print("[dim]Jira export coming soon (Step 15)...[/dim]")
+        console.print("[dim]Jira export coming soon...[/dim]")
     elif to_lower == "notion":
-        console.print("[dim]Notion export coming soon (Step 15)...[/dim]")
+        console.print("[dim]Notion export coming soon...[/dim]")
     else:
         console.print(
             f"[red]Error:[/red] Unknown export target: {to}\n"
