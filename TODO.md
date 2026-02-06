@@ -3,7 +3,7 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-06
-**Current Task:** T19 (README)
+**Current Task:** T20 (Smoke Test Script)
 **Current Sprint:** S6 (Documentation & Testing)
 
 ---
@@ -32,7 +32,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T16~~  | ~~S5~~ | ~~P1~~   | ~~Export~~  | ~~PM Client Stubs~~          | ~~Stub implementations for Linear, Jira, Notion~~ ✓        |
 | ~~T17~~  | ~~S5~~ | ~~P0~~   | ~~Integration~~ | ~~Integration Wiring~~   | ~~Wire all components and verify CLI works~~ ✓             |
 | ~~T18~~  | ~~S5~~ | ~~P0~~   | ~~Testing~~ | ~~E2E Integration Test~~     | ~~End-to-end tests with mock AI client~~ ✓                 |
-| T19      | S6     | P1       | Docs        | README                       | User-facing documentation and quick start                  |
+| ~~T19~~  | ~~S6~~ | ~~P1~~   | ~~Docs~~    | ~~README~~                   | ~~User-facing documentation and quick start~~ ✓            |
 | T20      | S6     | P0       | Testing     | Smoke Test Script            | Real API testing script for prompt validation              |
 | T21      | S6     | P1       | Templates   | Prompt Tuning                | Refine prompts based on smoke test results                 |
 | T22      | S6     | P2       | Maintenance | Repository Cleanup           | Remove legacy files from pre-refactor                      |
@@ -84,7 +84,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 
 ### Sprint 6 - Documentation & Testing (CURRENT)
 
-- [ ] **T19** - README and user documentation
+- [x] **T19** - README and user documentation ✓
 - [ ] **T20** - Real API smoke test script
 - [ ] **T21** - Prompt tuning based on smoke test results
 - [ ] **T22** - Repository cleanup of legacy files
