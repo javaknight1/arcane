@@ -3,7 +3,7 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-06
-**Current Task:** T15 (CSV PM Client)
+**Current Task:** T18 (E2E Integration Test)
 **Current Sprint:** S5 (Export & Polish)
 
 ---
@@ -28,9 +28,9 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T12~~  | ~~S4~~ | ~~P0~~   | ~~Storage~~ | ~~Storage Manager~~          | ~~Save/load/resume detection for roadmaps~~ ✓              |
 | ~~T13~~  | ~~S4~~ | ~~P0~~   | ~~Generators~~ | ~~Orchestrator~~          | ~~Roadmap orchestrator for hierarchical generation~~ ✓     |
 | ~~T14~~  | ~~S4~~ | ~~P0~~   | ~~CLI~~     | ~~CLI Commands~~             | ~~Command-line interface with all commands~~ ✓             |
-| T15      | S5     | P0       | Export      | CSV PM Client                | CSV export client for universal PM import                  |
-| T16      | S5     | P1       | Export      | PM Client Stubs              | Stub implementations for Linear, Jira, Notion              |
-| T17      | S5     | P0       | Integration | Integration Wiring           | Wire all components and verify CLI works                   |
+| ~~T15~~  | ~~S5~~ | ~~P0~~   | ~~Export~~  | ~~CSV PM Client~~            | ~~CSV export client for universal PM import~~ ✓            |
+| ~~T16~~  | ~~S5~~ | ~~P1~~   | ~~Export~~  | ~~PM Client Stubs~~          | ~~Stub implementations for Linear, Jira, Notion~~ ✓        |
+| ~~T17~~  | ~~S5~~ | ~~P0~~   | ~~Integration~~ | ~~Integration Wiring~~   | ~~Wire all components and verify CLI works~~ ✓             |
 | T18      | S5     | P0       | Testing     | E2E Integration Test         | End-to-end tests with mock AI client                       |
 | T19      | S6     | P1       | Docs        | README                       | User-facing documentation and quick start                  |
 | T20      | S6     | P0       | Testing     | Smoke Test Script            | Real API testing script for prompt validation              |
@@ -77,9 +77,9 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 
 ### Sprint 5 - Export & Polish (CURRENT)
 
-- [ ] **T15** - CSV export client for universal PM import
-- [ ] **T16** - PM client stubs for Linear, Jira, Notion
-- [ ] **T17** - Wire all components and verify CLI works
+- [x] **T15** - CSV export client for universal PM import ✓
+- [x] **T16** - PM client stubs for Linear, Jira, Notion ✓
+- [x] **T17** - Wire all components and verify CLI works ✓
 - [ ] **T18** - End-to-end integration tests with mock client
 
 ### Sprint 6 - Documentation & Testing
