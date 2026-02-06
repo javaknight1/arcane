@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_prefix="ARCANE_",
+        extra="ignore",  # Ignore extra fields from env that aren't in the model
     )
 
     # Required for generation
