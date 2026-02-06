@@ -536,6 +536,35 @@ git status --porcelain
 
 ---
 
+## Future Improvements
+
+Items identified during development that should be addressed. Organized by priority.
+
+### High Priority (Before MVP Complete)
+
+| Item | Description | Status |
+|------|-------------|--------|
+| Interactive Review Mode | Pause between milestones/epics/stories for user review and approval | ⬜ TODO |
+| Cost Visibility | Show estimated token usage/cost before starting generation | ⬜ TODO |
+
+### Medium Priority (Post-MVP)
+
+| Item | Description | Status |
+|------|-------------|--------|
+| Resume Functionality | Actually continue generation from where it stopped (not just detect) | ⬜ TODO |
+| Rate Limiting | Add backoff/retry logic for Anthropic API rate limits | ⬜ TODO |
+| Question Back-Navigation | Allow users to go back and edit previous answers | ⬜ TODO |
+
+### Lower Priority (Future Releases)
+
+| Item | Description | Status |
+|------|-------------|--------|
+| Linear Integration | Native export to Linear (GraphQL API) | ⬜ TODO |
+| Jira Integration | Native export to Jira Cloud (REST API) | ⬜ TODO |
+| Notion Integration | Native export to Notion (API) | ⬜ TODO |
+
+---
+
 ## Quick Reference
 
 ### Running Tests
