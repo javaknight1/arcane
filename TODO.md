@@ -8,56 +8,103 @@ This file tracks the complete build of Arcane following the step-by-step archite
 
 ---
 
-## Sprints Overview
+## Task Index
 
-| Sprint | Name | Status | Tasks |
-|--------|------|--------|-------|
-| S1 | Core Foundation | ✅ DONE | T01-T04 |
-| S2 | Discovery System | ✅ DONE | T05-T07 |
-| S3 | AI Integration | ✅ DONE | T08-T11 |
-| S4 | Storage & Orchestration | ✅ DONE | T12-T14 |
-| S5 | Export & Polish | 🔄 IN PROGRESS | T15-T18 |
-| S6 | Documentation & Testing | ⬜ PLANNED | T19-T22 |
-| S7 | UX Improvements | ⬜ PLANNED | T23-T24 |
-| S8 | Post-MVP Features | ⬜ BACKLOG | T25-T27 |
-| S9 | Native Integrations | ⬜ BACKLOG | T28-T30 |
+Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a task.
+
+| ID       | Sprint | Priority | Type        | Title                        | Description                                                |
+| -------- | ------ | -------- | ----------- | ---------------------------- | ---------------------------------------------------------- |
+| ~~T01~~  | ~~S1~~ | ~~P0~~   | ~~Setup~~   | ~~Bootstrap~~                | ~~Directory structure for new architecture~~ ✓             |
+| ~~T02~~  | ~~S1~~ | ~~P0~~   | ~~Config~~  | ~~Configuration~~            | ~~Settings management with pydantic-settings~~ ✓           |
+| ~~T03~~  | ~~S1~~ | ~~P0~~   | ~~Utils~~   | ~~Utilities~~                | ~~ID generation and Rich console utilities~~ ✓             |
+| ~~T04~~  | ~~S1~~ | ~~P0~~   | ~~Models~~  | ~~Item Models~~              | ~~Pydantic models with hierarchy roll-ups~~ ✓              |
+| ~~T05~~  | ~~S2~~ | ~~P0~~   | ~~Questions~~ | ~~Question Interface~~     | ~~Base question interface and basic questions~~ ✓          |
+| ~~T06~~  | ~~S2~~ | ~~P0~~   | ~~Questions~~ | ~~Remaining Questions~~    | ~~Constraint, technical, and requirement questions~~ ✓     |
+| ~~T07~~  | ~~S2~~ | ~~P0~~   | ~~Questions~~ | ~~Registry & Conductor~~   | ~~Question registry and interactive conductor~~ ✓          |
+| ~~T08~~  | ~~S3~~ | ~~P0~~   | ~~Clients~~ | ~~AI Client Interface~~      | ~~BaseAIClient and Anthropic implementation~~ ✓            |
+| ~~T09~~  | ~~S3~~ | ~~P0~~   | ~~Templates~~ | ~~Template Loader~~        | ~~Jinja2 prompt templates and loader~~ ✓                   |
+| ~~T10~~  | ~~S3~~ | ~~P0~~   | ~~Generators~~ | ~~BaseGenerator~~         | ~~Base generator with retry logic and skeletons~~ ✓        |
+| ~~T11~~  | ~~S3~~ | ~~P0~~   | ~~Generators~~ | ~~Individual Generators~~ | ~~Milestone, epic, story, and task generators~~ ✓          |
+| ~~T12~~  | ~~S4~~ | ~~P0~~   | ~~Storage~~ | ~~Storage Manager~~          | ~~Save/load/resume detection for roadmaps~~ ✓              |
+| ~~T13~~  | ~~S4~~ | ~~P0~~   | ~~Generators~~ | ~~Orchestrator~~          | ~~Roadmap orchestrator for hierarchical generation~~ ✓     |
+| ~~T14~~  | ~~S4~~ | ~~P0~~   | ~~CLI~~     | ~~CLI Commands~~             | ~~Command-line interface with all commands~~ ✓             |
+| T15      | S5     | P0       | Export      | CSV PM Client                | CSV export client for universal PM import                  |
+| T16      | S5     | P1       | Export      | PM Client Stubs              | Stub implementations for Linear, Jira, Notion              |
+| T17      | S5     | P0       | Integration | Integration Wiring           | Wire all components and verify CLI works                   |
+| T18      | S5     | P0       | Testing     | E2E Integration Test         | End-to-end tests with mock AI client                       |
+| T19      | S6     | P1       | Docs        | README                       | User-facing documentation and quick start                  |
+| T20      | S6     | P0       | Testing     | Smoke Test Script            | Real API testing script for prompt validation              |
+| T21      | S6     | P1       | Templates   | Prompt Tuning                | Refine prompts based on smoke test results                 |
+| T22      | S6     | P2       | Maintenance | Repository Cleanup           | Remove legacy files from pre-refactor                      |
+| T23      | S7     | P0       | UX          | Interactive Review           | Pause between phases for user review                       |
+| T24      | S7     | P0       | UX          | Cost Visibility              | Show estimated cost before generation                      |
+| T25      | S8     | P1       | Generators  | Resume Functionality         | Continue interrupted generations                           |
+| T26      | S8     | P1       | Clients     | Rate Limiting                | Backoff/retry for API rate limits                          |
+| T27      | S8     | P1       | Questions   | Back-Navigation              | Edit previous answers in question flow                     |
+| T28      | S9     | P2       | Export      | Linear Integration           | Native export via GraphQL API                              |
+| T29      | S9     | P2       | Export      | Jira Integration             | Native export via REST API                                 |
+| T30      | S9     | P2       | Export      | Notion Integration           | Native export via Notion API                               |
 
 ---
 
-## Progress Summary
+## Sprint Roadmap
 
-| Task | Sprint | Priority | Type | Description | Status |
-|------|--------|----------|------|-------------|--------|
-| T01 | S1 | P0 | Setup | Bootstrap directory structure for new architecture | ✅ DONE |
-| T02 | S1 | P0 | Config | Settings management with pydantic-settings | ✅ DONE |
-| T03 | S1 | P0 | Utils | ID generation and Rich console utilities | ✅ DONE |
-| T04 | S1 | P0 | Models | Pydantic item models with hierarchy roll-ups | ✅ DONE |
-| T05 | S2 | P0 | Questions | Base question interface and basic questions | ✅ DONE |
-| T06 | S2 | P0 | Questions | Constraint, technical, and requirement questions | ✅ DONE |
-| T07 | S2 | P0 | Questions | Question registry and interactive conductor | ✅ DONE |
-| T08 | S3 | P0 | Clients | AI client interface and Anthropic implementation | ✅ DONE |
-| T09 | S3 | P0 | Templates | Jinja2 prompt templates and loader | ✅ DONE |
-| T10 | S3 | P0 | Generators | BaseGenerator with retry logic and skeletons | ✅ DONE |
-| T11 | S3 | P0 | Generators | Milestone, epic, story, and task generators | ✅ DONE |
-| T12 | S4 | P0 | Storage | Storage manager with save/load/resume detection | ✅ DONE |
-| T13 | S4 | P0 | Generators | Roadmap orchestrator for hierarchical generation | ✅ DONE |
-| T14 | S4 | P0 | CLI | Command-line interface with all commands | ✅ DONE |
-| T15 | S5 | P0 | Export | CSV export client for universal PM import | ⬜ TODO |
-| T16 | S5 | P1 | Export | PM client stubs for Linear, Jira, Notion | ⬜ TODO |
-| T17 | S5 | P0 | Integration | Wire all components and verify CLI works | ⬜ TODO |
-| T18 | S5 | P0 | Testing | End-to-end integration tests with mock client | ⬜ TODO |
-| T19 | S6 | P1 | Docs | README and user documentation | ⬜ TODO |
-| T20 | S6 | P0 | Testing | Real API smoke test script | ⬜ TODO |
-| T21 | S6 | P1 | Templates | Prompt tuning based on smoke test results | ⬜ TODO |
-| T22 | S6 | P2 | Maintenance | Repository cleanup of legacy files | ⬜ TODO |
-| T23 | S7 | P0 | UX | Interactive review mode between generation phases | ⬜ TODO |
-| T24 | S7 | P0 | UX | Cost visibility before starting generation | ⬜ TODO |
-| T25 | S8 | P1 | Generators | Resume functionality for interrupted generations | ⬜ TODO |
-| T26 | S8 | P1 | Clients | Rate limiting with backoff/retry logic | ⬜ TODO |
-| T27 | S8 | P1 | Questions | Back-navigation to edit previous answers | ⬜ TODO |
-| T28 | S9 | P2 | Export | Native Linear integration via GraphQL API | ⬜ TODO |
-| T29 | S9 | P2 | Export | Native Jira Cloud integration via REST API | ⬜ TODO |
-| T30 | S9 | P2 | Export | Native Notion integration via API | ⬜ TODO |
+### Sprint 1 - Core Foundation (COMPLETE)
+
+- [x] **T01** - Bootstrap directory structure ✓
+- [x] **T02** - Configuration with pydantic-settings ✓
+- [x] **T03** - ID generation and console utilities ✓
+- [x] **T04** - Pydantic item models with hierarchy roll-ups ✓
+
+### Sprint 2 - Discovery System (COMPLETE)
+
+- [x] **T05** - Question interface and basic questions ✓
+- [x] **T06** - Constraint, technical, and requirement questions ✓
+- [x] **T07** - Question registry and interactive conductor ✓
+
+### Sprint 3 - AI Integration (COMPLETE)
+
+- [x] **T08** - AI client interface and Anthropic implementation ✓
+- [x] **T09** - Jinja2 prompt templates and loader ✓
+- [x] **T10** - BaseGenerator with retry logic and skeletons ✓
+- [x] **T11** - Milestone, epic, story, and task generators ✓
+
+### Sprint 4 - Storage & Orchestration (COMPLETE)
+
+- [x] **T12** - Storage manager with save/load/resume ✓
+- [x] **T13** - Roadmap orchestrator for hierarchical generation ✓
+- [x] **T14** - CLI with new, resume, export, view, config commands ✓
+
+### Sprint 5 - Export & Polish (CURRENT)
+
+- [ ] **T15** - CSV export client for universal PM import
+- [ ] **T16** - PM client stubs for Linear, Jira, Notion
+- [ ] **T17** - Wire all components and verify CLI works
+- [ ] **T18** - End-to-end integration tests with mock client
+
+### Sprint 6 - Documentation & Testing
+
+- [ ] **T19** - README and user documentation
+- [ ] **T20** - Real API smoke test script
+- [ ] **T21** - Prompt tuning based on smoke test results
+- [ ] **T22** - Repository cleanup of legacy files
+
+### Sprint 7 - UX Improvements
+
+- [ ] **T23** - Interactive review mode between generation phases
+- [ ] **T24** - Cost visibility before starting generation
+
+### Sprint 8 - Post-MVP Features
+
+- [ ] **T25** - Resume functionality for interrupted generations
+- [ ] **T26** - Rate limiting with backoff/retry logic
+- [ ] **T27** - Back-navigation to edit previous answers
+
+### Sprint 9 - Native Integrations
+
+- [ ] **T28** - Native Linear integration via GraphQL API
+- [ ] **T29** - Native Jira Cloud integration via REST API
+- [ ] **T30** - Native Notion integration via API
 
 ---
 
@@ -65,14 +112,14 @@ This file tracks the complete build of Arcane following the step-by-step archite
 
 ---
 
-### T01: Bootstrap — Directory Structure ✅ DONE
+### T01: Bootstrap — Directory Structure ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S1 - Core Foundation |
-| Priority | P0 - Critical |
-| Type | Setup |
-| Description | Create the new directory structure for the refactored architecture |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S1 - Core Foundation                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | Setup                                                      |
+| Description | Create the new directory structure for refactored architecture |
 
 **Commit:** `chore: restructure project for new architecture`
 
@@ -99,14 +146,14 @@ This file tracks the complete build of Arcane following the step-by-step archite
 
 ---
 
-### T02: Configuration ✅ DONE
+### T02: Configuration ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S1 - Core Foundation |
-| Priority | P0 - Critical |
-| Type | Config |
-| Description | Settings management using pydantic-settings with env var and .env file support |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S1 - Core Foundation                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | Config                                                     |
+| Description | Settings management using pydantic-settings with env/dotenv support |
 
 **Commit:** `feat: add Settings config with env/dotenv support`
 
@@ -134,39 +181,39 @@ output_dir: str = "./"
 
 ---
 
-### T03: Utility Modules ✅ DONE
+### T03: Utility Modules ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S1 - Core Foundation |
-| Priority | P0 - Critical |
-| Type | Utils |
-| Description | Shared utilities for ID generation using ULID and Rich console output helpers |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S1 - Core Foundation                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | Utils                                                      |
+| Description | Shared utilities for ID generation (ULID) and Rich console helpers |
 
 **Commit:** `feat: add ID generation and Rich console utilities`
 
 **Files created:**
 - `arcane/utils/ids.py` - `generate_id(prefix)` using ULID
-- `arcane/utils/console.py` - Shared Console + helper functions (success, error, warning, info, header)
+- `arcane/utils/console.py` - Shared Console + helper functions
 - `arcane/utils/__init__.py` - Exports
 - `tests/test_utils.py` - Utility tests
 
 ---
 
-### T04: Item Models ✅ DONE
+### T04: Item Models ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S1 - Core Foundation |
-| Priority | P0 - Critical |
-| Type | Models |
-| Description | Pydantic models for all roadmap entities with computed hour roll-ups through hierarchy |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S1 - Core Foundation                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | Models                                                     |
+| Description | Pydantic models for all roadmap entities with computed hour roll-ups |
 
 **Commit:** `feat: add all Pydantic item models with hierarchy roll-ups`
 
 **Files created in `arcane/items/`:**
 - `base.py` - Priority, Status enums, BaseItem
-- `task.py` - Task model (estimated_hours, acceptance_criteria, implementation_notes, claude_code_prompt)
+- `task.py` - Task model (estimated_hours, acceptance_criteria, claude_code_prompt)
 - `story.py` - Story model with computed estimated_hours
 - `epic.py` - Epic model with computed estimated_hours
 - `milestone.py` - Milestone model with computed estimated_hours
@@ -182,14 +229,14 @@ output_dir: str = "./"
 
 ---
 
-### T05: Question Interface and Basic Questions ✅ DONE
+### T05: Question Interface and Basic Questions ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S2 - Discovery System |
-| Priority | P0 - Critical |
-| Type | Questions |
-| Description | Abstract question interface with validation/transform methods and basic project info questions |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S2 - Discovery System                                      |
+| Priority    | P0 - Critical                                              |
+| Type        | Questions                                                  |
+| Description | Abstract question interface with validation/transform and basic questions |
 
 **Commit:** `feat: add Question interface and basic question implementations`
 
@@ -210,27 +257,27 @@ output_dir: str = "./"
 
 ---
 
-### T06: Remaining Questions ✅ DONE
+### T06: Remaining Questions ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S2 - Discovery System |
-| Priority | P0 - Critical |
-| Type | Questions |
-| Description | Complete set of discovery questions covering constraints, technical choices, and requirements |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S2 - Discovery System                                      |
+| Priority    | P0 - Critical                                              |
+| Type        | Questions                                                  |
+| Description | Complete set of discovery questions for constraints, technical, requirements |
 
 **Commit:** `feat: add constraint, technical, and requirement questions`
 
 **Files created:**
 - `arcane/questions/constraints.py`:
-  - TimelineQuestion (CHOICE: "1 month MVP", "3 months", "6 months", "1 year", "custom")
-  - TeamSizeQuestion (INT, default="1", validates 1-100)
-  - DeveloperExperienceQuestion (CHOICE: "junior", "mid-level", "senior", "mixed")
-  - BudgetQuestion (CHOICE: "minimal (free tier everything)", "moderate", "flexible")
+  - TimelineQuestion (CHOICE)
+  - TeamSizeQuestion (INT, validates 1-100)
+  - DeveloperExperienceQuestion (CHOICE)
+  - BudgetQuestion (CHOICE)
 - `arcane/questions/technical.py`:
   - TechStackQuestion (LIST, optional)
-  - InfrastructureQuestion (CHOICE: "AWS", "GCP", "Azure", "Serverless", "Self-hosted", "No preference")
-  - ExistingCodebaseQuestion (CONFIRM, default="n")
+  - InfrastructureQuestion (CHOICE)
+  - ExistingCodebaseQuestion (CONFIRM)
 - `arcane/questions/requirements.py`:
   - MustHaveQuestion (LIST, required)
   - NiceToHaveQuestion (LIST, optional)
@@ -243,20 +290,20 @@ output_dir: str = "./"
 
 ---
 
-### T07: Question Registry and Conductor ✅ DONE
+### T07: Question Registry and Conductor ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S2 - Discovery System |
-| Priority | P0 - Critical |
-| Type | Questions |
-| Description | Registry for organizing questions by category and conductor for running interactive flow |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S2 - Discovery System                                      |
+| Priority    | P0 - Critical                                              |
+| Type        | Questions                                                  |
+| Description | Registry for organizing questions and conductor for interactive flow |
 
 **Commit:** `feat: add QuestionRegistry and interactive QuestionConductor`
 
 **Files created:**
 - `arcane/questions/registry.py`:
-  - QuestionRegistry class with CATEGORIES dict (4 categories, 16 total questions)
+  - QuestionRegistry class with CATEGORIES dict (4 categories, 16 questions)
   - get_all_questions() returns (category, question) tuples
   - get_category(name) returns questions for one category
 - `arcane/questions/conductor.py`:
@@ -271,14 +318,14 @@ output_dir: str = "./"
 
 ---
 
-### T08: AI Client Interface ✅ DONE
+### T08: AI Client Interface ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S3 - AI Integration |
-| Priority | P0 - Critical |
-| Type | Clients |
-| Description | Abstract AI client interface with Anthropic implementation using Instructor for structured output |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S3 - AI Integration                                        |
+| Priority    | P0 - Critical                                              |
+| Type        | Clients                                                    |
+| Description | Abstract AI client interface with Anthropic implementation using Instructor |
 
 **Commit:** `feat: add BaseAIClient interface and AnthropicClient implementation`
 
@@ -302,14 +349,14 @@ output_dir: str = "./"
 
 ---
 
-### T09: Template Loader and Templates ✅ DONE
+### T09: Template Loader and Templates ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S3 - AI Integration |
-| Priority | P0 - Critical |
-| Type | Templates |
-| Description | Jinja2 template system for AI prompts with system and user prompt templates per item type |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S3 - AI Integration                                        |
+| Priority    | P0 - Critical                                              |
+| Type        | Templates                                                  |
+| Description | Jinja2 template system for AI prompts with system and user templates |
 
 **Commit:** `feat: add Jinja2 prompt templates and TemplateLoader`
 
@@ -317,12 +364,12 @@ output_dir: str = "./"
 - `arcane/templates/loader.py`:
   - TemplateLoader class with Jinja2 Environment
   - render_system(item_type) - loads system/{item_type}.j2
-  - render_user(template_name, project_context, parent_context, sibling_context, additional_guidance, errors)
+  - render_user(template_name, project_context, parent_context, sibling_context, errors)
 - `arcane/templates/__init__.py` - Exports TemplateLoader
 - `arcane/templates/system/milestone.j2` - System prompt for milestones
 - `arcane/templates/system/epic.j2` - System prompt for epics
 - `arcane/templates/system/story.j2` - System prompt for stories
-- `arcane/templates/system/task.j2` - System prompt for tasks (includes claude_code_prompt instructions)
+- `arcane/templates/system/task.j2` - System prompt for tasks
 - `arcane/templates/user/generate.j2` - Main user prompt with context injection
 - `arcane/templates/user/refine.j2` - Retry prompt with error list
 
@@ -331,14 +378,14 @@ output_dir: str = "./"
 
 ---
 
-### T10: Generator Skeletons and BaseGenerator ✅ DONE
+### T10: Generator Skeletons and BaseGenerator ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S3 - AI Integration |
-| Priority | P0 - Critical |
-| Type | Generators |
-| Description | Base generator class with retry logic and intermediate skeleton models for generation phases |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S3 - AI Integration                                        |
+| Priority    | P0 - Critical                                              |
+| Type        | Generators                                                 |
+| Description | Base generator class with retry logic and intermediate skeleton models |
 
 **Commit:** `feat: add BaseGenerator with retry logic and skeleton models`
 
@@ -363,35 +410,22 @@ output_dir: str = "./"
 
 ---
 
-### T11: Individual Generators ✅ DONE
+### T11: Individual Generators ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S3 - AI Integration |
-| Priority | P0 - Critical |
-| Type | Generators |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S3 - AI Integration                                        |
+| Priority    | P0 - Critical                                              |
+| Type        | Generators                                                 |
 | Description | Concrete generator implementations for each roadmap item level |
 
 **Commit:** `feat: add milestone, epic, story, and task generators`
 
 **Files created:**
-- `arcane/generators/milestone.py`:
-  - MilestoneGenerator(BaseGenerator)
-  - item_type = "milestone"
-  - get_response_model() = MilestoneSkeletonList
-- `arcane/generators/epic.py`:
-  - EpicGenerator(BaseGenerator)
-  - item_type = "epic"
-  - get_response_model() = EpicSkeletonList
-- `arcane/generators/story.py`:
-  - StoryGenerator(BaseGenerator)
-  - item_type = "story"
-  - get_response_model() = StorySkeletonList
-- `arcane/generators/task.py`:
-  - TaskList(BaseModel) with tasks: list[Task]
-  - TaskGenerator(BaseGenerator)
-  - item_type = "task"
-  - get_response_model() = TaskList
+- `arcane/generators/milestone.py` - MilestoneGenerator
+- `arcane/generators/epic.py` - EpicGenerator
+- `arcane/generators/story.py` - StoryGenerator
+- `arcane/generators/task.py` - TaskGenerator with TaskList model
 - Updated `arcane/generators/__init__.py` to export all generators
 
 **Tests:**
@@ -399,14 +433,14 @@ output_dir: str = "./"
 
 ---
 
-### T12: Storage Manager ✅ DONE
+### T12: Storage Manager ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S4 - Storage & Orchestration |
-| Priority | P0 - Critical |
-| Type | Storage |
-| Description | Persistence layer for saving/loading roadmaps with resume point detection for interrupted generations |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S4 - Storage & Orchestration                               |
+| Priority    | P0 - Critical                                              |
+| Type        | Storage                                                    |
+| Description | Persistence layer for saving/loading roadmaps with resume detection |
 
 **Commit:** `feat: add StorageManager with save/load/resume support`
 
@@ -421,14 +455,14 @@ output_dir: str = "./"
 
 ---
 
-### T13: Roadmap Orchestrator ✅ DONE
+### T13: Roadmap Orchestrator ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S4 - Storage & Orchestration |
-| Priority | P0 - Critical |
-| Type | Generators |
-| Description | Top-level orchestrator that coordinates hierarchical generation with incremental saves |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S4 - Storage & Orchestration                               |
+| Priority    | P0 - Critical                                              |
+| Type        | Generators                                                 |
+| Description | Top-level orchestrator for hierarchical generation with incremental saves |
 
 **Commit:** `feat: add RoadmapOrchestrator for hierarchical generation`
 
@@ -445,14 +479,14 @@ output_dir: str = "./"
 
 ---
 
-### T14: CLI Commands ✅ DONE
+### T14: CLI Commands ✓
 
-| Field | Value |
-|-------|-------|
-| Sprint | S4 - Storage & Orchestration |
-| Priority | P0 - Critical |
-| Type | CLI |
-| Description | Typer-based command-line interface with new, resume, export, view, and config commands |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S4 - Storage & Orchestration                               |
+| Priority    | P0 - Critical                                              |
+| Type        | CLI                                                        |
+| Description | Typer-based command-line interface with new, resume, export, view, config |
 
 **Commit:** `feat: add CLI with new, resume, export, view, and config commands`
 
@@ -474,13 +508,13 @@ output_dir: str = "./"
 
 ---
 
-### T15: CSV PM Client ⬜ TODO
+### T15: CSV PM Client
 
-| Field | Value |
-|-------|-------|
-| Sprint | S5 - Export & Polish |
-| Priority | P0 - Critical |
-| Type | Export |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S5 - Export & Polish                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | Export                                                     |
 | Description | CSV export client for universal import into any PM tool that accepts CSV |
 
 **Commit message:** `feat: add BasePMClient interface and CSV exporter`
@@ -533,14 +567,14 @@ class CSVClient(BasePMClient):
 
 ---
 
-### T16: PM Client Stubs ⬜ TODO
+### T16: PM Client Stubs
 
-| Field | Value |
-|-------|-------|
-| Sprint | S5 - Export & Polish |
-| Priority | P1 - High |
-| Type | Export |
-| Description | Stub implementations for Linear, Jira, and Notion that raise NotImplementedError |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S5 - Export & Polish                                       |
+| Priority    | P1 - High                                                  |
+| Type        | Export                                                     |
+| Description | Stub implementations for Linear, Jira, Notion that raise NotImplementedError |
 
 **Commit message:** `feat: add Linear, Jira, and Notion PM client stubs`
 
@@ -556,13 +590,13 @@ class CSVClient(BasePMClient):
 
 ---
 
-### T17: Integration Wiring ⬜ TODO
+### T17: Integration Wiring
 
-| Field | Value |
-|-------|-------|
-| Sprint | S5 - Export & Polish |
-| Priority | P0 - Critical |
-| Type | Integration |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S5 - Export & Polish                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | Integration                                                |
 | Description | Wire all components together, fix imports, verify CLI works end-to-end |
 
 **Commit message:** `feat: wire all components together and verify CLI works`
@@ -577,14 +611,14 @@ class CSVClient(BasePMClient):
 
 ---
 
-### T18: End-to-End Integration Test ⬜ TODO
+### T18: End-to-End Integration Test
 
-| Field | Value |
-|-------|-------|
-| Sprint | S5 - Export & Polish |
-| Priority | P0 - Critical |
-| Type | Testing |
-| Description | Full integration test using mock AI client to verify entire pipeline works |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S5 - Export & Polish                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | Testing                                                    |
+| Description | Full integration test using mock AI client to verify entire pipeline |
 
 **Commit message:** `test: add end-to-end integration test with mock AI client`
 
@@ -596,13 +630,13 @@ class CSVClient(BasePMClient):
 
 ---
 
-### T19: README and Documentation ⬜ TODO
+### T19: README and Documentation
 
-| Field | Value |
-|-------|-------|
-| Sprint | S6 - Documentation & Testing |
-| Priority | P1 - High |
-| Type | Docs |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S6 - Documentation & Testing                               |
+| Priority    | P1 - High                                                  |
+| Type        | Docs                                                       |
 | Description | User-facing README with quick start, CLI commands, and project overview |
 
 **Commit message:** `docs: update README and TODO for new architecture`
@@ -619,14 +653,14 @@ Rewrite README.md with:
 
 ---
 
-### T20: Real API Smoke Test Script ⬜ TODO
+### T20: Real API Smoke Test Script
 
-| Field | Value |
-|-------|-------|
-| Sprint | S6 - Documentation & Testing |
-| Priority | P0 - Critical |
-| Type | Testing |
-| Description | Script to test full generation with real Anthropic API for prompt quality validation |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S6 - Documentation & Testing                               |
+| Priority    | P0 - Critical                                              |
+| Type        | Testing                                                    |
+| Description | Script to test full generation with real Anthropic API for prompt validation |
 
 **Commit message:** `feat: add manual smoke test script for real API testing`
 
@@ -642,13 +676,13 @@ Add `smoke-test-output/` to `.gitignore`.
 
 ---
 
-### T21: Prompt Tuning ⬜ TODO
+### T21: Prompt Tuning
 
-| Field | Value |
-|-------|-------|
-| Sprint | S6 - Documentation & Testing |
-| Priority | P1 - High |
-| Type | Templates |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S6 - Documentation & Testing                               |
+| Priority    | P1 - High                                                  |
+| Type        | Templates                                                  |
 | Description | Refine Jinja2 prompt templates based on real API output quality |
 
 **Commit message:** `refine: tune prompt templates based on smoke test results`
@@ -660,13 +694,13 @@ After running real API smoke test:
 
 ---
 
-### T22: Repository Cleanup ⬜ TODO
+### T22: Repository Cleanup
 
-| Field | Value |
-|-------|-------|
-| Sprint | S6 - Documentation & Testing |
-| Priority | P2 - Medium |
-| Type | Maintenance |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S6 - Documentation & Testing                               |
+| Priority    | P2 - Medium                                                |
+| Type        | Maintenance                                                |
 | Description | Remove legacy files from pre-refactor architecture |
 
 **Commit message:** `chore: clean up legacy files from pre-refactor architecture`
@@ -708,14 +742,14 @@ git status --porcelain
 
 ---
 
-### T23: Interactive Review Mode ⬜ TODO
+### T23: Interactive Review Mode
 
-| Field | Value |
-|-------|-------|
-| Sprint | S7 - UX Improvements |
-| Priority | P0 - Critical |
-| Type | UX |
-| Description | Pause generation between phases to allow user review and approval of generated items |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S7 - UX Improvements                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | UX                                                         |
+| Description | Pause generation between phases for user review and approval |
 
 **Commit message:** `feat: add interactive review mode with pause between generation phases`
 
@@ -738,13 +772,13 @@ git status --porcelain
 
 ---
 
-### T24: Cost Visibility ⬜ TODO
+### T24: Cost Visibility
 
-| Field | Value |
-|-------|-------|
-| Sprint | S7 - UX Improvements |
-| Priority | P0 - Critical |
-| Type | UX |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S7 - UX Improvements                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | UX                                                         |
 | Description | Show estimated token usage and cost before starting generation |
 
 **Commit message:** `feat: add cost estimation before generation starts`
@@ -767,14 +801,14 @@ Proceed with generation? [Y/n] >
 
 ---
 
-### T25: Resume Functionality ⬜ TODO
+### T25: Resume Functionality
 
-| Field | Value |
-|-------|-------|
-| Sprint | S8 - Post-MVP Features |
-| Priority | P1 - High |
-| Type | Generators |
-| Description | Actually continue generation from where it stopped, not just detect resume point |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S8 - Post-MVP Features                                     |
+| Priority    | P1 - High                                                  |
+| Type        | Generators                                                 |
+| Description | Actually continue generation from where it stopped, not just detect |
 
 **Commit message:** `feat: implement actual resume functionality for interrupted generations`
 
@@ -787,14 +821,14 @@ Proceed with generation? [Y/n] >
 
 ---
 
-### T26: Rate Limiting ⬜ TODO
+### T26: Rate Limiting
 
-| Field | Value |
-|-------|-------|
-| Sprint | S8 - Post-MVP Features |
-| Priority | P1 - High |
-| Type | Clients |
-| Description | Handle Anthropic API rate limits with exponential backoff and retry logic |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S8 - Post-MVP Features                                     |
+| Priority    | P1 - High                                                  |
+| Type        | Clients                                                    |
+| Description | Handle Anthropic API rate limits with exponential backoff and retry |
 
 **Commit message:** `feat: add rate limiting with exponential backoff`
 
@@ -807,13 +841,13 @@ Proceed with generation? [Y/n] >
 
 ---
 
-### T27: Question Back-Navigation ⬜ TODO
+### T27: Question Back-Navigation
 
-| Field | Value |
-|-------|-------|
-| Sprint | S8 - Post-MVP Features |
-| Priority | P1 - High |
-| Type | Questions |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S8 - Post-MVP Features                                     |
+| Priority    | P1 - High                                                  |
+| Type        | Questions                                                  |
 | Description | Allow users to go back and edit previous answers during discovery |
 
 **Commit message:** `feat: add back-navigation in question flow`
@@ -827,13 +861,13 @@ Proceed with generation? [Y/n] >
 
 ---
 
-### T28: Linear Integration ⬜ TODO
+### T28: Linear Integration
 
-| Field | Value |
-|-------|-------|
-| Sprint | S9 - Native Integrations |
-| Priority | P2 - Medium |
-| Type | Export |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S9 - Native Integrations                                   |
+| Priority    | P2 - Medium                                                |
+| Type        | Export                                                     |
 | Description | Native export to Linear using GraphQL API |
 
 **Commit message:** `feat: add native Linear integration`
@@ -846,13 +880,13 @@ Proceed with generation? [Y/n] >
 
 ---
 
-### T29: Jira Integration ⬜ TODO
+### T29: Jira Integration
 
-| Field | Value |
-|-------|-------|
-| Sprint | S9 - Native Integrations |
-| Priority | P2 - Medium |
-| Type | Export |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S9 - Native Integrations                                   |
+| Priority    | P2 - Medium                                                |
+| Type        | Export                                                     |
 | Description | Native export to Jira Cloud using REST API |
 
 **Commit message:** `feat: add native Jira Cloud integration`
@@ -865,13 +899,13 @@ Proceed with generation? [Y/n] >
 
 ---
 
-### T30: Notion Integration ⬜ TODO
+### T30: Notion Integration
 
-| Field | Value |
-|-------|-------|
-| Sprint | S9 - Native Integrations |
-| Priority | P2 - Medium |
-| Type | Export |
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S9 - Native Integrations                                   |
+| Priority    | P2 - Medium                                                |
+| Type        | Export                                                     |
 | Description | Native export to Notion using API |
 
 **Commit message:** `feat: add native Notion integration`
@@ -927,13 +961,13 @@ EOF
 ### Project Structure
 ```
 arcane/
-├── clients/       # AI provider abstraction
-├── config.py      # Settings with pydantic-settings
-├── generators/    # Generation orchestration
-├── items/         # Pydantic data models
-├── project_management/  # PM tool exporters
-├── questions/     # Discovery question system
-├── storage/       # Save/load/resume
-├── templates/     # Jinja2 prompt templates
-└── utils/         # ID generation, console helpers
+├── clients/            # AI provider abstraction
+├── config.py           # Settings with pydantic-settings
+├── generators/         # Generation orchestration
+├── items/              # Pydantic data models
+├── project_management/ # PM tool exporters
+├── questions/          # Discovery question system
+├── storage/            # Save/load/resume
+├── templates/          # Jinja2 prompt templates
+└── utils/              # ID generation, console helpers
 ```
