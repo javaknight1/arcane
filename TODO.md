@@ -38,8 +38,8 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T22~~  | ~~S6~~ | ~~P2~~   | ~~Maintenance~~ | ~~Repository Cleanup~~   | ~~Remove legacy files from pre-refactor~~ ✓                |
 | ~~T23~~  | ~~S7~~ | ~~P0~~   | ~~UX~~      | ~~Interactive Review~~       | ~~Pause between phases for user review~~ ✓                 |
 | ~~T24~~  | ~~S7~~ | ~~P0~~   | ~~UX~~      | ~~Cost Visibility~~          | ~~Show estimated cost before generation~~ ✓                |
-| T25      | S8     | P1       | Generators  | Resume Functionality         | Continue interrupted generations                           |
-| T26      | S8     | P1       | Clients     | Rate Limiting                | Backoff/retry for API rate limits                          |
+| ~~T25~~  | ~~S8~~ | ~~P1~~   | ~~Generators~~ | ~~Resume Functionality~~  | ~~Continue interrupted generations~~ ✓                     |
+| ~~T26~~  | ~~S8~~ | ~~P1~~   | ~~Clients~~ | ~~Rate Limiting~~            | ~~Backoff/retry for API rate limits~~ ✓                    |
 | T27      | S8     | P1       | Questions   | Back-Navigation              | Edit previous answers in question flow                     |
 | T28      | S9     | P2       | Export      | Linear Integration           | Native export via GraphQL API                              |
 | T29      | S9     | P2       | Export      | Jira Integration             | Native export via REST API                                 |
@@ -100,8 +100,8 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 
 ### Sprint 8 - Post-MVP Features
 
-- [ ] **T25** - Resume functionality for interrupted generations
-- [ ] **T26** - Rate limiting with backoff/retry logic
+- [x] **T25** - Resume functionality for interrupted generations ✓
+- [x] **T26** - Rate limiting with backoff/retry logic ✓
 - [ ] **T27** - Back-navigation to edit previous answers
 
 ### Sprint 9 - Native Integrations
@@ -810,7 +810,7 @@ Proceed with generation? [Y/n] >
 
 ---
 
-### T25: Resume Functionality
+### T25: Resume Functionality ✓
 
 | Field       | Value                                                      |
 | ----------- | ---------------------------------------------------------- |
@@ -819,18 +819,19 @@ Proceed with generation? [Y/n] >
 | Type        | Generators                                                 |
 | Description | Actually continue generation from where it stopped, not just detect |
 
-**Commit message:** `feat: implement actual resume functionality for interrupted generations`
+**Commit:** `feat: implement actual resume functionality for interrupted generations`
 
-**Implementation:**
-- Extend `RoadmapOrchestrator` with `resume(roadmap)` method
-- Use `StorageManager.get_resume_point()` to find where to continue
-- Skip already-generated items
-- Continue from the incomplete item
-- Maintain context from existing items
+**What was done:**
+- Fixed incremental save ordering in `generate()`: milestones and epics are now appended to the roadmap before expansion so partial progress is captured in saves
+- Added `resume(roadmap)` method to `RoadmapOrchestrator` that walks the existing hierarchy, skips complete items, and generates missing children
+- Added `_item_context()` helper to extract compact context dicts from saved items for `parent_context` injection
+- Extracted `_print_summary()` for shared use by both `generate()` and `resume()`
+- Wired up `_resume()` in `cli.py` with API key validation, connection check, and confirmation prompt
+- Fixed pre-existing test failures: updated all 4 MockClient classes to implement `usage`, `reset_usage`, and `level` parameter
 
 ---
 
-### T26: Rate Limiting
+### T26: Rate Limiting ✓
 
 | Field       | Value                                                      |
 | ----------- | ---------------------------------------------------------- |
@@ -839,14 +840,17 @@ Proceed with generation? [Y/n] >
 | Type        | Clients                                                    |
 | Description | Handle Anthropic API rate limits with exponential backoff and retry |
 
-**Commit message:** `feat: add rate limiting with exponential backoff`
+**Commit:** `feat: add rate limiting with exponential backoff`
 
-**Implementation:**
-- Detect rate limit errors from Anthropic API
-- Implement exponential backoff (1s, 2s, 4s, 8s, etc.)
-- Add configurable max wait time
-- Log rate limit events for visibility
-- Consider adding request throttling proactively
+**What was done:**
+- Added rate limiting infrastructure to `BaseAIClient`:
+  - Configurable class attributes: `rate_limit_max_retries` (5), `rate_limit_initial_delay` (2s), `rate_limit_max_delay` (60s)
+  - `_is_rate_limit_error(error)` method — subclasses override to detect provider-specific rate limit exceptions (returns False by default for local models)
+  - `_call_with_backoff(coro_func)` helper — wraps any async call with exponential backoff, only retrying on rate limit errors
+- `AnthropicClient` overrides `_is_rate_limit_error` to detect `anthropic.RateLimitError`
+- Extracted `_create_message()` from `generate()` so the raw API call can be wrapped with `_call_with_backoff()`
+- Future clients (OpenAI, Gemini) override `_is_rate_limit_error`; local models set `rate_limit_max_retries = 0`
+- Added 8 tests covering: success path, retry-then-succeed, max retries exhausted, non-rate-limit passthrough, disabled mode, defaults, Anthropic detection
 
 ---
 

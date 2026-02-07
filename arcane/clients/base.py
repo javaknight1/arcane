@@ -5,10 +5,14 @@ This lets us swap between Claude, GPT-4, or local models without changing
 any generation logic.
 """
 
+import asyncio
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -71,7 +75,60 @@ class BaseAIClient(ABC):
 
     All AI clients must implement this interface. The generators
     only interact with this interface, never with provider SDKs directly.
+
+    Subclasses can configure rate limit handling by setting:
+        rate_limit_max_retries: Max retries on rate limit (0 to disable).
+        rate_limit_initial_delay: Starting backoff delay in seconds.
+        rate_limit_max_delay: Maximum backoff delay in seconds.
     """
+
+    rate_limit_max_retries: int = 5
+    rate_limit_initial_delay: float = 2.0
+    rate_limit_max_delay: float = 60.0
+
+    def _is_rate_limit_error(self, error: Exception) -> bool:
+        """Check if an exception is a rate limit error.
+
+        Override in subclasses to detect provider-specific rate limit
+        exceptions. Returns False by default (no rate limit handling).
+        """
+        return False
+
+    async def _call_with_backoff(self, coro_func, *args, **kwargs):
+        """Call an async function with exponential backoff on rate limits.
+
+        Args:
+            coro_func: An async callable to invoke.
+            *args, **kwargs: Arguments passed to the callable.
+
+        Returns:
+            The result of the callable.
+
+        Raises:
+            The original exception if max retries are exhausted or
+            the error is not a rate limit.
+        """
+        delay = self.rate_limit_initial_delay
+
+        for attempt in range(self.rate_limit_max_retries + 1):
+            try:
+                return await coro_func(*args, **kwargs)
+            except Exception as e:
+                if not self._is_rate_limit_error(e):
+                    raise
+
+                if attempt >= self.rate_limit_max_retries:
+                    raise
+
+                logger.warning(
+                    "Rate limited by %s. Retrying in %.1fs (attempt %d/%d)",
+                    self.provider_name,
+                    delay,
+                    attempt + 1,
+                    self.rate_limit_max_retries,
+                )
+                await asyncio.sleep(delay)
+                delay = min(delay * 2, self.rate_limit_max_delay)
 
     @abstractmethod
     async def generate(

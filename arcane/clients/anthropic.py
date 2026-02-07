@@ -17,6 +17,8 @@ class AnthropicClient(BaseAIClient):
     This client wraps the Anthropic API and uses the Instructor library
     to ensure responses conform to Pydantic schemas. It also tracks
     cumulative token usage across all API calls.
+
+    Rate limit handling is built in via BaseAIClient._call_with_backoff().
     """
 
     def __init__(self, api_key: str, model: str = "claude-sonnet-4-20250514"):
@@ -32,6 +34,10 @@ class AnthropicClient(BaseAIClient):
         self._client = instructor.from_anthropic(self._raw_client)
         self._usage = UsageStats()
 
+    def _is_rate_limit_error(self, error: Exception) -> bool:
+        """Detect Anthropic rate limit errors (HTTP 429)."""
+        return isinstance(error, anthropic.RateLimitError)
+
     async def generate(
         self,
         system_prompt: str,
@@ -42,6 +48,8 @@ class AnthropicClient(BaseAIClient):
         level: str | None = None,
     ) -> BaseModel:
         """Generate a structured response from Claude.
+
+        Automatically retries with exponential backoff on rate limit errors.
 
         Args:
             system_prompt: The system-level instruction.
@@ -58,14 +66,13 @@ class AnthropicClient(BaseAIClient):
             AIClientError: If the API call fails.
         """
         try:
-            # Use create_with_completion to get both model and raw response
-            response, completion = await self._client.messages.create_with_completion(
-                model=self._model,
+            response, completion = await self._call_with_backoff(
+                self._create_message,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                response_model=response_model,
                 max_tokens=max_tokens,
                 temperature=temperature,
-                system=system_prompt,
-                messages=[{"role": "user", "content": user_prompt}],
-                response_model=response_model,
             )
 
             # Track usage from the completion
@@ -79,6 +86,24 @@ class AnthropicClient(BaseAIClient):
             return response
         except Exception as e:
             raise AIClientError(f"Anthropic API call failed: {e}") from e
+
+    async def _create_message(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        response_model: type[BaseModel],
+        max_tokens: int,
+        temperature: float,
+    ):
+        """Make the raw Instructor API call. Separated for use with _call_with_backoff."""
+        return await self._client.messages.create_with_completion(
+            model=self._model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_prompt}],
+            response_model=response_model,
+        )
 
     async def validate_connection(self) -> bool:
         """Test that the client can reach the Anthropic API.
