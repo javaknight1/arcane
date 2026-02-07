@@ -22,7 +22,7 @@ from arcane.items import (
 )
 from arcane.storage import StorageManager
 from arcane.templates import TemplateLoader
-from arcane.utils import generate_id
+from arcane.utils import generate_id, format_actual_usage
 
 from .milestone import MilestoneGenerator
 from .epic import EpicGenerator
@@ -54,6 +54,7 @@ class RoadmapOrchestrator:
             storage: Storage manager for saving roadmaps.
             interactive: Whether to pause for user review between levels.
         """
+        self.client = client
         self.console = console
         self.storage = storage
         self.interactive = interactive
@@ -183,6 +184,9 @@ class RoadmapOrchestrator:
             updated_at=datetime.now(timezone.utc),
             context=context,
         )
+
+        # Reset usage tracking for this generation
+        self.client.reset_usage()
 
         # Phase 1: Generate milestones
         self.console.print("\n[bold]📋 Generating milestones...[/bold]")
@@ -346,5 +350,12 @@ class RoadmapOrchestrator:
             f"{counts['stories']} stories, {counts['tasks']} tasks"
         )
         self.console.print(f"   Estimated: {roadmap.total_hours} hours")
+
+        # Print actual usage statistics
+        self.console.print()
+        self.console.print(format_actual_usage(
+            usage=self.client.usage,
+            model=self.client.model_name,
+        ))
 
         return roadmap

@@ -4,12 +4,13 @@ This module provides a common interface for AI providers and
 concrete implementations for supported providers.
 """
 
-from .base import BaseAIClient, AIClientError
+from .base import BaseAIClient, AIClientError, UsageStats
 from .anthropic import AnthropicClient
 
 __all__ = [
     "BaseAIClient",
     "AIClientError",
+    "UsageStats",
     "AnthropicClient",
     "create_client",
 ]

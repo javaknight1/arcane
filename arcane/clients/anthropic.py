@@ -8,14 +8,15 @@ import anthropic
 import instructor
 from pydantic import BaseModel
 
-from .base import BaseAIClient, AIClientError
+from .base import BaseAIClient, AIClientError, UsageStats
 
 
 class AnthropicClient(BaseAIClient):
     """Claude client using Anthropic SDK + Instructor for structured output.
 
     This client wraps the Anthropic API and uses the Instructor library
-    to ensure responses conform to Pydantic schemas.
+    to ensure responses conform to Pydantic schemas. It also tracks
+    cumulative token usage across all API calls.
     """
 
     def __init__(self, api_key: str, model: str = "claude-sonnet-4-20250514"):
@@ -29,6 +30,7 @@ class AnthropicClient(BaseAIClient):
         self._model = model
         self._raw_client = anthropic.AsyncAnthropic(api_key=api_key)
         self._client = instructor.from_anthropic(self._raw_client)
+        self._usage = UsageStats()
 
     async def generate(
         self,
@@ -37,6 +39,7 @@ class AnthropicClient(BaseAIClient):
         response_model: type[BaseModel],
         max_tokens: int = 4096,
         temperature: float = 0.7,
+        level: str | None = None,
     ) -> BaseModel:
         """Generate a structured response from Claude.
 
@@ -46,6 +49,7 @@ class AnthropicClient(BaseAIClient):
             response_model: Pydantic model class for the response.
             max_tokens: Maximum tokens in the response.
             temperature: Creativity level (0.0-1.0).
+            level: Optional generation level for usage tracking.
 
         Returns:
             An instance of response_model with validated data.
@@ -54,7 +58,8 @@ class AnthropicClient(BaseAIClient):
             AIClientError: If the API call fails.
         """
         try:
-            response = await self._client.messages.create(
+            # Use create_with_completion to get both model and raw response
+            response, completion = await self._client.messages.create_with_completion(
                 model=self._model,
                 max_tokens=max_tokens,
                 temperature=temperature,
@@ -62,6 +67,15 @@ class AnthropicClient(BaseAIClient):
                 messages=[{"role": "user", "content": user_prompt}],
                 response_model=response_model,
             )
+
+            # Track usage from the completion
+            if hasattr(completion, "usage") and completion.usage:
+                self._usage.add(
+                    input_tokens=completion.usage.input_tokens,
+                    output_tokens=completion.usage.output_tokens,
+                    level=level,
+                )
+
             return response
         except Exception as e:
             raise AIClientError(f"Anthropic API call failed: {e}") from e
@@ -91,3 +105,12 @@ class AnthropicClient(BaseAIClient):
     def model_name(self) -> str:
         """The specific model being used."""
         return self._model
+
+    @property
+    def usage(self) -> UsageStats:
+        """Get cumulative usage statistics for this client."""
+        return self._usage
+
+    def reset_usage(self) -> None:
+        """Reset usage statistics to zero."""
+        self._usage.reset()

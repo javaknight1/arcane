@@ -6,6 +6,7 @@ from .cost_estimator import (
     CostEstimate,
     estimate_generation_cost,
     format_cost_estimate,
+    format_actual_usage,
 )
 
 __all__ = [
@@ -19,4 +20,5 @@ __all__ = [
     "CostEstimate",
     "estimate_generation_cost",
     "format_cost_estimate",
+    "format_actual_usage",
 ]

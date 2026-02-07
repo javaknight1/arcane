@@ -143,3 +143,41 @@ def format_cost_estimate(estimate: CostEstimate) -> str:
         f"   ~${estimate.estimated_cost_usd:.2f} estimated cost",
     ]
     return "\n".join(lines)
+
+
+def format_actual_usage(usage: "UsageStats", model: str = "claude-sonnet-4-20250514") -> str:
+    """Format actual usage statistics for display with per-level breakdown.
+
+    Args:
+        usage: UsageStats object with cumulative and per-level tracking.
+        model: The model used for pricing calculation.
+
+    Returns:
+        Formatted string for console display.
+    """
+    pricing = MODEL_PRICING.get(model, MODEL_PRICING["default"])
+    total_cost = usage.calculate_cost(pricing["input"], pricing["output"])
+
+    lines = [
+        "📊 Actual usage:",
+        f"   {usage.api_calls} API calls",
+        f"   {usage.total_tokens:,} tokens ({usage.input_tokens:,} in / {usage.output_tokens:,} out)",
+        f"   ${total_cost:.4f} total cost",
+    ]
+
+    # Per-level breakdown if available
+    level_order = ["milestone", "epic", "story", "task"]
+    levels_with_data = [lv for lv in level_order if lv in usage.calls_by_level]
+
+    if levels_with_data:
+        lines.append("")
+        lines.append("   Level        Calls   Input Tok   Output Tok")
+        lines.append("   ─────────────────────────────────────────────")
+        for level in levels_with_data:
+            calls = usage.calls_by_level[level]
+            tokens = usage.tokens_by_level.get(level, {"input": 0, "output": 0})
+            lines.append(
+                f"   {level:<12} {calls:>5}   {tokens['input']:>9,}   {tokens['output']:>10,}"
+            )
+
+    return "\n".join(lines)

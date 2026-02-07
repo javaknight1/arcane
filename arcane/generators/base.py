@@ -86,6 +86,7 @@ class BaseGenerator(ABC):
                     system_prompt=system_prompt,
                     user_prompt=user_prompt,
                     response_model=self.get_response_model(),
+                    level=self.item_type,
                 )
 
                 extra_errors = self._validate(response, project_context, sibling_context)
