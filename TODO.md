@@ -40,7 +40,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T24~~  | ~~S7~~ | ~~P0~~   | ~~UX~~      | ~~Cost Visibility~~          | ~~Show estimated cost before generation~~ ✓                |
 | ~~T25~~  | ~~S8~~ | ~~P1~~   | ~~Generators~~ | ~~Resume Functionality~~  | ~~Continue interrupted generations~~ ✓                     |
 | ~~T26~~  | ~~S8~~ | ~~P1~~   | ~~Clients~~ | ~~Rate Limiting~~            | ~~Backoff/retry for API rate limits~~ ✓                    |
-| T27      | S8     | P1       | Questions   | Back-Navigation              | Edit previous answers in question flow                     |
+| ~~T27~~  | ~~S8~~ | ~~P1~~   | ~~Questions~~ | ~~Back-Navigation~~        | ~~Edit previous answers in question flow~~ ✓               |
 | T28      | S9     | P2       | Export      | Linear Integration           | Native export via GraphQL API                              |
 | T29      | S9     | P2       | Export      | Jira Integration             | Native export via REST API                                 |
 | T30      | S9     | P2       | Export      | Notion Integration           | Native export via Notion API                               |
@@ -98,11 +98,11 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 - [x] **T23** - Interactive review mode between generation phases ✓
 - [x] **T24** - Cost visibility before starting generation ✓
 
-### Sprint 8 - Post-MVP Features
+### Sprint 8 - Post-MVP Features (COMPLETE)
 
 - [x] **T25** - Resume functionality for interrupted generations ✓
 - [x] **T26** - Rate limiting with backoff/retry logic ✓
-- [ ] **T27** - Back-navigation to edit previous answers
+- [x] **T27** - Back-navigation to edit previous answers ✓
 
 ### Sprint 9 - Native Integrations
 
@@ -854,7 +854,7 @@ Proceed with generation? [Y/n] >
 
 ---
 
-### T27: Question Back-Navigation
+### T27: Question Back-Navigation ✓
 
 | Field       | Value                                                      |
 | ----------- | ---------------------------------------------------------- |
@@ -863,14 +863,20 @@ Proceed with generation? [Y/n] >
 | Type        | Questions                                                  |
 | Description | Allow users to go back and edit previous answers during discovery |
 
-**Commit message:** `feat: add back-navigation in question flow`
+**Commit:** `feat: add back-navigation in question flow`
 
-**Implementation:**
-- Store answer history in `QuestionConductor`
-- Add "back" option to each question prompt
-- Allow editing of previous answers
-- Re-validate edited answers
-- Show summary of all answers before finalizing
+**What was done:**
+- Refactored `run()` from a `for` loop to an index-based `while` loop for bidirectional navigation
+- Added `_BACK` sentinel returned by `_ask()` when user types `<`
+- Back-navigation works across all question types:
+  - TEXT/LIST: checks for `<` before validation
+  - INT: switched from IntPrompt to Prompt with manual int validation
+  - CHOICE: adds `<` to the choices list
+  - CONFIRM: uses Prompt with choices `["y", "n", "<"]`
+- Pre-filled answers (from CLI flags like `--name`) are tracked and skipped in both directions
+- Category headers reprint correctly when navigating backward
+- Added answer summary table after all questions, with option to edit any answer by number before finalizing
+- Added `_display_summary()` and `_format_answer()` helpers
 
 ---
 
