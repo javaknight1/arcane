@@ -217,6 +217,9 @@ class RoadmapOrchestrator:
                 priority=ms_skel.priority,
             )
 
+            # Append milestone early so incremental saves capture it
+            roadmap.milestones.append(milestone)
+
             # Generate epics for this milestone
             ep_result = await self.epic_gen.generate(
                 context,
@@ -251,6 +254,9 @@ class RoadmapOrchestrator:
                     description=ep_skel.description,
                     priority=ep_skel.priority,
                 )
+
+                # Append epic early so incremental saves capture it
+                milestone.epics.append(epic)
 
                 # Generate stories for this epic
                 st_result = await self.story_gen.generate(
@@ -334,15 +340,188 @@ class RoadmapOrchestrator:
                     roadmap.updated_at = datetime.now(timezone.utc)
                     await self.storage.save_roadmap(roadmap)
 
-                milestone.epics.append(epic)
+        # Final save
+        roadmap.updated_at = datetime.now(timezone.utc)
+        await self.storage.save_roadmap(roadmap)
 
-            roadmap.milestones.append(milestone)
+        self._print_summary(roadmap)
+        return roadmap
+
+    async def resume(self, roadmap: Roadmap) -> Roadmap:
+        """Resume generation of an incomplete roadmap.
+
+        Walks the existing hierarchy, skips completed items, and generates
+        missing children (epics, stories, tasks) from where it left off.
+
+        Args:
+            roadmap: A partially-complete roadmap loaded from disk.
+
+        Returns:
+            The completed Roadmap.
+        """
+        context = roadmap.context
+
+        # Reset usage tracking for this resume session
+        self.client.reset_usage()
+
+        # Walk milestones — they already exist, just need children filled in
+        for milestone in roadmap.milestones:
+            ms_ctx = self._item_context(milestone)
+
+            # Case 1: Milestone has no epics — generate them
+            if not milestone.epics:
+                self.console.print(
+                    f"\n[bold]📦 Resuming: {milestone.name}[/bold] (generating epics)"
+                )
+
+                ep_result = await self.epic_gen.generate(
+                    context,
+                    parent_context={"milestone": ms_ctx},
+                )
+
+                if self.interactive:
+                    while True:
+                        self._display_epics(ep_result.epics, milestone.name)
+                        self.console.print(
+                            "[dim]  [a] Approve and continue  [r] Regenerate epics[/dim]"
+                        )
+                        action = self._prompt_review("epics")
+                        if action == ReviewAction.APPROVE:
+                            break
+                        self.console.print(
+                            f"\n[bold]🔄 Regenerating epics for {milestone.name}...[/bold]"
+                        )
+                        ep_result = await self.epic_gen.generate(
+                            context,
+                            parent_context={"milestone": ms_ctx},
+                        )
+
+                for ep_skel in ep_result.epics:
+                    epic = Epic(
+                        id=generate_id("epic"),
+                        name=ep_skel.name,
+                        goal=ep_skel.goal,
+                        description=ep_skel.description,
+                        priority=ep_skel.priority,
+                    )
+                    milestone.epics.append(epic)
+
+            # Now expand each epic that needs children
+            for epic in milestone.epics:
+                ep_ctx = self._item_context(epic)
+
+                # Case 2: Epic has no stories — generate them
+                if not epic.stories:
+                    self.console.print(
+                        f"  [bold]🏗  Resuming: {epic.name}[/bold] (generating stories)"
+                    )
+
+                    st_result = await self.story_gen.generate(
+                        context,
+                        parent_context={"milestone": ms_ctx, "epic": ep_ctx},
+                        sibling_context=[],
+                    )
+
+                    if self.interactive:
+                        while True:
+                            self._display_stories(st_result.stories, epic.name)
+                            self.console.print(
+                                "[dim]  [a] Approve and continue  [r] Regenerate stories[/dim]"
+                            )
+                            action = self._prompt_review("stories")
+                            if action == ReviewAction.APPROVE:
+                                break
+                            self.console.print(
+                                f"\n[bold]🔄 Regenerating stories for {epic.name}...[/bold]"
+                            )
+                            st_result = await self.story_gen.generate(
+                                context,
+                                parent_context={"milestone": ms_ctx, "epic": ep_ctx},
+                                sibling_context=[],
+                            )
+
+                    for st_skel in st_result.stories:
+                        story = Story(
+                            id=generate_id("story"),
+                            name=st_skel.name,
+                            description=st_skel.description,
+                            priority=st_skel.priority,
+                            acceptance_criteria=st_skel.acceptance_criteria,
+                        )
+                        epic.stories.append(story)
+
+                # Now expand each story that needs tasks
+                for story in epic.stories:
+                    if story.tasks:
+                        continue
+
+                    st_ctx = self._item_context(story)
+
+                    self.console.print(
+                        f"    [dim]📝 Resuming: {story.name}[/dim] (generating tasks)"
+                    )
+
+                    task_result = await self.task_gen.generate(
+                        context,
+                        parent_context={
+                            "milestone": ms_ctx,
+                            "epic": ep_ctx,
+                            "story": st_ctx,
+                        },
+                    )
+
+                    if self.interactive:
+                        while True:
+                            self._display_tasks(task_result.tasks, story.name)
+                            self.console.print(
+                                "[dim]  [a] Approve and continue  [r] Regenerate tasks[/dim]"
+                            )
+                            action = self._prompt_review("tasks")
+                            if action == ReviewAction.APPROVE:
+                                break
+                            self.console.print(
+                                f"\n[bold]🔄 Regenerating tasks for {story.name}...[/bold]"
+                            )
+                            task_result = await self.task_gen.generate(
+                                context,
+                                parent_context={
+                                    "milestone": ms_ctx,
+                                    "epic": ep_ctx,
+                                    "story": st_ctx,
+                                },
+                            )
+
+                    story.tasks = task_result.tasks
+
+                    # Save incrementally after each story
+                    roadmap.updated_at = datetime.now(timezone.utc)
+                    await self.storage.save_roadmap(roadmap)
 
         # Final save
         roadmap.updated_at = datetime.now(timezone.utc)
         await self.storage.save_roadmap(roadmap)
 
-        # Print summary
+        self._print_summary(roadmap)
+        return roadmap
+
+    @staticmethod
+    def _item_context(item: Milestone | Epic | Story) -> dict:
+        """Extract compact context dict from a saved item for parent_context.
+
+        Only includes the fields used by the prompt template (name, goal,
+        description, priority) to keep context concise.
+        """
+        ctx = {
+            "name": item.name,
+            "description": item.description,
+            "priority": item.priority.value,
+        }
+        if hasattr(item, "goal"):
+            ctx["goal"] = item.goal
+        return ctx
+
+    def _print_summary(self, roadmap: Roadmap) -> None:
+        """Print generation summary with item counts and usage stats."""
         counts = roadmap.total_items
         self.console.print(f"\n[bold green]✅ Roadmap complete![/bold green]")
         self.console.print(
@@ -357,5 +536,3 @@ class RoadmapOrchestrator:
             usage=self.client.usage,
             model=self.client.model_name,
         ))
-
-        return roadmap

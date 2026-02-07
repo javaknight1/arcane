@@ -8,7 +8,7 @@ import pytest
 from pydantic import BaseModel
 from rich.console import Console
 
-from arcane.clients.base import BaseAIClient
+from arcane.clients.base import BaseAIClient, UsageStats
 from arcane.generators import (
     RoadmapOrchestrator,
     MilestoneSkeletonList,
@@ -29,6 +29,7 @@ class MockClient(BaseAIClient):
 
     def __init__(self):
         self._call_count = 0
+        self._usage = UsageStats()
 
     async def generate(
         self,
@@ -37,6 +38,7 @@ class MockClient(BaseAIClient):
         response_model: type[BaseModel],
         max_tokens: int = 4096,
         temperature: float = 0.7,
+        level: str | None = None,
     ) -> BaseModel:
         self._call_count += 1
 
@@ -130,6 +132,13 @@ class MockClient(BaseAIClient):
     @property
     def model_name(self) -> str:
         return "mock-model-1.0"
+
+    @property
+    def usage(self) -> UsageStats:
+        return self._usage
+
+    def reset_usage(self) -> None:
+        self._usage.reset()
 
 
 @pytest.fixture

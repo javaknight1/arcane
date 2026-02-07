@@ -105,6 +105,14 @@ async def _resume(path: str) -> None:
     settings = Settings()
     path_obj = Path(path)
 
+    # Validate API key
+    if not settings.anthropic_api_key:
+        console.print(
+            "[red]Error:[/red] No API key found. "
+            "Set ARCANE_ANTHROPIC_API_KEY environment variable or add to .env file."
+        )
+        raise typer.Exit(1)
+
     # Load existing roadmap
     storage = StorageManager(path_obj.parent if path_obj.is_file() else path_obj)
 
@@ -120,8 +128,41 @@ async def _resume(path: str) -> None:
         console.print("[green]✓[/green] Roadmap is already complete!")
         return
 
+    console.print(f"\n[bold]{roadmap.project_name}[/bold]")
     console.print(f"[yellow]Resume point:[/yellow] {resume_point}")
-    console.print("[dim]Resume functionality coming soon...[/dim]")
+
+    # Create client
+    client = create_client(
+        "anthropic",
+        api_key=settings.anthropic_api_key,
+        model=settings.model,
+    )
+
+    # Validate connection
+    console.print("\n[dim]Validating API connection...[/dim]")
+    if not await client.validate_connection():
+        console.print("[red]Error:[/red] Could not connect to AI provider.")
+        raise typer.Exit(1)
+    console.print("[green]✓[/green] Connected to", client.provider_name)
+
+    if not Confirm.ask("\nResume generation?", default=True, console=console):
+        console.print("[dim]Resume cancelled.[/dim]")
+        raise typer.Exit(0)
+
+    # Resume generation
+    orchestrator = RoadmapOrchestrator(
+        client=client,
+        console=console,
+        storage=storage,
+        interactive=settings.interactive,
+    )
+
+    roadmap = await orchestrator.resume(roadmap)
+
+    # Print output location
+    project_slug = storage._slugify(roadmap.project_name)
+    output_dir = path_obj.parent if path_obj.is_file() else path_obj
+    console.print(f"\n[bold]📁 Saved to:[/bold] {output_dir.absolute()}")
 
 
 async def _export(path: str, to: str, workspace: str | None) -> None:

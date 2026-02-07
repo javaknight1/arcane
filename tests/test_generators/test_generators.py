@@ -4,7 +4,7 @@ import pytest
 from pydantic import BaseModel
 from rich.console import Console
 
-from arcane.clients.base import BaseAIClient, AIClientError
+from arcane.clients.base import BaseAIClient, AIClientError, UsageStats
 from arcane.generators import (
     MilestoneGenerator,
     EpicGenerator,
@@ -31,6 +31,7 @@ class MockClient(BaseAIClient):
         self._last_system_prompt: str | None = None
         self._last_user_prompt: str | None = None
         self._call_count = 0
+        self._usage = UsageStats()
 
     async def generate(
         self,
@@ -39,6 +40,7 @@ class MockClient(BaseAIClient):
         response_model: type[BaseModel],
         max_tokens: int = 4096,
         temperature: float = 0.7,
+        level: str | None = None,
     ) -> BaseModel:
         self._last_system_prompt = system_prompt
         self._last_user_prompt = user_prompt
@@ -55,6 +57,13 @@ class MockClient(BaseAIClient):
     @property
     def model_name(self) -> str:
         return "mock-model-1.0"
+
+    @property
+    def usage(self) -> UsageStats:
+        return self._usage
+
+    def reset_usage(self) -> None:
+        self._usage.reset()
 
 
 @pytest.fixture
