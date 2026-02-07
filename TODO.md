@@ -3,7 +3,7 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-06
-**Current Task:** T31 (Update Example Scripts)
+**Current Task:** T24 (Cost Visibility)
 **Current Sprint:** S6 (Documentation & Testing)
 
 ---
@@ -36,7 +36,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T20~~  | ~~S6~~ | ~~P0~~   | ~~Testing~~ | ~~Smoke Test Script~~        | ~~Real API testing script for prompt validation~~ ✓        |
 | ~~T21~~  | ~~S6~~ | ~~P1~~   | ~~Templates~~ | ~~Prompt Tuning~~          | ~~Refine prompts based on smoke test results~~ ✓           |
 | ~~T22~~  | ~~S6~~ | ~~P2~~   | ~~Maintenance~~ | ~~Repository Cleanup~~   | ~~Remove legacy files from pre-refactor~~ ✓                |
-| T23      | S7     | P0       | UX          | Interactive Review           | Pause between phases for user review                       |
+| ~~T23~~  | ~~S7~~ | ~~P0~~   | ~~UX~~      | ~~Interactive Review~~       | ~~Pause between phases for user review~~ ✓                 |
 | T24      | S7     | P0       | UX          | Cost Visibility              | Show estimated cost before generation                      |
 | T25      | S8     | P1       | Generators  | Resume Functionality         | Continue interrupted generations                           |
 | T26      | S8     | P1       | Clients     | Rate Limiting                | Backoff/retry for API rate limits                          |
@@ -95,7 +95,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 
 ### Sprint 7 - UX Improvements
 
-- [ ] **T23** - Interactive review mode between generation phases
+- [x] **T23** - Interactive review mode between generation phases ✓
 - [ ] **T24** - Cost visibility before starting generation
 
 ### Sprint 8 - Post-MVP Features
