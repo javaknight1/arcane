@@ -3,7 +3,7 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-06
-**Current Task:** T20 (Smoke Test Script)
+**Current Task:** T22 (Repository Cleanup)
 **Current Sprint:** S6 (Documentation & Testing)
 
 ---
@@ -33,8 +33,8 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T17~~  | ~~S5~~ | ~~P0~~   | ~~Integration~~ | ~~Integration Wiring~~   | ~~Wire all components and verify CLI works~~ ✓             |
 | ~~T18~~  | ~~S5~~ | ~~P0~~   | ~~Testing~~ | ~~E2E Integration Test~~     | ~~End-to-end tests with mock AI client~~ ✓                 |
 | ~~T19~~  | ~~S6~~ | ~~P1~~   | ~~Docs~~    | ~~README~~                   | ~~User-facing documentation and quick start~~ ✓            |
-| T20      | S6     | P0       | Testing     | Smoke Test Script            | Real API testing script for prompt validation              |
-| T21      | S6     | P1       | Templates   | Prompt Tuning                | Refine prompts based on smoke test results                 |
+| ~~T20~~  | ~~S6~~ | ~~P0~~   | ~~Testing~~ | ~~Smoke Test Script~~        | ~~Real API testing script for prompt validation~~ ✓        |
+| ~~T21~~  | ~~S6~~ | ~~P1~~   | ~~Templates~~ | ~~Prompt Tuning~~          | ~~Refine prompts based on smoke test results~~ ✓           |
 | T22      | S6     | P2       | Maintenance | Repository Cleanup           | Remove legacy files from pre-refactor                      |
 | T23      | S7     | P0       | UX          | Interactive Review           | Pause between phases for user review                       |
 | T24      | S7     | P0       | UX          | Cost Visibility              | Show estimated cost before generation                      |
@@ -44,6 +44,8 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | T28      | S9     | P2       | Export      | Linear Integration           | Native export via GraphQL API                              |
 | T29      | S9     | P2       | Export      | Jira Integration             | Native export via REST API                                 |
 | T30      | S9     | P2       | Export      | Notion Integration           | Native export via Notion API                               |
+| T31      | S6     | P1       | Scripts     | Update Example Scripts       | Create new scripts that use `arcane new` CLI               |
+| T32      | S6     | P1       | Scripts     | Create Example Idea File     | Create telchar.txt example for testing                     |
 
 ---
 
@@ -85,9 +87,11 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 ### Sprint 6 - Documentation & Testing (CURRENT)
 
 - [x] **T19** - README and user documentation ✓
-- [ ] **T20** - Real API smoke test script
-- [ ] **T21** - Prompt tuning based on smoke test results
+- [x] **T20** - Real API smoke test script ✓
+- [x] **T21** - Prompt tuning based on smoke test results ✓
 - [ ] **T22** - Repository cleanup of legacy files
+- [ ] **T31** - Update example scripts to use new CLI
+- [ ] **T32** - Create example idea file (telchar.txt)
 
 ### Sprint 7 - UX Improvements
 
@@ -914,6 +918,94 @@ Proceed with generation? [Y/n] >
 - Create database with roadmap items
 - Use nested pages for hierarchy
 - Include all metadata as properties
+
+---
+
+### T31: Update Example Scripts
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S6 - Documentation & Testing                               |
+| Priority    | P1 - High                                                  |
+| Type        | Scripts                                                    |
+| Description | Create new example scripts that use the refactored `arcane new` CLI |
+
+**Commit message:** `chore: update example scripts for new CLI`
+
+**Background:**
+The old scripts in `scripts/` use the deprecated `arcane interactive` command with many flags that no longer exist. The new CLI uses:
+- `arcane new` - Interactive discovery and generation
+- `arcane new --name "Project"` - Skip project name question
+- `arcane new --no-interactive` - Skip review prompts
+- `arcane new --output ./path` - Custom output directory
+
+**Create/update scripts:**
+
+1. **`scripts/run.sh`** - Basic example:
+   ```bash
+   #!/bin/bash
+   # Basic Arcane roadmap generation
+   arcane new --output ./output
+   ```
+
+2. **`scripts/run-with-idea.sh`** - Using idea file context:
+   ```bash
+   #!/bin/bash
+   # Generate roadmap with idea file for reference
+   # Note: The idea file is shown during discovery for context
+   arcane new --name "$(head -1 idea.txt)" --output ./output
+   ```
+
+3. **`scripts/run-batch.sh`** - Non-interactive batch mode:
+   ```bash
+   #!/bin/bash
+   # Non-interactive mode (for CI/testing)
+   arcane new --name "Test Project" --no-interactive --output ./output
+   ```
+
+**Delete old scripts:**
+- `scripts/run.sh` (will be replaced)
+- `scripts/run-simple.sh`
+- `scripts/run-comprehensive.sh`
+- `scripts/run-solo.sh`
+
+---
+
+### T32: Create Example Idea File
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S6 - Documentation & Testing                               |
+| Priority    | P1 - High                                                  |
+| Type        | Scripts                                                    |
+| Description | Create telchar.txt example idea file for testing Arcane with real project |
+
+**Commit message:** `docs: add example idea file for testing`
+
+**Background:**
+The telchar.txt file is an example project idea that can be used when testing Arcane. It contains a real project concept (the "Telchar" application) that serves as input for manual testing of the roadmap generation.
+
+**Create `telchar.txt`:**
+- Should contain a realistic project description
+- Include enough detail to generate a meaningful roadmap
+- Serve as a reference during the discovery question phase
+
+**Example format:**
+```
+Project: Telchar - Full-Stack Application Scaffolding CLI
+
+Description: A CLI tool that scaffolds complete full-stack applications based on user preferences. Similar to create-react-app but for full-stack projects.
+
+Key Features:
+- Interactive project setup wizard
+- Template-based code generation
+- Support for multiple frameworks (React, Vue, Django, FastAPI, etc.)
+- Database configuration (PostgreSQL, MongoDB, etc.)
+- Authentication boilerplate
+- Docker and CI/CD setup
+
+Target Users: Developers who want to quickly bootstrap production-ready projects
+```
 
 ---
 

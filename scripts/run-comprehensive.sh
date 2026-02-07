@@ -4,7 +4,7 @@
 # This script generates a holistic roadmap covering all business and technical aspects
 
 python -m arcane interactive \
-    --provider claude \
+    --model claude \
     --output-dir output \
     --idea-file idea.txt \
     --timeline "24-months" \
@@ -22,18 +22,10 @@ python -m arcane interactive \
     --team-distribution hybrid \
     --dev-methodology agile \
     --budget-range funded \
-    --infra-budget substantial \
-    --services-budget professional \
     --deployment-environment kubernetes \
     --geographic-distribution multi-region \
     --scaling-expectations daily-peaks \
-    --payment-integrations stripe paypal bank-transfers \
-    --communication-integrations email sms push-notifications in-app-chat \
-    --business-integrations crm accounting analytics support \
-    --developer-integrations github-gitlab ci-cd monitoring error-tracking feature-flags \
-    --data-integrations rest-apis graphql-apis webhooks websockets databases \
+    --integrations payments notifications business-tools developer-tools external-apis \
     --success-metric revenue \
-    --success-timeline long \
-    --measurement-approach quantitative \
-    --failure-tolerance low \
     --formats csv json yaml
+    # --export-to linear  # Uncomment to export to: notion, jira, asana, linear, trello, github_projects, azure_devops, monday, clickup, file_only, skip

@@ -5,7 +5,7 @@
 
 python -m arcane interactive \
     --idea-file idea.txt \
-    --provider claude \
+    --model claude \
     --output-dir output \
     --timeline "10 years" \
     --complexity complex \
@@ -21,18 +21,10 @@ python -m arcane interactive \
     --team-distribution colocated \
     --dev-methodology agile \
     --budget-range enterprise \
-    --infra-budget unlimited \
-    --services-budget enterprise \
     --deployment-environment kubernetes \
     --geographic-distribution global \
     --scaling-expectations viral \
-    --payment-integrations stripe paypal square cryptocurrency bank-transfers \
-    --communication-integrations email sms push-notifications in-app-chat video-calls \
-    --business-integrations crm accounting analytics support marketing-automation \
-    --developer-integrations github-gitlab ci-cd monitoring error-tracking feature-flags \
-    --data-integrations rest-apis graphql-apis webhooks websockets file-uploads databases \
+    --integrations payments notifications business-tools developer-tools external-apis \
     --success-metric revenue \
-    --success-timeline long \
-    --measurement-approach quantitative \
-    --failure-tolerance zero \
     --formats csv json yaml
+    # --export-to linear  # Uncomment to export to: notion, jira, asana, linear, trello, github_projects, azure_devops, monday, clickup, file_only, skip

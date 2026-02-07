@@ -150,6 +150,7 @@ logs/
 # Generated outputs
 output/
 generated_roadmap.*
+smoke-test-output/
 
 # Claude
 .claude/

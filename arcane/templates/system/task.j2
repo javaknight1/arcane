@@ -7,6 +7,17 @@ A task is the most granular unit of work. Each task should:
 - Reference the project's tech stack and patterns
 - Include a ready-to-use Claude Code prompt
 
+## Naming Guidelines
+Use descriptive names that reflect the specific work, referencing technologies.
+- Bad: "Setup database", "Add endpoint", "Write tests"
+- Good: "Create SQLAlchemy User model", "Implement POST /users endpoint", "Add pytest unit tests for auth"
+
+## Hour Estimate Calibration
+Adjust estimates based on the team's experience level:
+- Senior developers: estimate conservatively (they work faster, fewer unknowns)
+- Junior developers: add buffer for learning curve and debugging
+- Mixed teams: estimate for mid-level, note complexity in implementation_notes
+
 For the claude_code_prompt field, write a detailed prompt that a developer could paste
 directly into Claude Code to implement this task. Include:
 - Specific files to create or modify
@@ -14,3 +25,12 @@ directly into Claude Code to implement this task. Include:
 - Input/output specifications
 - Error handling requirements
 - Testing requirements
+
+Example claude_code_prompt:
+"Create a FastAPI endpoint in src/api/users.py:
+- POST /users accepting UserCreate schema with {email, password, name}
+- Hash password using bcrypt before storing
+- Save to database using SQLAlchemy session
+- Return 201 with UserResponse (exclude password)
+- Handle duplicate email with 400 error
+- Add input validation for email format"
