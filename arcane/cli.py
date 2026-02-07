@@ -14,6 +14,7 @@ from pathlib import Path
 import typer
 from rich.console import Console
 from rich.panel import Panel
+from rich.prompt import Confirm
 from rich.tree import Tree
 
 from arcane.clients import create_client
@@ -23,6 +24,7 @@ from arcane.items import Roadmap
 from arcane.project_management import CSVClient
 from arcane.questions import QuestionConductor
 from arcane.storage import StorageManager
+from arcane.utils import estimate_generation_cost, format_cost_estimate
 
 app = typer.Typer(
     name="arcane",
@@ -70,6 +72,17 @@ async def _new(
         console.print("[red]Error:[/red] Could not connect to AI provider.")
         raise typer.Exit(1)
     console.print("[green]✓[/green] Connected to", client.provider_name)
+
+    # Show cost estimate and confirm (only in interactive mode)
+    if interactive:
+        estimate = estimate_generation_cost(model=settings.model)
+        console.print()
+        console.print(format_cost_estimate(estimate))
+        console.print()
+
+        if not Confirm.ask("Proceed with generation?", default=True, console=console):
+            console.print("[dim]Generation cancelled.[/dim]")
+            raise typer.Exit(0)
 
     # Generate roadmap
     orchestrator = RoadmapOrchestrator(

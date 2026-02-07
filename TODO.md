@@ -3,7 +3,7 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-06
-**Current Task:** T24 (Cost Visibility)
+**Current Task:** T31 (Update Example Scripts)
 **Current Sprint:** S6 (Documentation & Testing)
 
 ---
@@ -37,7 +37,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T21~~  | ~~S6~~ | ~~P1~~   | ~~Templates~~ | ~~Prompt Tuning~~          | ~~Refine prompts based on smoke test results~~ ✓           |
 | ~~T22~~  | ~~S6~~ | ~~P2~~   | ~~Maintenance~~ | ~~Repository Cleanup~~   | ~~Remove legacy files from pre-refactor~~ ✓                |
 | ~~T23~~  | ~~S7~~ | ~~P0~~   | ~~UX~~      | ~~Interactive Review~~       | ~~Pause between phases for user review~~ ✓                 |
-| T24      | S7     | P0       | UX          | Cost Visibility              | Show estimated cost before generation                      |
+| ~~T24~~  | ~~S7~~ | ~~P0~~   | ~~UX~~      | ~~Cost Visibility~~          | ~~Show estimated cost before generation~~ ✓                |
 | T25      | S8     | P1       | Generators  | Resume Functionality         | Continue interrupted generations                           |
 | T26      | S8     | P1       | Clients     | Rate Limiting                | Backoff/retry for API rate limits                          |
 | T27      | S8     | P1       | Questions   | Back-Navigation              | Edit previous answers in question flow                     |
@@ -93,10 +93,10 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 - [ ] **T31** - Update example scripts to use new CLI
 - [ ] **T32** - Create example idea file (telchar.txt)
 
-### Sprint 7 - UX Improvements
+### Sprint 7 - UX Improvements (COMPLETE)
 
 - [x] **T23** - Interactive review mode between generation phases ✓
-- [ ] **T24** - Cost visibility before starting generation
+- [x] **T24** - Cost visibility before starting generation ✓
 
 ### Sprint 8 - Post-MVP Features
 
@@ -776,7 +776,7 @@ git status --porcelain
 
 ---
 
-### T24: Cost Visibility
+### T24: Cost Visibility ✓
 
 | Field       | Value                                                      |
 | ----------- | ---------------------------------------------------------- |
@@ -785,20 +785,25 @@ git status --porcelain
 | Type        | UX                                                         |
 | Description | Show estimated token usage and cost before starting generation |
 
-**Commit message:** `feat: add cost estimation before generation starts`
+**Commit:** `feat: add cost estimation before generation starts`
 
-**Implementation:**
-- Estimate number of API calls based on typical generation (2-4 milestones, 2-3 epics each, etc.)
-- Calculate approximate token count per call
-- Show estimated cost using Anthropic pricing
-- Prompt user to confirm before proceeding
+**What was done:**
+- Created `arcane/utils/cost_estimator.py` with:
+  - `CostEstimate` dataclass for structured estimates
+  - `estimate_generation_cost()` function with configurable parameters
+  - `format_cost_estimate()` function for display formatting
+  - Token estimates per call type (milestone, epic, story, task)
+  - Model pricing dictionary for accurate cost calculation
+- Updated `arcane/utils/__init__.py` to export cost estimator functions
+- Modified `arcane/cli.py` to show cost estimate before generation (interactive mode only)
+- Added user confirmation prompt before proceeding
 
 **User experience:**
 ```
 📊 Estimated generation:
-   ~15 API calls
-   ~50,000 tokens
-   ~$0.75 estimated cost
+   ~40 API calls
+   ~136,700 tokens (55,100 in / 81,600 out)
+   ~$1.39 estimated cost
 
 Proceed with generation? [Y/n] >
 ```
