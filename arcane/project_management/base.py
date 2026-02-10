@@ -17,15 +17,24 @@ class ExportResult(BaseModel):
     Attributes:
         success: Whether the export completed successfully.
         target: Name of the export target (e.g., "CSV", "Linear").
-        items_created: Number of items exported.
-        errors: List of error messages if any occurred.
+        items_created: Total number of items exported.
+        items_by_type: Breakdown of items created by type
+            (e.g., {"milestones": 3, "epics": 9, ...}).
+        id_mapping: Mapping of Arcane item IDs to PM tool IDs
+            (e.g., {"task-01HQ...": "LIN-123"}).
+        errors: List of fatal error messages if any occurred.
+        warnings: List of non-fatal issues encountered during export
+            (e.g., "Could not set status for task-01HQ...").
         url: URL or path to the exported result, if applicable.
     """
 
     success: bool
     target: str
     items_created: int
+    items_by_type: dict[str, int] = {}
+    id_mapping: dict[str, str] = {}
     errors: list[str] = []
+    warnings: list[str] = []
     url: str | None = None
 
 

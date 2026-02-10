@@ -285,6 +285,48 @@ class TestCSVClient:
         assert str(output_path.absolute()) in result.url
 
 
+    @pytest.mark.asyncio
+    async def test_export_items_by_type(self, tmp_path, sample_roadmap):
+        """Export returns items_by_type breakdown."""
+        client = CSVClient()
+        output_path = tmp_path / "output.csv"
+
+        result = await client.export(sample_roadmap, output_path=str(output_path))
+
+        assert result.items_by_type == {
+            "milestones": 1,
+            "epics": 1,
+            "stories": 1,
+            "tasks": 2,
+        }
+
+    @pytest.mark.asyncio
+    async def test_export_id_mapping(self, tmp_path, sample_roadmap):
+        """Export returns id_mapping for all items."""
+        client = CSVClient()
+        output_path = tmp_path / "output.csv"
+
+        result = await client.export(sample_roadmap, output_path=str(output_path))
+
+        # CSV uses identity mapping (arcane ID = CSV ID)
+        assert "milestone-001" in result.id_mapping
+        assert "epic-001" in result.id_mapping
+        assert "story-001" in result.id_mapping
+        assert "task-001" in result.id_mapping
+        assert "task-002" in result.id_mapping
+        assert result.id_mapping["task-001"] == "task-001"
+
+    @pytest.mark.asyncio
+    async def test_export_no_warnings(self, tmp_path, sample_roadmap):
+        """CSV export produces no warnings."""
+        client = CSVClient()
+        output_path = tmp_path / "output.csv"
+
+        result = await client.export(sample_roadmap, output_path=str(output_path))
+
+        assert result.warnings == []
+
+
 class TestExportResult:
     """Tests for ExportResult model."""
 
@@ -300,6 +342,9 @@ class TestExportResult:
         assert result.target == "CSV"
         assert result.items_created == 10
         assert result.errors == []
+        assert result.items_by_type == {}
+        assert result.id_mapping == {}
+        assert result.warnings == []
 
     def test_export_result_failure(self):
         """ExportResult can represent failure with errors."""
@@ -311,3 +356,36 @@ class TestExportResult:
         )
         assert result.success is False
         assert len(result.errors) == 2
+
+    def test_export_result_with_warnings(self):
+        """ExportResult can include non-fatal warnings."""
+        result = ExportResult(
+            success=True,
+            target="Linear",
+            items_created=10,
+            warnings=["Could not set status for task-01HQ", "Label 'urgent' not found"],
+        )
+        assert result.success is True
+        assert len(result.warnings) == 2
+
+    def test_export_result_with_items_by_type(self):
+        """ExportResult can include items_by_type breakdown."""
+        result = ExportResult(
+            success=True,
+            target="Jira",
+            items_created=15,
+            items_by_type={"milestones": 2, "epics": 4, "stories": 5, "tasks": 4},
+        )
+        assert result.items_by_type["milestones"] == 2
+        assert sum(result.items_by_type.values()) == 15
+
+    def test_export_result_with_id_mapping(self):
+        """ExportResult can include id_mapping."""
+        result = ExportResult(
+            success=True,
+            target="Linear",
+            items_created=2,
+            id_mapping={"task-01HQ": "LIN-123", "task-02HQ": "LIN-124"},
+        )
+        assert result.id_mapping["task-01HQ"] == "LIN-123"
+        assert len(result.id_mapping) == 2

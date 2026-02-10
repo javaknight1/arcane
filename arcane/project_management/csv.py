@@ -77,6 +77,16 @@ class CSVClient(BasePMClient):
         # Flatten hierarchy to rows
         rows = self._flatten(roadmap)
 
+        # Count items by type (keys match Roadmap.total_items)
+        _plural = {"Milestone": "milestones", "Epic": "epics", "Story": "stories", "Task": "tasks"}
+        items_by_type: dict[str, int] = {}
+        for row in rows:
+            type_key = _plural[row["Type"]]
+            items_by_type[type_key] = items_by_type.get(type_key, 0) + 1
+
+        # Build ID mapping (identity for CSV — arcane IDs are used directly)
+        id_mapping = {row["ID"]: row["ID"] for row in rows}
+
         # Write CSV
         try:
             with open(path, "w", newline="", encoding="utf-8") as f:
@@ -88,6 +98,8 @@ class CSVClient(BasePMClient):
                 success=True,
                 target=self.name,
                 items_created=len(rows),
+                items_by_type=items_by_type,
+                id_mapping=id_mapping,
                 url=str(path.absolute()),
             )
         except OSError as e:
