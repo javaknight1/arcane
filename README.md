@@ -45,6 +45,14 @@ This starts an interactive session that:
 4. Defines requirements (must-have, nice-to-have, out of scope)
 5. Generates a complete roadmap with AI
 
+### Preparing Your Answers
+
+For the best results, plan your answers before running `arcane new`. We provide an idea file guide that walks you through every prompt with tips and examples:
+
+- **[`examples/idea-file-guide.txt`](examples/idea-file-guide.txt)** — Template and guide for creating your own project idea file
+
+Copy the guide, fill it in for your project, and reference it while answering arcane's prompts. The "Additional Notes" prompt at the end accepts free-form text — paste your architecture decisions, data model, and constraints there for the highest quality roadmap output.
+
 ## CLI Commands
 
 ### `arcane new`
@@ -166,9 +174,10 @@ Generated roadmaps are saved to a project directory:
 
 ```
 my-project/
-├── roadmap.json    # Complete roadmap with all items
-├── context.yaml    # Project context from discovery
-└── roadmap.csv     # CSV export (if exported)
+├── roadmap.json      # Complete roadmap with all items
+├── context.yaml      # Project context from discovery
+├── roadmap.csv       # CSV export (if exported)
+└── project-docs.md   # Project documentation (generated with CSV export)
 ```
 
 ### CSV Format

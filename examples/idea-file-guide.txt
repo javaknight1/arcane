@@ -1,0 +1,449 @@
+================================================================================
+ARCANE IDEA FILE — GUIDE & TEMPLATE
+================================================================================
+
+This is a template for creating your own project idea file. Fill it out before
+running `arcane new` and use it as a reference while answering each prompt.
+
+A well-written idea file is the single biggest factor in roadmap quality.
+arcane injects your answers into every AI call — vague answers produce vague
+roadmaps, specific answers produce actionable tasks with real implementation
+detail.
+
+See examples/telchar-idea.txt for a fully filled-out example.
+
+
+HOW TO USE THIS FILE
+────────────────────
+  1. Copy this file and rename it for your project (e.g., myapp-idea.txt)
+  2. Fill out every section — the [REQUIRED] ones map directly to arcane
+     prompts, and the [CONTEXT] ones go into the "Additional Notes" prompt
+  3. Run `arcane new` and reference your file while answering each question
+  4. When you reach the final "Additional Notes" prompt, paste in everything
+     from the NOTES section at the bottom — arcane feeds this into every
+     AI generation call, so the more detail you provide, the more specific
+     your milestones, epics, stories, and tasks will be
+
+
+HOW ARCANE USES YOUR ANSWERS
+─────────────────────────────
+arcane generates roadmaps top-down: Milestones -> Epics -> Stories -> Tasks.
+Every AI call receives your full project context. Here's what each field
+affects:
+
+  project_name        -> Used in naming conventions throughout the roadmap
+  vision              -> Sets the overall direction; the AI checks every
+                         milestone against this to ensure alignment
+  problem_statement   -> Helps the AI prioritize — features that directly
+                         solve this problem get higher priority
+  target_users        -> Affects task granularity and terminology; "junior
+                         devs" produces more hand-holding, "enterprise IT"
+                         produces compliance-oriented tasks
+  timeline            -> Controls how many milestones are generated and how
+                         ambitious each one is
+  team_size           -> Affects parallelism; team of 1 gets sequential work,
+                         team of 4 gets concurrent epics
+  developer_experience -> Controls task detail level; "junior" gets step-by-
+                         step instructions, "senior" gets high-level guidance
+  budget_constraints  -> Steers infrastructure decisions; "minimal" avoids
+                         paid services
+  tech_stack          -> Directly referenced in every task's implementation
+                         notes and claude_code_prompts
+  must_have_features  -> Each becomes a tracked deliverable; ordering hints
+                         at milestone sequencing
+  nice_to_have        -> Generated as lower-priority items in later milestones
+  out_of_scope        -> Prevents the AI from generating unwanted roadmap items
+  similar_products    -> Helps the AI understand the problem space and
+                         differentiate your approach
+  notes               -> Injected verbatim into every AI call; this is your
+                         most powerful lever for steering generation quality
+
+
+================================================================================
+TEMPLATE — Fill in each section below
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 1: BASIC INFORMATION
+Arcane prompts: project_name, vision, problem_statement, target_users
+────────────────────────────────────────────────────────────────────────────────
+
+PROJECT NAME [REQUIRED]
+───────────────
+<your project name>
+
+  Tips:
+  - Keep it short (1-2 words)
+  - This becomes the directory name (slugified: "My App" -> "my-app")
+  - Used in generated task names like "Set up My App CI pipeline"
+
+
+VISION [REQUIRED]
+───────────────
+<2-4 sentences describing what your project does and why it matters>
+
+  Tips:
+  - Be specific about WHAT it does, not just the category
+  - BAD:  "A web app for managing things"
+  - GOOD: "A real-time inventory tracking system that lets warehouse staff
+           scan barcodes with their phones and see stock levels update
+           instantly across all connected devices"
+  - Include the key differentiator — what makes this different from
+    existing solutions?
+  - The AI references this in every generation call to ensure milestones
+    and tasks align with the overall vision
+
+
+PROBLEM STATEMENT [REQUIRED]
+───────────────
+<2-4 sentences describing the problem your users have today>
+
+  Tips:
+  - Focus on the user's pain, not your solution
+  - BAD:  "There's no good app for this"
+  - GOOD: "Warehouse managers currently track inventory with spreadsheets
+           that are outdated by the time they're shared. A single miscount
+           can cascade into wrong orders, stockouts, and lost revenue"
+  - Quantify if possible: "teams spend 4 hours/week on manual reconciliation"
+  - The AI uses this to prioritize features — items that directly address
+    the problem get higher priority in the roadmap
+
+
+TARGET USERS [REQUIRED]
+───────────────
+<comma-separated list of user types>
+
+  Tips:
+  - Be specific about roles, not demographics
+  - BAD:  "everyone, users, people"
+  - GOOD: "warehouse staff, inventory managers, procurement officers"
+  - 2-4 user types is ideal; more than that dilutes focus
+  - The AI tailors terminology and task complexity based on this
+  - If your users are non-technical, the AI generates more UX-focused tasks
+  - If your users are developers, it focuses on APIs and documentation
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 2: CONSTRAINTS
+Arcane prompts: timeline, team_size, developer_experience, budget
+────────────────────────────────────────────────────────────────────────────────
+
+TIMELINE [REQUIRED]
+───────────────
+<select one: 1 month MVP, 3 months, 6 months, 1 year, or custom>
+
+  Tips:
+  - This is the most impactful constraint on roadmap shape
+  - "1 month MVP" -> 2-3 milestones, minimal scope, fastest path to launch
+  - "3 months"    -> 3-5 milestones, solid MVP with some polish
+  - "6 months"    -> 5-8 milestones, full-featured v1
+  - "1 year"      -> 8+ milestones, comprehensive with scaling and iteration
+  - Be honest — an overambitious timeline produces an unrealistic roadmap
+  - For side projects, "3 months" is a good default
+
+
+TEAM SIZE [REQUIRED]
+───────────────
+<number of developers, 1-100>
+
+  Tips:
+  - Count only developers, not designers/PMs/etc.
+  - Team of 1: all work is sequential, no parallel epics
+  - Team of 2-3: some parallel work, but still mostly sequential
+  - Team of 4+: the AI generates parallel workstreams and considers
+    handoff points between team members
+  - For side projects, this is usually 1
+
+
+DEVELOPER EXPERIENCE [REQUIRED]
+───────────────
+<select one: junior, mid-level, senior, mixed>
+
+  Tips:
+  - This controls the granularity of generated tasks:
+    - "junior": very detailed tasks (1-2 hours each), explicit step-by-step
+      instructions, more testing tasks, more documentation tasks
+    - "mid-level": moderate detail (2-4 hours each), some guidance
+    - "senior": high-level tasks (4-8 hours each), assumes familiarity
+      with patterns and tooling, focused on architecture decisions
+    - "mixed": varied detail levels, explicit handoff notes
+  - Also affects claude_code_prompts — junior gets longer, more specific
+    prompts; senior gets concise ones
+
+
+BUDGET [REQUIRED]
+───────────────
+<select one: minimal (free tier everything), moderate, flexible>
+
+  Tips:
+  - "minimal": AI avoids paid services, suggests self-hosted or free-tier
+    alternatives, Docker Compose over Kubernetes, SQLite over managed DBs
+  - "moderate": AI may suggest managed databases, basic cloud services,
+    CI/CD with paid tiers
+  - "flexible": AI freely suggests the best tool for the job regardless
+    of cost (managed Kubernetes, paid monitoring, commercial APIs)
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 3: TECHNICAL
+Arcane prompts: tech_stack, infrastructure_preferences, existing_codebase
+────────────────────────────────────────────────────────────────────────────────
+
+TECH STACK [REQUIRED]
+───────────────
+<comma-separated list of technologies, or leave blank for AI suggestions>
+
+  Tips:
+  - Be as specific as possible — library names, not just languages
+  - BAD:  "JavaScript, database"
+  - GOOD: "TypeScript, Next.js 14, Prisma, PostgreSQL, Tailwind CSS,
+           NextAuth.js, Vercel"
+  - The AI uses these in every task's implementation_notes and
+    claude_code_prompt fields
+  - If you list "FastAPI", tasks will reference FastAPI patterns
+  - If you list "Django", tasks will reference Django patterns
+  - Leaving this blank tells the AI to suggest technologies based on
+    your requirements — useful if you're undecided
+  - Include tooling too: "Docker, GitHub Actions, ESLint, Prettier"
+
+
+INFRASTRUCTURE [REQUIRED]
+───────────────
+<select one: AWS, GCP, Azure, Serverless, Self-hosted, No preference>
+
+  Tips:
+  - This affects deployment-related tasks in the roadmap
+  - "AWS" -> tasks reference S3, RDS, ECS/EKS, CloudFormation
+  - "GCP" -> tasks reference Cloud Run, Cloud SQL, GKE
+  - "Serverless" -> tasks reference Lambda/Cloud Functions, API Gateway
+  - "Self-hosted" -> tasks reference Docker, Nginx, systemd
+  - "No preference" -> AI picks based on other constraints (budget, scale)
+  - For CLI tools or libraries, pick "No preference"
+
+
+EXISTING CODEBASE [REQUIRED]
+───────────────
+<Yes or No>
+
+  Tips:
+  - "Yes" produces migration-aware tasks: understanding existing code,
+    backwards compatibility, incremental refactoring, data migration
+  - "No" produces greenfield tasks: setting up from scratch, choosing
+    conventions, initial project structure
+  - If "Yes", describe the existing codebase in the Notes section —
+    what language, what patterns, what state it's in
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 4: REQUIREMENTS
+Arcane prompts: must_have_features, nice_to_have_features, out_of_scope,
+                similar_products, notes
+────────────────────────────────────────────────────────────────────────────────
+
+MUST-HAVE FEATURES [REQUIRED]
+───────────────
+<comma-separated list of features required for launch>
+
+  Tips:
+  - ORDER MATTERS — list items in roughly the order you'd build them.
+    arcane uses this as a hint for milestone sequencing. Items listed
+    first tend to appear in earlier milestones.
+  - Be specific and actionable:
+    - BAD:  "user management"
+    - GOOD: "email/password registration, login with JWT tokens, password
+             reset via email, role-based access control (admin/user)"
+  - Each item becomes a trackable deliverable in the roadmap
+  - Aim for 8-20 items — fewer than 8 and the roadmap is too sparse,
+    more than 20 and priorities become unclear
+  - Group related items together:
+    "user registration, user login, password reset,
+     product listing page, product detail page, shopping cart,
+     Stripe checkout, order confirmation email"
+  - Think in user journeys: what does the user DO, step by step?
+
+
+NICE-TO-HAVE FEATURES [OPTIONAL]
+───────────────
+<comma-separated list of features that aren't critical for launch>
+
+  Tips:
+  - These appear in later milestones with lower priority
+  - Good candidates: polish features, advanced settings, analytics,
+    admin dashboards, integrations with third-party services
+  - If you're unsure whether something is must-have or nice-to-have,
+    ask: "Can we launch without this?" If yes, it's nice-to-have.
+  - Leave blank if everything is must-have
+
+
+OUT OF SCOPE [OPTIONAL]
+───────────────
+<comma-separated list of things you explicitly do NOT want to build>
+
+  Tips:
+  - THIS IS THE MOST UNDERUSED FIELD AND ONE OF THE MOST VALUABLE
+  - Without out-of-scope items, the AI may generate roadmap items for
+    things you never intended to build, wasting roadmap real estate
+  - Common out-of-scope items:
+    - "mobile app" (if web-only)
+    - "multi-tenancy" (if single-tenant)
+    - "internationalization/i18n" (if English-only for now)
+    - "offline support" (if online-only)
+    - "migration from existing system" (if greenfield)
+    - "custom analytics" (if using third-party analytics)
+    - "white-labeling" (if single brand)
+  - Be explicit: "no mobile app, no offline mode, no multi-language
+    support, no custom reporting engine"
+
+
+SIMILAR PRODUCTS [OPTIONAL]
+───────────────
+<comma-separated list of competitors or similar tools>
+
+  Tips:
+  - Helps the AI understand the problem space without lengthy explanation
+  - "Like Notion but for X" immediately conveys a lot of context
+  - The AI may reference these in task descriptions for clarity:
+    "Similar to how Stripe handles webhook retries..."
+  - Also helps with differentiation — the AI can generate tasks that
+    explicitly address gaps in competitor products
+  - 2-5 similar products is ideal
+
+
+NOTES [REQUIRED — paste all additional context here]
+───────────────
+<free-form text with as much detail as you want>
+
+  This is your most powerful tool for steering roadmap quality. Everything
+  you write here is injected into every AI generation call. The AI reads
+  this when generating milestones, epics, stories, AND tasks.
+
+  WHAT TO INCLUDE IN NOTES:
+
+  1. ARCHITECTURE DECISIONS
+     Describe how the system should be structured. What are the main
+     components? How do they communicate? What patterns should be used?
+
+     Example:
+       "The system has three components: a REST API (FastAPI), a React
+       frontend, and a PostgreSQL database. The API uses the repository
+       pattern for database access. All API responses follow JSON:API
+       format. WebSockets are used for real-time updates."
+
+  2. DATA MODEL
+     List your core entities and their relationships. The AI uses this
+     to generate database-related tasks and API endpoint tasks.
+
+     Example:
+       "Core entities: User (has many Projects), Project (has many Tasks),
+       Task (belongs to Project, optionally assigned to User), Comment
+       (belongs to Task, belongs to User). Users have roles: admin, member."
+
+  3. INTEGRATION POINTS
+     List any external services or APIs you need to integrate with.
+
+     Example:
+       "Must integrate with: Stripe for payments, SendGrid for email,
+       AWS S3 for file uploads, Google OAuth for login."
+
+  4. NON-FUNCTIONAL REQUIREMENTS
+     Performance targets, security requirements, compliance needs.
+
+     Example:
+       "API response time must be under 200ms for p95. Must support 1000
+       concurrent users. All data must be encrypted at rest. Must comply
+       with GDPR (user data export and deletion)."
+
+  5. USER FLOWS
+     Describe the key user journeys step by step. This directly maps
+     to stories and tasks.
+
+     Example:
+       "Onboarding flow: User signs up with email -> verifies email ->
+       creates first project -> invites team members -> creates first
+       task. Should take under 5 minutes."
+
+  6. DEPLOYMENT STRATEGY
+     How should the app be deployed? What environments are needed?
+
+     Example:
+       "Three environments: local (Docker Compose), staging (Kubernetes
+       on GKE, auto-deploy on merge to main), production (Kubernetes on
+       GKE, manual promotion from staging). Use GitHub Actions for CI."
+
+  7. TESTING STRATEGY
+     What level of testing do you expect?
+
+     Example:
+       "Unit tests for all business logic (>80% coverage). Integration
+       tests for all API endpoints. E2E tests for critical user flows
+       (registration, checkout). No load testing in MVP."
+
+  8. CONSTRAINTS AND GOTCHAS
+     Anything the AI should watch out for when generating tasks.
+
+     Example:
+       "We're using a monorepo with Turborepo. All packages share a
+       single tsconfig.base.json. The API must support both REST and
+       GraphQL from the start because mobile clients will use GraphQL
+       later. Do NOT generate any tasks related to mobile — that's a
+       separate project."
+
+  The more you write here, the better your roadmap. A 500-word notes
+  section produces dramatically better results than a 50-word one.
+
+
+================================================================================
+COMMON MISTAKES TO AVOID
+================================================================================
+
+1. VAGUE FEATURES
+   BAD:  "user management, data handling, nice UI"
+   GOOD: "email/password auth with JWT, PostgreSQL with Prisma ORM,
+          responsive dashboard with Tailwind CSS and data tables"
+
+2. NO OUT-OF-SCOPE LIST
+   Without it, the AI generates tasks for mobile apps, i18n, analytics
+   dashboards, and other things you never asked for. Always list what
+   you DON'T want.
+
+3. EMPTY NOTES SECTION
+   The notes field is injected into every AI call. An empty notes section
+   means the AI is guessing about your architecture, data model, and
+   deployment. Fill it in.
+
+4. OVERLY AMBITIOUS TIMELINE
+   "1 month" with 20 must-have features produces an unrealistic roadmap
+   where every task is compressed. Be honest about what you can build.
+
+5. GENERIC TECH STACK
+   "JavaScript, database" tells the AI nothing. "TypeScript 5, Next.js 14
+   App Router, Prisma 5, PostgreSQL 16, Tailwind CSS 3" tells it exactly
+   what patterns and APIs to reference in every task.
+
+6. LISTING FEATURES WITHOUT ORDERING
+   arcane uses feature ordering as a sequencing hint. If "authentication"
+   is listed after "admin dashboard", the AI might generate auth tasks
+   in a later milestone. List foundational features first.
+
+7. SKIPPING SIMILAR PRODUCTS
+   Three words — "like Notion but..." — give the AI more context than
+   three paragraphs of description. Always list competitors.
+
+
+================================================================================
+CHECKLIST — Before running `arcane new`
+================================================================================
+
+[ ] Project name is filled in (1-2 words)
+[ ] Vision is specific (not "an app that does stuff")
+[ ] Problem statement focuses on user pain, not your solution
+[ ] Target users are specific roles, not "everyone"
+[ ] Timeline is realistic for team size
+[ ] Tech stack lists specific libraries, not just languages
+[ ] Must-have features are ordered by build priority
+[ ] Must-have features are specific and actionable
+[ ] Out of scope explicitly lists what NOT to build
+[ ] Similar products are listed (even 1-2 helps)
+[ ] Notes section includes architecture, data model, and constraints
+[ ] Notes section is at least 200 words (more is better)
