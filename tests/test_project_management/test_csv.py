@@ -326,6 +326,23 @@ class TestCSVClient:
 
         assert result.warnings == []
 
+    @pytest.mark.asyncio
+    async def test_export_creates_docs_markdown(self, tmp_path, sample_roadmap):
+        """Export creates project-docs.md alongside the CSV."""
+        client = CSVClient()
+        output_path = tmp_path / "output.csv"
+
+        await client.export(sample_roadmap, output_path=str(output_path))
+
+        docs_path = tmp_path / "project-docs.md"
+        assert docs_path.exists()
+
+        content = docs_path.read_text(encoding="utf-8")
+        assert "# Project Overview" in content
+        assert "# Requirements" in content
+        assert "# Technical Decisions" in content
+        assert "# Team & Constraints" in content
+
 
 class TestExportResult:
     """Tests for ExportResult model."""

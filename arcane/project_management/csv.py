@@ -10,6 +10,7 @@ from pathlib import Path
 from arcane.items import Roadmap
 
 from .base import BasePMClient, ExportResult
+from .docs import build_all_pages, render_markdown
 
 
 class CSVClient(BasePMClient):
@@ -93,6 +94,11 @@ class CSVClient(BasePMClient):
                 writer = csv.DictWriter(f, fieldnames=self.FIELDNAMES)
                 writer.writeheader()
                 writer.writerows(rows)
+
+            # Write project docs markdown alongside the CSV
+            docs_path = path.parent / "project-docs.md"
+            pages = build_all_pages(roadmap.context)
+            docs_path.write_text(render_markdown(pages), encoding="utf-8")
 
             return ExportResult(
                 success=True,

@@ -2,7 +2,7 @@
 
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
-**Last Updated:** 2026-02-06
+**Last Updated:** 2026-02-13
 **Current Task:** T31 (Update Example Scripts)
 **Current Sprint:** S6 (Documentation & Testing)
 
@@ -46,6 +46,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | T30      | S9     | P2       | Export      | Notion Integration           | Native export via Notion API                               |
 | T31      | S6     | P1       | Scripts     | Update Example Scripts       | Create new scripts that use `arcane new` CLI               |
 | T32      | S6     | P1       | Scripts     | Create Example Idea File     | Create telchar.txt example for testing                     |
+| ~~T33~~  | ~~S9~~ | ~~P1~~   | ~~Export~~  | ~~Documentation Page Builders~~ | ~~Shared doc page builders from ProjectContext~~ ✓         |
 
 ---
 
@@ -106,9 +107,10 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 
 ### Sprint 9 - Native Integrations
 
-- [ ] **T28** - Native Linear integration via GraphQL API
-- [ ] **T29** - Native Jira Cloud integration via REST API
-- [ ] **T30** - Native Notion integration via API
+- [x] **T33** - Shared documentation page builders from ProjectContext ✓
+- [ ] **T28** - Native Linear integration via GraphQL API (includes doc page export)
+- [ ] **T29** - Native Jira Cloud integration via REST API (includes doc page export)
+- [ ] **T30** - Native Notion integration via API (includes doc page export)
 
 ---
 
@@ -887,7 +889,7 @@ Proceed with generation? [Y/n] >
 | Sprint      | S9 - Native Integrations                                   |
 | Priority    | P2 - Medium                                                |
 | Type        | Export                                                     |
-| Description | Native export to Linear using GraphQL API |
+| Description | Native export to Linear using GraphQL API, including documentation pages |
 
 **Commit message:** `feat: add native Linear integration`
 
@@ -896,6 +898,8 @@ Proceed with generation? [Y/n] >
 - Epics → Issues with 'epic' label
 - Stories → Issues linked to epic
 - Tasks → Sub-issues
+
+**Documentation pages:** Uses T33's doc page builders to create Linear Documents (markdown) associated with the Initiative. See PM_INTEGRATIONS.md "Documentation Pages" section for details.
 
 ---
 
@@ -906,7 +910,7 @@ Proceed with generation? [Y/n] >
 | Sprint      | S9 - Native Integrations                                   |
 | Priority    | P2 - Medium                                                |
 | Type        | Export                                                     |
-| Description | Native export to Jira Cloud using REST API |
+| Description | Native export to Jira Cloud using REST API, including documentation pages via Confluence (optional) |
 
 **Commit message:** `feat: add native Jira Cloud integration`
 
@@ -915,6 +919,8 @@ Proceed with generation? [Y/n] >
 - Epics → Epics
 - Stories → Stories linked to Epic
 - Tasks → Sub-tasks
+
+**Documentation pages:** Uses T33's doc page builders. If user provides `--confluence-space`, creates Confluence pages using the Confluence REST API. Otherwise, puts a minimal summary in the Jira project description and logs a warning. See PM_INTEGRATIONS.md "Documentation Pages" section for details.
 
 ---
 
@@ -925,7 +931,7 @@ Proceed with generation? [Y/n] >
 | Sprint      | S9 - Native Integrations                                   |
 | Priority    | P2 - Medium                                                |
 | Type        | Export                                                     |
-| Description | Native export to Notion using API |
+| Description | Native export to Notion using API, including documentation pages as child pages |
 
 **Commit message:** `feat: add native Notion integration`
 
@@ -933,6 +939,8 @@ Proceed with generation? [Y/n] >
 - Create database with roadmap items
 - Use nested pages for hierarchy
 - Include all metadata as properties
+
+**Documentation pages:** Uses T33's doc page builders to create child pages under the parent page (alongside the 4 databases). Notion is the best fit for doc pages since it IS a wiki — pages support rich block content (callouts, to-do lists, headings). See PM_INTEGRATIONS.md "Documentation Pages" section for details.
 
 ---
 
@@ -1017,6 +1025,36 @@ Key Features:
 
 Target Users: Developers who want to quickly bootstrap production-ready projects
 ```
+
+---
+
+### T33: Documentation Page Builders ✓
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S9 - Native Integrations                                   |
+| Priority    | P1 - High                                                  |
+| Type        | Export                                                     |
+| Description | Shared doc page building logic from ProjectContext, used by all PM integrations |
+
+**Commit:** `feat: add documentation page builders from ProjectContext`
+
+**What was done:**
+- Created `arcane/project_management/docs.py` with:
+  - `DocSection(BaseModel)` — title, content_type, items, optional icon
+  - `DocPage(BaseModel)` — title, list of sections
+  - `build_project_overview()` — vision callout, problem paragraph, target users list, optional similar products & notes
+  - `build_requirements()` — must-have checklist, optional nice-to-have checklist & out-of-scope callout
+  - `build_technical_decisions()` — optional tech stack list, infrastructure paragraph, codebase paragraph
+  - `build_team_constraints()` — timeline callout, team paragraph, budget paragraph
+  - `build_all_pages()` — returns all 4 pages
+- Optional/empty fields omitted (e.g., no "Nice-to-Have" section if list is empty)
+- Updated `arcane/project_management/__init__.py` to export all new symbols
+- Created `tests/test_project_management/test_docs.py` with 30 tests covering all builders, minimal context, and model behavior
+
+**Dependencies:** None (uses existing `ProjectContext` model). T28/T29/T30 depend on this task.
+
+See PM_INTEGRATIONS.md "Documentation Pages" section for per-tool formatting details.
 
 ---
 

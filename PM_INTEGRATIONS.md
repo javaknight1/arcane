@@ -2,7 +2,7 @@
 
 This document defines how Arcane's roadmap data model maps to each project management tool's entity model, API specifics, and implementation notes for T28 (Linear), T29 (Jira), and T30 (Notion).
 
-**Last Updated:** 2026-02-06
+**Last Updated:** 2026-02-13
 
 ---
 
@@ -316,3 +316,133 @@ All three integrations need:
 5. **Error recovery** — If export fails mid-way, report what was created and what remains via `ExportResult.warnings`
 6. **ID mapping** — Track `arcane_id → pm_tool_id` mapping for dependency resolution (must create items before linking dependencies). Returned in `ExportResult.id_mapping`.
 7. **Description builders** — Per-tool content formatter: Linear (markdown passthrough), Jira (ADF builder), Notion (block builder). Each composites `description`, `acceptance_criteria`, `implementation_notes` into the tool's native format.
+8. **Documentation page builders** — Shared logic (T33) that builds doc page content from `ProjectContext`. Each PM client formats the output for its own API. See Documentation Pages section below.
+
+---
+
+## Documentation Pages
+
+Beyond the roadmap hierarchy (milestones/epics/stories/tasks), Arcane's `ProjectContext` captures rich project information — vision, tech stack, requirements, constraints — that currently disappears after generation. We export this as **documentation pages** alongside the roadmap items.
+
+**Design decision:** Doc pages are always exported by default (no `--include-docs` flag). They're lightweight (4 pages, no AI generation needed — just data formatting from `ProjectContext`) and always useful as project reference material.
+
+### Page Definitions
+
+All pages are built directly from `ProjectContext` fields — no AI generation required.
+
+| Page | Source Fields | Description |
+|---|---|---|
+| **Project Overview** | `project_name`, `vision`, `problem_statement`, `target_users`, `similar_products`, `notes` | The "README" — elevator pitch, who it's for, what it does |
+| **Requirements** | `must_have_features`, `nice_to_have_features`, `out_of_scope` | Scope definition with checklists for must-have/nice-to-have, explicit out-of-scope callout |
+| **Technical Decisions** | `tech_stack`, `infrastructure_preferences`, `existing_codebase` | Tech stack choices and infrastructure setup |
+| **Team & Constraints** | `timeline`, `team_size`, `developer_experience`, `budget_constraints` | Project boundaries and team composition |
+
+### Per-Tool Placement
+
+| Page | Notion | Linear | Jira |
+|---|---|---|---|
+| Project Overview | Child page under parent page | Document on Initiative | Confluence page (or Jira project description fallback) |
+| Requirements | Child page under parent page | Document on Initiative | Confluence child page |
+| Technical Decisions | Child page under parent page | Document on Initiative | Confluence child page |
+| Team & Constraints | Child page under parent page | Document on Initiative | Confluence child page |
+
+### Notion — Child Pages with Block Content
+
+Notion is the best fit for doc pages since it IS a wiki. Pages are created via `POST /v1/pages` with `parent.page_id` set to the workspace parent page (same parent that holds the 4 databases). Each page can include up to 100 content blocks in a single API call.
+
+**Block structure per page:**
+
+**Project Overview:**
+- `heading_1`: Project name
+- `callout` (💡): Vision statement
+- `heading_2`: "Problem Statement"
+- `paragraph`: Problem statement text
+- `heading_2`: "Target Users"
+- `bulleted_list_item` × N: One per target user
+- `heading_2`: "Similar Products" (if any)
+- `bulleted_list_item` × N: One per similar product
+- `heading_2`: "Additional Notes" (if notes non-empty)
+- `paragraph`: Notes text
+
+**Requirements:**
+- `heading_1`: "Requirements"
+- `heading_2`: "Must-Have Features"
+- `to_do` × N: One per must-have (unchecked)
+- `heading_2`: "Nice-to-Have Features" (if any)
+- `to_do` × N: One per nice-to-have (unchecked)
+- `heading_2`: "Out of Scope" (if any)
+- `callout` (🚫): "The following are explicitly out of scope:"
+- `bulleted_list_item` × N: One per out-of-scope item
+
+**Technical Decisions:**
+- `heading_1`: "Technical Decisions"
+- `heading_2`: "Tech Stack"
+- `bulleted_list_item` × N: One per tech stack item (or "AI to suggest" if empty)
+- `heading_2`: "Infrastructure"
+- `paragraph`: Infrastructure preference
+- `heading_2`: "Existing Codebase"
+- `paragraph`: "Yes — integrating with existing code" or "No — greenfield project"
+
+**Team & Constraints:**
+- `heading_1`: "Team & Constraints"
+- `heading_2`: "Timeline"
+- `callout` (📅): Timeline value
+- `heading_2`: "Team"
+- `paragraph`: "{team_size} developer(s), {developer_experience} level"
+- `heading_2`: "Budget"
+- `paragraph`: Budget constraints value
+
+### Linear — Markdown Documents
+
+Linear documents are created via the `documentCreate` GraphQL mutation. Content is markdown (same editor as issues). Documents are flat within a project (no folders).
+
+- Documents are associated with the Initiative (`initiativeId`) since they apply to the whole roadmap, not individual milestones
+- Each page becomes a separate Document with a descriptive title
+- Content is rendered as standard markdown with headings, bullet lists, and checklists
+
+**Example (Project Overview as markdown):**
+```markdown
+# MyProject
+
+> **Vision:** A CLI tool that transforms project ideas into detailed roadmaps
+
+## Problem Statement
+Teams waste hours manually breaking down projects into tasks...
+
+## Target Users
+- Field technicians
+- Dispatchers
+- Business owners
+
+## Similar Products
+- Linear, Jira (but manual)
+- ChatGPT (unstructured output)
+```
+
+### Jira — Confluence Pages (Optional)
+
+Jira has **no native wiki**. Documentation pages require Confluence, which is a separate product (though free tier is available for up to 10 users and auto-integrates with Jira on the same Atlassian site).
+
+**Strategy:**
+- If user provides a Confluence space key (`--confluence-space`), create pages there using the Confluence REST API (`/wiki/api/v2/pages`)
+- If no Confluence space is provided, put a minimal project summary in the Jira project description and skip doc pages. Log a warning: "Confluence space not provided — documentation pages skipped."
+- Content format: Atlassian storage format (XHTML-like) for v1 API, or ADF for v2. Use the same ADF builder from issue description conversion.
+- Pages are created as children under a "Project Documentation" parent page in the space
+
+**Confluence API details:**
+- `POST /wiki/api/v2/pages` — create page with `spaceId`, `parentId`, `title`, `body` (storage format or ADF)
+- `GET /wiki/api/v2/spaces?keys={key}` — look up space by key to get spaceId
+- Auth: Same Atlassian credentials as Jira (basic auth with email + API token)
+
+### Shared Builder Logic (T33)
+
+The `arcane/project_management/docs.py` module provides tool-agnostic page builders:
+
+```python
+def build_project_overview(context: ProjectContext) -> DocPage
+def build_requirements(context: ProjectContext) -> DocPage
+def build_technical_decisions(context: ProjectContext) -> DocPage
+def build_team_constraints(context: ProjectContext) -> DocPage
+```
+
+Each returns a `DocPage` with a title and list of sections (heading + content items). The PM client is responsible for formatting the `DocPage` into its native format (Notion blocks, markdown, ADF).
