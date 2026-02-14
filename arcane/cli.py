@@ -10,6 +10,7 @@ Provides the main command-line interface using Typer:
 
 import asyncio
 from pathlib import Path
+from typing import Any
 
 import typer
 from rich.console import Console
@@ -23,6 +24,8 @@ from arcane.generators import RoadmapOrchestrator
 from arcane.items import Roadmap
 from arcane.project_management import CSVClient
 from arcane.questions import QuestionConductor
+from arcane.questions.base import QuestionType
+from arcane.questions.registry import QuestionRegistry
 from arcane.storage import StorageManager
 from arcane.utils import estimate_generation_cost, format_cost_estimate
 
@@ -34,11 +37,93 @@ app = typer.Typer(
 console = Console()
 
 
+def _split_csv(value: str | None) -> list[str] | None:
+    """Split a comma-separated string into a list, or return None if input is None."""
+    if value is None:
+        return None
+    return [x.strip() for x in value.split(",") if x.strip()]
+
+
+def _build_prefilled(
+    *,
+    project_name: str | None = None,
+    vision: str | None = None,
+    problem_statement: str | None = None,
+    target_users: list[str] | None = None,
+    timeline: str | None = None,
+    team_size: int | None = None,
+    developer_experience: str | None = None,
+    budget_constraints: str | None = None,
+    tech_stack: list[str] | None = None,
+    infrastructure_preferences: str | None = None,
+    existing_codebase: bool | None = None,
+    must_have_features: list[str] | None = None,
+    nice_to_have_features: list[str] | None = None,
+    out_of_scope: list[str] | None = None,
+    similar_products: list[str] | None = None,
+    notes: str | None = None,
+) -> dict[str, Any]:
+    """Build a dict of prefilled answers from CLI flags, validating choice types.
+
+    Only non-None values are included in the result. Choice-type questions
+    are validated against the actual options defined in the QuestionRegistry.
+
+    Raises:
+        typer.BadParameter: If a choice value is invalid or team_size is out of range.
+    """
+    # Build a lookup of question key -> question instance for validation
+    registry = QuestionRegistry()
+    questions_by_key = {q.key: q for _, q in registry.get_all_questions()}
+
+    raw: dict[str, Any] = {
+        "project_name": project_name,
+        "vision": vision,
+        "problem_statement": problem_statement,
+        "target_users": target_users,
+        "timeline": timeline,
+        "team_size": team_size,
+        "developer_experience": developer_experience,
+        "budget_constraints": budget_constraints,
+        "tech_stack": tech_stack,
+        "infrastructure_preferences": infrastructure_preferences,
+        "existing_codebase": existing_codebase,
+        "must_have_features": must_have_features,
+        "nice_to_have_features": nice_to_have_features,
+        "out_of_scope": out_of_scope,
+        "similar_products": similar_products,
+        "notes": notes,
+    }
+
+    result: dict[str, Any] = {}
+    for key, value in raw.items():
+        if value is None:
+            continue
+
+        question = questions_by_key.get(key)
+        if question and question.question_type == QuestionType.CHOICE and question.options:
+            if value not in question.options:
+                raise typer.BadParameter(
+                    f"Invalid value '{value}' for --{key.replace('_', '-')}. "
+                    f"Valid options: {', '.join(question.options)}"
+                )
+
+        if key == "team_size" and isinstance(value, int):
+            if not (1 <= value <= 100):
+                raise typer.BadParameter(
+                    f"Team size must be between 1 and 100, got {value}"
+                )
+
+        result[key] = value
+
+    return result
+
+
 async def _new(
-    name: str | None,
+    prefilled: dict[str, Any],
     provider: str,
     output: str,
     interactive: bool,
+    idea: str | None,
 ) -> None:
     """Internal async implementation of the new command."""
     settings = Settings()
@@ -51,12 +136,28 @@ async def _new(
         )
         raise typer.Exit(1)
 
+    # Load idea file if provided
+    idea_content = None
+    if idea:
+        idea_path = Path(idea)
+        if not idea_path.exists():
+            console.print(f"[red]Error:[/red] Idea file not found: {idea}")
+            raise typer.Exit(1)
+        idea_content = idea_path.read_text(encoding="utf-8").strip()
+        console.print(f"[green]✓[/green] Loaded idea file: {idea_path.name}")
+
     # Run discovery questions
-    conductor = QuestionConductor(console)
-    if name:
-        conductor.answers["project_name"] = name
+    conductor = QuestionConductor(console, interactive=interactive)
+    conductor.answers.update(prefilled)
 
     context = await conductor.run()
+
+    # Append idea file content to notes
+    if idea_content:
+        if context.notes:
+            context.notes = context.notes + "\n\n" + idea_content
+        else:
+            context.notes = idea_content
 
     # Create client and storage
     client = create_client(
@@ -300,6 +401,82 @@ def new(
         "-n",
         help="Project name (skip the first question)",
     ),
+    vision: str = typer.Option(
+        None,
+        "--vision",
+        help="Project vision (2-3 sentence description)",
+    ),
+    problem: str = typer.Option(
+        None,
+        "--problem",
+        help="Problem statement (what problem does this solve?)",
+    ),
+    users: str = typer.Option(
+        None,
+        "--users",
+        help="Target users (comma-separated)",
+    ),
+    timeline: str = typer.Option(
+        None,
+        "--timeline",
+        "-t",
+        help="Target timeline (e.g. '3 months')",
+    ),
+    team_size: int = typer.Option(
+        None,
+        "--team-size",
+        help="Number of developers (1-100)",
+    ),
+    experience: str = typer.Option(
+        None,
+        "--experience",
+        help="Team experience level (junior, mid-level, senior, mixed)",
+    ),
+    budget: str = typer.Option(
+        None,
+        "--budget",
+        help="Budget constraints",
+    ),
+    tech: str = typer.Option(
+        None,
+        "--tech",
+        help="Tech stack (comma-separated)",
+    ),
+    infra: str = typer.Option(
+        None,
+        "--infra",
+        help="Infrastructure preference (AWS, GCP, Azure, etc.)",
+    ),
+    existing_codebase: bool = typer.Option(
+        None,
+        "--existing-codebase",
+        help="Adding to an existing codebase?",
+    ),
+    must_have: str = typer.Option(
+        None,
+        "--must-have",
+        help="Must-have features (comma-separated)",
+    ),
+    nice_to_have: str = typer.Option(
+        None,
+        "--nice-to-have",
+        help="Nice-to-have features (comma-separated)",
+    ),
+    out_of_scope: str = typer.Option(
+        None,
+        "--out-of-scope",
+        help="Out-of-scope items (comma-separated)",
+    ),
+    similar: str = typer.Option(
+        None,
+        "--similar",
+        help="Similar products or competitors (comma-separated)",
+    ),
+    notes: str = typer.Option(
+        None,
+        "--notes",
+        help="Additional context or notes",
+    ),
     provider: str = typer.Option(
         "anthropic",
         "--provider",
@@ -317,13 +494,44 @@ def new(
         "--no-interactive",
         help="Skip review prompts between generation phases",
     ),
+    idea: str = typer.Option(
+        None,
+        "--idea",
+        "-i",
+        help="Path to an idea file with additional project context",
+    ),
 ) -> None:
     """Create a new roadmap from scratch.
 
     Runs an interactive discovery session to gather project information,
     then generates a complete roadmap with milestones, epics, stories, and tasks.
+
+    Use --idea to provide an idea file with extra context. The file contents
+    are appended to your notes and injected into every AI generation call.
+    See examples/idea-file-guide.txt for how to write one.
+
+    All discovery questions can be pre-filled via flags. When all 16 are
+    provided with --no-interactive, arcane runs with zero prompts.
     """
-    asyncio.run(_new(name, provider, output, not no_interactive))
+    prefilled = _build_prefilled(
+        project_name=name,
+        vision=vision,
+        problem_statement=problem,
+        target_users=_split_csv(users),
+        timeline=timeline,
+        team_size=team_size,
+        developer_experience=experience,
+        budget_constraints=budget,
+        tech_stack=_split_csv(tech),
+        infrastructure_preferences=infra,
+        existing_codebase=existing_codebase,
+        must_have_features=_split_csv(must_have),
+        nice_to_have_features=_split_csv(nice_to_have),
+        out_of_scope=_split_csv(out_of_scope),
+        similar_products=_split_csv(similar),
+        notes=notes,
+    )
+    asyncio.run(_new(prefilled, provider, output, not no_interactive, idea))
 
 
 @app.command()

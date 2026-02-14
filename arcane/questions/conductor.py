@@ -29,13 +29,16 @@ class QuestionConductor:
     Supports back-navigation with '<' and displays a summary for review.
     """
 
-    def __init__(self, console: Console):
+    def __init__(self, console: Console, interactive: bool = True):
         """Initialize the conductor.
 
         Args:
             console: Rich Console instance for terminal output.
+            interactive: Whether to show prompts and review summary.
+                When False and all questions are prefilled, no prompts are shown.
         """
         self.console = console
+        self.interactive = interactive
         self.registry = QuestionRegistry()
         self.answers: dict[str, Any] = {}
 
@@ -49,19 +52,24 @@ class QuestionConductor:
         Returns:
             ProjectContext populated with user answers.
         """
-        self.console.print(
-            Panel(
-                "[bold magenta]Arcane[/bold magenta] - Let's build your roadmap!\n"
-                "Answer a few questions so we can generate the best plan for your project.\n"
-                "[dim]Type < at any prompt to go back to the previous question.[/dim]",
-                border_style="magenta",
-            )
-        )
-
-        # Track which keys were pre-filled (e.g., --name flag)
+        # Track which keys were pre-filled (e.g., CLI flags)
         prefilled = set(self.answers.keys())
 
         questions = self.registry.get_all_questions()
+        all_keys = {q.key for _, q in questions}
+        all_prefilled = prefilled >= all_keys
+
+        # Skip welcome panel if all questions are already answered
+        if not all_prefilled:
+            self.console.print(
+                Panel(
+                    "[bold magenta]Arcane[/bold magenta] - Let's build your roadmap!\n"
+                    "Answer a few questions so we can generate the best plan for your project.\n"
+                    "[dim]Type < at any prompt to go back to the previous question.[/dim]",
+                    border_style="magenta",
+                )
+            )
+
         last_category = None
         idx = 0
 
@@ -104,7 +112,9 @@ class QuestionConductor:
             idx += 1
 
         # Show summary and allow edits before finalizing
-        await self._review_summary(questions, prefilled)
+        # Skip review if all questions were prefilled and non-interactive
+        if not (all_prefilled and not self.interactive):
+            await self._review_summary(questions, prefilled)
 
         return ProjectContext(**self.answers)
 
