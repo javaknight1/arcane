@@ -12,7 +12,7 @@ from .task import Task
 from .story import Story
 from .epic import Epic
 from .milestone import Milestone
-from .roadmap import Roadmap
+from .roadmap import Roadmap, StoredUsage
 from .context import ProjectContext
 
 __all__ = [
@@ -24,5 +24,6 @@ __all__ = [
     "Epic",
     "Milestone",
     "Roadmap",
+    "StoredUsage",
     "ProjectContext",
 ]

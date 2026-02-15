@@ -15,6 +15,7 @@ from rich.table import Table
 from arcane.clients.base import BaseAIClient
 from arcane.items import (
     Roadmap,
+    StoredUsage,
     Milestone,
     Epic,
     Story,
@@ -58,12 +59,19 @@ class RoadmapOrchestrator:
         self.console = console
         self.storage = storage
         self.interactive = interactive
+        self._previous_usage = StoredUsage()
 
         templates = TemplateLoader()
         self.milestone_gen = MilestoneGenerator(client, console, templates)
         self.epic_gen = EpicGenerator(client, console, templates)
         self.story_gen = StoryGenerator(client, console, templates)
         self.task_gen = TaskGenerator(client, console, templates)
+
+    async def _save(self, roadmap: Roadmap) -> None:
+        """Save roadmap with accumulated usage stats."""
+        roadmap.usage = self._previous_usage.merged_with(self.client.usage)
+        roadmap.updated_at = datetime.now(timezone.utc)
+        await self.storage.save_roadmap(roadmap)
 
     def _display_milestones(self, milestones: list) -> None:
         """Display generated milestones in a table format."""
@@ -185,7 +193,8 @@ class RoadmapOrchestrator:
             context=context,
         )
 
-        # Reset usage tracking for this generation
+        # Reset usage tracking for this session (new roadmap, no previous usage)
+        self._previous_usage = StoredUsage()
         self.client.reset_usage()
 
         # Phase 1: Generate milestones
@@ -205,10 +214,9 @@ class RoadmapOrchestrator:
                 self.console.print("\n[bold]🔄 Regenerating milestones...[/bold]")
                 ms_result = await self.milestone_gen.generate(context)
 
-        # Phase 2-4: Expand each milestone
+        # Create all milestone shells so resume can find them if generation fails
+        ms_pairs = []
         for ms_skel in ms_result.milestones:
-            self.console.print(f"\n[bold]📦 Expanding: {ms_skel.name}[/bold]")
-
             milestone = Milestone(
                 id=generate_id("milestone"),
                 name=ms_skel.name,
@@ -216,9 +224,15 @@ class RoadmapOrchestrator:
                 description=ms_skel.description,
                 priority=ms_skel.priority,
             )
-
-            # Append milestone early so incremental saves capture it
             roadmap.milestones.append(milestone)
+            ms_pairs.append((ms_skel, milestone))
+
+        # Save milestone shells so resume can find them if generation fails
+        await self._save(roadmap)
+
+        # Phase 2-4: Expand each milestone
+        for ms_skel, milestone in ms_pairs:
+            self.console.print(f"\n[bold]📦 Expanding: {ms_skel.name}[/bold]")
 
             # Generate epics for this milestone
             ep_result = await self.epic_gen.generate(
@@ -244,9 +258,9 @@ class RoadmapOrchestrator:
                         parent_context={"milestone": ms_skel.model_dump()},
                     )
 
+            # Create all epic shells first so resume can detect incomplete ones
+            epic_pairs = []
             for ep_skel in ep_result.epics:
-                self.console.print(f"  [bold]🏗  Epic: {ep_skel.name}[/bold]")
-
                 epic = Epic(
                     id=generate_id("epic"),
                     name=ep_skel.name,
@@ -254,9 +268,15 @@ class RoadmapOrchestrator:
                     description=ep_skel.description,
                     priority=ep_skel.priority,
                 )
-
-                # Append epic early so incremental saves capture it
                 milestone.epics.append(epic)
+                epic_pairs.append((ep_skel, epic))
+
+            # Save epic shells so resume can find them if generation fails
+            await self._save(roadmap)
+
+            # Now expand each epic with stories and tasks
+            for ep_skel, epic in epic_pairs:
+                self.console.print(f"  [bold]🏗  Epic: {ep_skel.name}[/bold]")
 
                 # Generate stories for this epic
                 st_result = await self.story_gen.generate(
@@ -290,9 +310,9 @@ class RoadmapOrchestrator:
                             sibling_context=[s.name for s in epic.stories],
                         )
 
+                # Create all story shells first so resume can detect incomplete ones
+                story_pairs = []
                 for st_skel in st_result.stories:
-                    self.console.print(f"    [dim]📝 Story: {st_skel.name}[/dim]")
-
                     story = Story(
                         id=generate_id("story"),
                         name=st_skel.name,
@@ -300,6 +320,15 @@ class RoadmapOrchestrator:
                         priority=st_skel.priority,
                         acceptance_criteria=st_skel.acceptance_criteria,
                     )
+                    epic.stories.append(story)
+                    story_pairs.append((st_skel, story))
+
+                # Save story shells so resume can find them if generation fails
+                await self._save(roadmap)
+
+                # Now generate tasks for each story
+                for st_skel, story in story_pairs:
+                    self.console.print(f"    [dim]📝 Story: {st_skel.name}[/dim]")
 
                     # Generate tasks for this story
                     task_result = await self.task_gen.generate(
@@ -334,15 +363,12 @@ class RoadmapOrchestrator:
                             )
 
                     story.tasks = task_result.tasks
-                    epic.stories.append(story)
 
                     # Save incrementally after each story
-                    roadmap.updated_at = datetime.now(timezone.utc)
-                    await self.storage.save_roadmap(roadmap)
+                    await self._save(roadmap)
 
         # Final save
-        roadmap.updated_at = datetime.now(timezone.utc)
-        await self.storage.save_roadmap(roadmap)
+        await self._save(roadmap)
 
         self._print_summary(roadmap)
         return roadmap
@@ -361,7 +387,8 @@ class RoadmapOrchestrator:
         """
         context = roadmap.context
 
-        # Reset usage tracking for this resume session
+        # Capture existing usage so we can accumulate across sessions
+        self._previous_usage = roadmap.usage.model_copy()
         self.client.reset_usage()
 
         # Walk milestones — they already exist, just need children filled in
@@ -405,6 +432,9 @@ class RoadmapOrchestrator:
                         priority=ep_skel.priority,
                     )
                     milestone.epics.append(epic)
+
+                # Save epic shells so resume can find them if generation fails
+                await self._save(roadmap)
 
             # Now expand each epic that needs children
             for epic in milestone.epics:
@@ -450,6 +480,9 @@ class RoadmapOrchestrator:
                         )
                         epic.stories.append(story)
 
+                    # Save story shells so resume can find them if generation fails
+                    await self._save(roadmap)
+
                 # Now expand each story that needs tasks
                 for story in epic.stories:
                     if story.tasks:
@@ -494,12 +527,10 @@ class RoadmapOrchestrator:
                     story.tasks = task_result.tasks
 
                     # Save incrementally after each story
-                    roadmap.updated_at = datetime.now(timezone.utc)
-                    await self.storage.save_roadmap(roadmap)
+                    await self._save(roadmap)
 
         # Final save
-        roadmap.updated_at = datetime.now(timezone.utc)
-        await self.storage.save_roadmap(roadmap)
+        await self._save(roadmap)
 
         self._print_summary(roadmap)
         return roadmap
@@ -530,9 +561,19 @@ class RoadmapOrchestrator:
         )
         self.console.print(f"   Estimated: {roadmap.total_hours} hours")
 
-        # Print actual usage statistics
+        # Print session usage
         self.console.print()
         self.console.print(format_actual_usage(
             usage=self.client.usage,
             model=self.client.model_name,
+            label="Session usage",
         ))
+
+        # Print cumulative usage if there was previous usage
+        if self._previous_usage.api_calls > 0:
+            self.console.print()
+            self.console.print(format_actual_usage(
+                usage=roadmap.usage,
+                model=self.client.model_name,
+                label="Cumulative usage (all sessions)",
+            ))

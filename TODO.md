@@ -41,6 +41,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T25~~  | ~~S8~~ | ~~P1~~   | ~~Generators~~ | ~~Resume Functionality~~  | ~~Continue interrupted generations~~ ✓                     |
 | ~~T26~~  | ~~S8~~ | ~~P1~~   | ~~Clients~~ | ~~Rate Limiting~~            | ~~Backoff/retry for API rate limits~~ ✓                    |
 | ~~T27~~  | ~~S8~~ | ~~P1~~   | ~~Questions~~ | ~~Back-Navigation~~        | ~~Edit previous answers in question flow~~ ✓               |
+| T34      | S10    | P1       | CLI         | Model Selection UX           | Replace `--provider` with `--model` chooser                |
 | T28      | S9     | P2       | Export      | Linear Integration           | Native export via GraphQL API                              |
 | T29      | S9     | P2       | Export      | Jira Integration             | Native export via REST API                                 |
 | T30      | S9     | P2       | Export      | Notion Integration           | Native export via Notion API                               |
@@ -111,6 +112,10 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 - [ ] **T28** - Native Linear integration via GraphQL API (includes doc page export)
 - [ ] **T29** - Native Jira Cloud integration via REST API (includes doc page export)
 - [ ] **T30** - Native Notion integration via API (includes doc page export)
+
+### Sprint 10 - Multi-Model Support
+
+- [ ] **T34** - Replace `--provider` with `--model` chooser
 
 ---
 
@@ -1055,6 +1060,92 @@ Target Users: Developers who want to quickly bootstrap production-ready projects
 **Dependencies:** None (uses existing `ProjectContext` model). T28/T29/T30 depend on this task.
 
 See PM_INTEGRATIONS.md "Documentation Pages" section for per-tool formatting details.
+
+---
+
+### T34: Model Selection UX
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S10 - Multi-Model Support                                  |
+| Priority    | P1 - High                                                  |
+| Type        | CLI                                                        |
+| Description | Replace `--provider` with a `--model` flag that presents a curated list of AI models |
+
+**Commit message:** `feat: replace --provider with --model chooser`
+
+**Problem:**
+Currently, users choose a provider (`--provider anthropic`) and the model is set separately via the `ARCANE_MODEL` env var (defaulting to `claude-sonnet-4-20250514`). This is awkward because:
+1. Users think in terms of models ("I want to use Opus"), not providers
+2. The `--provider` flag is meaningless when there's only one provider (anthropic)
+3. The env var for model selection is hidden — most users won't discover it
+4. As we add OpenAI/Gemini support, asking for provider AND model is redundant; the model name implies the provider
+
+**Solution:**
+Replace `--provider` with a `--model` flag that accepts a model identifier from a curated list. The CLI resolves which provider to use from the model name. In interactive mode with no `--model` flag, prompt the user to choose from the list.
+
+**Curated model list (defined in a new `arcane/models.py` or in `config.py`):**
+```python
+SUPPORTED_MODELS = {
+    # Display name -> (provider, model_id, description)
+    "sonnet": ("anthropic", "claude-sonnet-4-20250514", "Claude Sonnet 4 — fast, balanced (recommended)"),
+    "opus": ("anthropic", "claude-opus-4-20250514", "Claude Opus 4 — most capable, slower"),
+    "haiku": ("anthropic", "claude-haiku-4-5-20251001", "Claude Haiku 4.5 — fastest, cheapest"),
+    # Future:
+    # "gpt-4o": ("openai", "gpt-4o", "GPT-4o — OpenAI's flagship"),
+    # "gemini-pro": ("google", "gemini-1.5-pro", "Gemini 1.5 Pro"),
+}
+DEFAULT_MODEL = "sonnet"
+```
+
+**Files to modify:**
+
+1. **`arcane/config.py`:**
+   - Change `model: str = "claude-sonnet-4-20250514"` to `model: str = "sonnet"` (use short alias as default)
+   - Add `SUPPORTED_MODELS` dict and `DEFAULT_MODEL` constant (or create a separate `arcane/models.py`)
+   - Add `resolve_model(alias: str) -> tuple[str, str]` function that returns `(provider, model_id)` from an alias, or treats the input as a raw model ID if not in the alias list
+
+2. **`arcane/cli.py`:**
+   - Remove `--provider` flag from `new()` command
+   - Add `--model` / `-m` flag: `typer.Option("sonnet", "--model", "-m", help="AI model to use (sonnet, opus, haiku)")`
+   - In `_new()`: call `resolve_model(model)` to get `(provider, model_id)`, pass both to `create_client(provider, api_key=..., model=model_id)`
+   - In interactive mode with no explicit `--model`: show a Rich selection prompt listing available models with descriptions
+   - Update `config` command output to show resolved model name
+   - Keep `ARCANE_MODEL` env var working (if set to "opus" or "claude-opus-4-20250514", both should work)
+
+3. **`arcane/clients/__init__.py`:**
+   - `create_client()` factory stays the same (still takes `provider` string internally)
+
+4. **`arcane/utils/cost_estimator.py`:**
+   - Update `MODEL_PRICING` keys to include new model IDs as they're added
+   - `estimate_generation_cost()` should accept either alias ("sonnet") or full model ID
+   - Add a lookup step: if model is an alias, resolve to model_id before pricing lookup
+
+5. **`arcane/clients/anthropic.py`:**
+   - No changes needed (already accepts model as a string parameter)
+
+**New interactive prompt (when `--model` not provided and in interactive mode):**
+```
+  Which AI model should we use for generation?
+
+  1. sonnet  — Claude Sonnet 4 — fast, balanced (recommended)
+  2. opus    — Claude Opus 4 — most capable, slower
+  3. haiku   — Claude Haiku 4.5 — fastest, cheapest
+
+  Model [sonnet]:
+```
+
+**Tests to add:**
+- `test_resolve_model_alias` — "sonnet" → ("anthropic", "claude-sonnet-4-20250514")
+- `test_resolve_model_full_id` — "claude-opus-4-20250514" → ("anthropic", "claude-opus-4-20250514")
+- `test_resolve_model_invalid` — "gpt-5" raises error with helpful message
+- `test_model_flag_overrides_env` — CLI `--model opus` takes precedence over `ARCANE_MODEL`
+- `test_cost_estimate_with_alias` — "opus" resolves correctly in cost estimator
+- `test_default_model` — no flag and no env var defaults to "sonnet"
+
+**Migration / backwards compatibility:**
+- `ARCANE_MODEL=claude-sonnet-4-20250514` (old full ID) still works — `resolve_model()` checks aliases first, then checks if the value is a known model ID across all providers, then falls back to using it as-is with a warning
+- `--provider` flag is removed entirely (was only "anthropic" anyway). If someone has scripts using `--provider`, they get a clean Typer error about an unknown option
 
 ---
 

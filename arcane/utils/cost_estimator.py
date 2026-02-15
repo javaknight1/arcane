@@ -145,12 +145,17 @@ def format_cost_estimate(estimate: CostEstimate) -> str:
     return "\n".join(lines)
 
 
-def format_actual_usage(usage: "UsageStats", model: str = "claude-sonnet-4-20250514") -> str:
+def format_actual_usage(
+    usage: "UsageStats",
+    model: str = "claude-sonnet-4-20250514",
+    label: str = "Actual usage",
+) -> str:
     """Format actual usage statistics for display with per-level breakdown.
 
     Args:
-        usage: UsageStats object with cumulative and per-level tracking.
+        usage: UsageStats or StoredUsage object with token tracking.
         model: The model used for pricing calculation.
+        label: Display label (e.g., "Session usage", "Cumulative usage").
 
     Returns:
         Formatted string for console display.
@@ -159,7 +164,7 @@ def format_actual_usage(usage: "UsageStats", model: str = "claude-sonnet-4-20250
     total_cost = usage.calculate_cost(pricing["input"], pricing["output"])
 
     lines = [
-        "📊 Actual usage:",
+        f"📊 {label}:",
         f"   {usage.api_calls} API calls",
         f"   {usage.total_tokens:,} tokens ({usage.input_tokens:,} in / {usage.output_tokens:,} out)",
         f"   ${total_cost:.4f} total cost",

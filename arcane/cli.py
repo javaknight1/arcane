@@ -201,7 +201,7 @@ async def _new(
     console.print(f"\n[bold]📁 Saved to:[/bold] {output_path.absolute()}")
 
 
-async def _resume(path: str) -> None:
+async def _resume(path: str, interactive: bool = True) -> None:
     """Internal async implementation of the resume command."""
     settings = Settings()
     path_obj = Path(path)
@@ -246,16 +246,17 @@ async def _resume(path: str) -> None:
         raise typer.Exit(1)
     console.print("[green]✓[/green] Connected to", client.provider_name)
 
-    if not Confirm.ask("\nResume generation?", default=True, console=console):
-        console.print("[dim]Resume cancelled.[/dim]")
-        raise typer.Exit(0)
+    if interactive:
+        if not Confirm.ask("\nResume generation?", default=True, console=console):
+            console.print("[dim]Resume cancelled.[/dim]")
+            raise typer.Exit(0)
 
     # Resume generation
     orchestrator = RoadmapOrchestrator(
         client=client,
         console=console,
         storage=storage,
-        interactive=settings.interactive,
+        interactive=interactive,
     )
 
     roadmap = await orchestrator.resume(roadmap)
@@ -449,7 +450,7 @@ def new(
     ),
     existing_codebase: bool = typer.Option(
         None,
-        "--existing-codebase",
+        "--existing-codebase/--no-existing-codebase",
         help="Adding to an existing codebase?",
     ),
     must_have: str = typer.Option(
@@ -540,12 +541,17 @@ def resume(
         ...,
         help="Path to project directory or roadmap.json",
     ),
+    no_interactive: bool = typer.Option(
+        False,
+        "--no-interactive",
+        help="Skip review prompts and auto-approve all generated items",
+    ),
 ) -> None:
     """Resume generating an incomplete roadmap.
 
     Detects where generation stopped and continues from that point.
     """
-    asyncio.run(_resume(path))
+    asyncio.run(_resume(path, not no_interactive))
 
 
 @app.command()
