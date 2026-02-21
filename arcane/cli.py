@@ -424,7 +424,64 @@ async def _export(path: str, to: str, workspace: str | None) -> None:
                 console.print(f"  {error}")
             raise typer.Exit(1)
     elif to_lower == "jira":
-        console.print("[dim]Jira export coming soon...[/dim]")
+        settings = Settings()
+        if not settings.jira_api_token:
+            console.print(
+                "[red]Error:[/red] No Jira API token found. "
+                "Set ARCANE_JIRA_DOMAIN, ARCANE_JIRA_EMAIL, and "
+                "ARCANE_JIRA_API_TOKEN environment variables or add to .env file."
+            )
+            raise typer.Exit(1)
+
+        if not settings.jira_domain or not settings.jira_email:
+            console.print(
+                "[red]Error:[/red] Jira export requires ARCANE_JIRA_DOMAIN and "
+                "ARCANE_JIRA_EMAIL to be set."
+            )
+            raise typer.Exit(1)
+
+        if not workspace:
+            console.print(
+                "[red]Error:[/red] Jira export requires --workspace/-w with the project key.\n"
+                "Example: arcane export roadmap.json --to jira -w PROJ"
+            )
+            raise typer.Exit(1)
+
+        from arcane.project_management import JiraClient
+
+        client = JiraClient(
+            domain=settings.jira_domain,
+            email=settings.jira_email,
+            api_token=settings.jira_api_token,
+        )
+
+        console.print("[dim]Validating Jira credentials...[/dim]")
+        if not await client.validate_credentials():
+            console.print("[red]Error:[/red] Could not connect to Jira API. Check your credentials.")
+            raise typer.Exit(1)
+        console.print("[green]✓[/green] Connected to Jira Cloud")
+
+        total = sum(roadmap.total_items.values())
+        result = await _export_with_progress(
+            client, roadmap, total, project_key=workspace
+        )
+
+        if result.success:
+            console.print(f"[green]✓[/green] Exported {result.items_created} items to Jira")
+            if result.items_by_type:
+                for type_name, count in result.items_by_type.items():
+                    console.print(f"  {type_name}: {count}")
+            if result.url:
+                console.print(f"[bold]🔗 View at:[/bold] {result.url}")
+            if result.warnings:
+                console.print(f"\n[yellow]⚠ {len(result.warnings)} warning(s):[/yellow]")
+                for w in result.warnings:
+                    console.print(f"  {w}")
+        else:
+            console.print("[red]Error:[/red] Export failed")
+            for error in result.errors:
+                console.print(f"  {error}")
+            raise typer.Exit(1)
     elif to_lower == "notion":
         settings = Settings()
         if not settings.notion_api_key:

@@ -79,17 +79,15 @@ class TestJiraClient:
         assert client.auth == ("user@example.com", "token123")
 
     @pytest.mark.asyncio
-    async def test_export_raises_not_implemented(self, sample_roadmap):
-        """JiraClient.export() raises NotImplementedError."""
+    async def test_export_requires_project_key(self, sample_roadmap):
+        """JiraClient.export() requires project_key."""
         client = JiraClient(
             domain="test.atlassian.net",
             email="user@example.com",
             api_token="token123",
         )
-        with pytest.raises(NotImplementedError) as exc_info:
+        with pytest.raises(ValueError, match="project_key is required"):
             await client.export(sample_roadmap)
-        assert "Sprint 9" in str(exc_info.value)
-        assert "CSV export" in str(exc_info.value)
 
 
 class TestNotionClient:
