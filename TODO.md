@@ -41,7 +41,9 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T25~~  | ~~S8~~ | ~~P1~~   | ~~Generators~~ | ~~Resume Functionality~~  | ~~Continue interrupted generations~~ ✓                     |
 | ~~T26~~  | ~~S8~~ | ~~P1~~   | ~~Clients~~ | ~~Rate Limiting~~            | ~~Backoff/retry for API rate limits~~ ✓                    |
 | ~~T27~~  | ~~S8~~ | ~~P1~~   | ~~Questions~~ | ~~Back-Navigation~~        | ~~Edit previous answers in question flow~~ ✓               |
-| T34      | S10    | P1       | CLI         | Model Selection UX           | Replace `--provider` with `--model` chooser                |
+| ~~T34~~  | ~~S10~~ | ~~P1~~  | ~~CLI~~     | ~~Model Selection UX~~       | ~~Replace `--provider` with `--model` chooser~~ ✓          |
+| T35      | S11    | P1       | UX          | Export Progress Bar          | Progress bar with percent and items remaining during export |
+| T36      | S11    | P1       | UX          | Generation Progress Bar      | Progress bar with percent and items remaining during new/resume |
 | T28      | S9     | P2       | Export      | Linear Integration           | Native export via GraphQL API                              |
 | T29      | S9     | P2       | Export      | Jira Integration             | Native export via REST API                                 |
 | T30      | S9     | P2       | Export      | Notion Integration           | Native export via Notion API                               |
@@ -113,9 +115,14 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 - [ ] **T29** - Native Jira Cloud integration via REST API (includes doc page export)
 - [ ] **T30** - Native Notion integration via API (includes doc page export)
 
-### Sprint 10 - Multi-Model Support
+### Sprint 10 - Multi-Model Support (COMPLETE)
 
-- [ ] **T34** - Replace `--provider` with `--model` chooser
+- [x] **T34** - Replace `--provider` with `--model` chooser ✓
+
+### Sprint 11 - Progress Indicators
+
+- [ ] **T35** - Export progress bar with percent and items remaining
+- [ ] **T36** - Generation progress bar with percent and items remaining
 
 ---
 
@@ -1146,6 +1153,154 @@ DEFAULT_MODEL = "sonnet"
 **Migration / backwards compatibility:**
 - `ARCANE_MODEL=claude-sonnet-4-20250514` (old full ID) still works — `resolve_model()` checks aliases first, then checks if the value is a known model ID across all providers, then falls back to using it as-is with a warning
 - `--provider` flag is removed entirely (was only "anthropic" anyway). If someone has scripts using `--provider`, they get a clean Typer error about an unknown option
+
+---
+
+### T35: Export Progress Bar
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S11 - Progress Indicators                                  |
+| Priority    | P1 - High                                                  |
+| Type        | UX                                                         |
+| Description | Show a single-line progress bar at the bottom of export output with percent completion and items remaining |
+
+**Commit message:** `feat: add progress bar to PM export`
+
+**Problem:**
+When exporting a large roadmap (e.g., telchar with hundreds of items) to Notion/Linear/Jira, the user has no visibility into progress. They don't know how far along the export is or how many items remain.
+
+**Solution:**
+Add a Rich Progress bar at the bottom of export output showing:
+- A progress bar
+- Percent completion
+- Items completed / total items
+- Current item being exported (e.g., "Exporting: Task - Set up database schema")
+
+**Implementation:**
+
+1. **Calculate total items before export starts:**
+   - Count all milestones + epics + stories + tasks from `roadmap.total_items`
+   - This gives the total for the progress bar denominator
+
+2. **Add progress callback to `BasePMClient.export()`:**
+   - Add an optional `progress_callback: Callable[[str, str], None] | None = None` parameter
+   - PM clients call `progress_callback(item_type, item_name)` after each item is created
+   - The callback increments the progress bar
+
+3. **Use Rich Progress in the CLI export command:**
+   ```python
+   from rich.progress import Progress, BarColumn, TextColumn, TaskProgressColumn, TimeRemainingColumn
+
+   total = sum(roadmap.total_items.values())
+   with Progress(
+       TextColumn("[bold blue]{task.description}"),
+       BarColumn(),
+       TaskProgressColumn(),
+       TextColumn("{task.fields[remaining]} remaining"),
+   ) as progress:
+       task = progress.add_task("Exporting...", total=total, remaining=total)
+
+       def on_progress(item_type: str, item_name: str):
+           completed = progress.tasks[0].completed + 1
+           remaining = total - completed
+           progress.update(task, advance=1, remaining=remaining,
+                          description=f"Exporting {item_type}: {item_name}")
+
+       result = await client.export(roadmap, progress_callback=on_progress, **kwargs)
+   ```
+
+4. **Update each PM client to call the callback:**
+   - `NotionClient.export()`: call after each database item is created
+   - `CSVClient.export()`: call after each row is written
+   - `LinearClient.export()`: call after each API mutation
+   - `JiraClient.export()`: call after each API call
+
+**Display example:**
+```
+Exporting Task: Set up database schema  ━━━━━━━━━━━━━━━━━━╸━━━━━━  67%  42 remaining
+```
+
+**Files to modify:**
+- `arcane/project_management/base.py` — add `progress_callback` parameter to `BasePMClient.export()`
+- `arcane/project_management/notion.py` — call callback after each item
+- `arcane/project_management/csv.py` — call callback after each row
+- `arcane/project_management/linear.py` — call callback after each item (when implemented)
+- `arcane/project_management/jira.py` — call callback after each item (when implemented)
+- `arcane/cli.py` — wrap export call with Rich Progress
+
+**Tests:**
+- Verify callback is called the expected number of times
+- Verify export still works when no callback is provided (None)
+
+---
+
+### T36: Generation Progress Bar
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S11 - Progress Indicators                                  |
+| Priority    | P1 - High                                                  |
+| Type        | UX                                                         |
+| Description | Show a progress bar during roadmap generation (new/resume) with percent completion and items remaining |
+
+**Commit message:** `feat: add progress bar to roadmap generation`
+
+**Problem:**
+During `arcane new` or `arcane resume`, generation can take many minutes for large roadmaps. The user sees individual "Expanding: ..." messages but has no sense of overall progress or how much work remains.
+
+**Solution:**
+Add a Rich Progress bar showing overall generation progress. Since generation is hierarchical and the total number of items isn't known upfront (epics/stories/tasks are discovered as we go), use a two-phase approach:
+
+1. **After milestones are generated:** Calculate estimated total API calls based on milestone count and expected expansion ratios
+2. **Update total dynamically:** As epics and stories are generated, refine the total count
+
+**Implementation:**
+
+1. **Add progress tracking to `RoadmapOrchestrator`:**
+   - After milestones are generated, estimate total items:
+     - Each milestone → 1 epic generation call
+     - Each epic (estimated ~3 per milestone) → 1 story generation call
+     - Each story (estimated ~3 per epic) → 1 task generation call
+   - Update estimates as actual counts become known
+
+2. **Use Rich Progress in the orchestrator:**
+   ```python
+   from rich.progress import Progress, BarColumn, TextColumn, TaskProgressColumn
+
+   with Progress(
+       TextColumn("[bold blue]{task.description}"),
+       BarColumn(),
+       TaskProgressColumn(),
+       TextColumn("{task.fields[remaining]} remaining"),
+   ) as progress:
+       task = progress.add_task("Generating milestones...", total=estimated_total, remaining=estimated_total)
+
+       # After each generation step:
+       progress.update(task, advance=1, remaining=remaining,
+                      description=f"Generating stories for: {epic.name}")
+   ```
+
+3. **Progress phases:**
+   - "Generating milestones..." — 1 step
+   - "Generating epics for: {milestone.name}" — 1 step per milestone
+   - "Generating stories for: {epic.name}" — 1 step per epic
+   - "Generating tasks for: {story.name}" — 1 step per story
+
+4. **For resume:** Calculate remaining by counting items that still need generation (stories without tasks, epics without stories, etc.)
+
+**Display example:**
+```
+Generating tasks for: Set up CI/CD pipeline  ━━━━━━━━━━━━╸━━━━━━━━━━━  38%  24 remaining
+```
+
+**Files to modify:**
+- `arcane/generators/orchestrator.py` — add Rich Progress to `generate()` and `resume()` methods
+- `arcane/cli.py` — pass console to orchestrator (already done)
+
+**Tests:**
+- Verify generation still completes with progress tracking
+- Verify resume calculates remaining items correctly
 
 ---
 

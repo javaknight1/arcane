@@ -5,6 +5,8 @@ Provides estimates for API calls, tokens, and costs before generation starts.
 
 from dataclasses import dataclass
 
+from arcane.models import SUPPORTED_MODELS, _MODEL_ID_TO_ALIAS
+
 
 @dataclass
 class CostEstimate:
@@ -31,9 +33,12 @@ TOKENS_PER_CALL = {
     "task": {"input": 1500, "output": 2500},
 }
 
-# Model pricing per million tokens (as of 2024)
+# Model pricing per million tokens (keyed by full model ID)
 MODEL_PRICING = {
     "claude-sonnet-4-20250514": {"input": 3.00, "output": 15.00},
+    "claude-opus-4-20250514": {"input": 15.00, "output": 75.00},
+    "claude-haiku-4-5-20251001": {"input": 0.80, "output": 4.00},
+    # Legacy model IDs
     "claude-3-5-sonnet-20241022": {"input": 3.00, "output": 15.00},
     "claude-3-opus-20240229": {"input": 15.00, "output": 75.00},
     "claude-3-haiku-20240307": {"input": 0.25, "output": 1.25},
@@ -50,8 +55,19 @@ DEFAULT_ESTIMATES = {
 }
 
 
+def _resolve_model_id(model: str) -> str:
+    """Resolve a model alias to a full model ID for pricing lookup.
+
+    If the model is an alias (e.g., "sonnet"), returns the full model ID.
+    If it's already a full model ID, returns it unchanged.
+    """
+    if model in SUPPORTED_MODELS:
+        return SUPPORTED_MODELS[model].model_id
+    return model
+
+
 def estimate_generation_cost(
-    model: str = "claude-sonnet-4-20250514",
+    model: str = "sonnet",
     milestones: int | None = None,
     epics_per_milestone: int | None = None,
     stories_per_epic: int | None = None,
@@ -106,8 +122,9 @@ def estimate_generation_cost(
 
     total_tokens = input_tokens + output_tokens
 
-    # Get pricing for model
-    pricing = MODEL_PRICING.get(model, MODEL_PRICING["default"])
+    # Get pricing for model (resolve alias if needed)
+    model_id = _resolve_model_id(model)
+    pricing = MODEL_PRICING.get(model_id, MODEL_PRICING["default"])
 
     # Calculate cost (pricing is per million tokens)
     input_cost = (input_tokens / 1_000_000) * pricing["input"]
@@ -147,20 +164,21 @@ def format_cost_estimate(estimate: CostEstimate) -> str:
 
 def format_actual_usage(
     usage: "UsageStats",
-    model: str = "claude-sonnet-4-20250514",
+    model: str = "sonnet",
     label: str = "Actual usage",
 ) -> str:
     """Format actual usage statistics for display with per-level breakdown.
 
     Args:
         usage: UsageStats or StoredUsage object with token tracking.
-        model: The model used for pricing calculation.
+        model: The model alias or full ID used for pricing calculation.
         label: Display label (e.g., "Session usage", "Cumulative usage").
 
     Returns:
         Formatted string for console display.
     """
-    pricing = MODEL_PRICING.get(model, MODEL_PRICING["default"])
+    model_id = _resolve_model_id(model)
+    pricing = MODEL_PRICING.get(model_id, MODEL_PRICING["default"])
     total_cost = usage.calculate_cost(pricing["input"], pricing["output"])
 
     lines = [

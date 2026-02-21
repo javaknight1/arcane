@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     # Required for generation
     anthropic_api_key: str = ""
-    model: str = "claude-sonnet-4-20250514"
+    model: str = "sonnet"
     max_retries: int = 3
 
     # Optional - Project Management integrations

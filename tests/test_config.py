@@ -13,7 +13,7 @@ class TestSettings:
         settings = Settings(_env_file=None)
 
         assert settings.anthropic_api_key == ""
-        assert settings.model == "claude-sonnet-4-20250514"
+        assert settings.model == "sonnet"
         assert settings.max_retries == 3
         assert settings.linear_api_key is None
         assert settings.jira_domain is None

@@ -22,6 +22,7 @@ from arcane.clients import create_client
 from arcane.config import Settings
 from arcane.generators import RoadmapOrchestrator
 from arcane.items import Roadmap
+from arcane.models import SUPPORTED_MODELS, DEFAULT_MODEL, ModelInfo, resolve_model
 from arcane.project_management import CSVClient
 from arcane.questions import QuestionConductor
 from arcane.questions.base import QuestionType
@@ -118,15 +119,45 @@ def _build_prefilled(
     return result
 
 
+def _resolve_model_or_exit(model: str) -> ModelInfo:
+    """Resolve a model alias/ID or exit with a helpful error message."""
+    try:
+        return resolve_model(model)
+    except ValueError as e:
+        console.print(f"[red]Error:[/red] {e}")
+        raise typer.Exit(1)
+
+
+def _prompt_model_selection() -> str:
+    """Interactively prompt the user to select an AI model."""
+    from rich.prompt import Prompt
+
+    console.print("\n[bold cyan]── Model Selection ──[/bold cyan]")
+    for alias, info in SUPPORTED_MODELS.items():
+        marker = " (default)" if alias == DEFAULT_MODEL else ""
+        console.print(f"  [bold]{alias:<8}[/bold] {info.description}{marker}")
+
+    choice = Prompt.ask(
+        "\n  Which AI model should we use?",
+        choices=list(SUPPORTED_MODELS.keys()),
+        default=DEFAULT_MODEL,
+        console=console,
+    )
+    return choice
+
+
 async def _new(
     prefilled: dict[str, Any],
-    provider: str,
+    model: str,
     output: str,
     interactive: bool,
     idea: str | None,
 ) -> None:
     """Internal async implementation of the new command."""
     settings = Settings()
+
+    # Resolve model (CLI flag overrides settings)
+    model_info = _resolve_model_or_exit(model)
 
     # Validate API key
     if not settings.anthropic_api_key:
@@ -161,9 +192,9 @@ async def _new(
 
     # Create client and storage
     client = create_client(
-        provider,
+        model_info.provider,
         api_key=settings.anthropic_api_key,
-        model=settings.model,
+        model=model_info.model_id,
     )
     storage = StorageManager(Path(output))
 
@@ -176,7 +207,7 @@ async def _new(
 
     # Show cost estimate and confirm (only in interactive mode)
     if interactive:
-        estimate = estimate_generation_cost(model=settings.model)
+        estimate = estimate_generation_cost(model=model_info.model_id)
         console.print()
         console.print(format_cost_estimate(estimate))
         console.print()
@@ -201,10 +232,14 @@ async def _new(
     console.print(f"\n[bold]📁 Saved to:[/bold] {output_path.absolute()}")
 
 
-async def _resume(path: str, interactive: bool = True) -> None:
+async def _resume(path: str, model: str | None = None, interactive: bool = True) -> None:
     """Internal async implementation of the resume command."""
     settings = Settings()
     path_obj = Path(path)
+
+    # Resolve model (CLI flag > settings > default)
+    model_str = model or settings.model
+    model_info = _resolve_model_or_exit(model_str)
 
     # Validate API key
     if not settings.anthropic_api_key:
@@ -234,9 +269,9 @@ async def _resume(path: str, interactive: bool = True) -> None:
 
     # Create client
     client = create_client(
-        "anthropic",
+        model_info.provider,
         api_key=settings.anthropic_api_key,
-        model=settings.model,
+        model=model_info.model_id,
     )
 
     # Validate connection
@@ -308,7 +343,50 @@ async def _export(path: str, to: str, workspace: str | None) -> None:
     elif to_lower == "jira":
         console.print("[dim]Jira export coming soon...[/dim]")
     elif to_lower == "notion":
-        console.print("[dim]Notion export coming soon...[/dim]")
+        settings = Settings()
+        if not settings.notion_api_key:
+            console.print(
+                "[red]Error:[/red] No Notion API key found. "
+                "Set ARCANE_NOTION_API_KEY environment variable or add to .env file."
+            )
+            raise typer.Exit(1)
+
+        if not workspace:
+            console.print(
+                "[red]Error:[/red] Notion export requires --workspace/-w with the parent page ID.\n"
+                "Find it in the Notion URL: https://notion.so/Your-Page-[page_id_here]"
+            )
+            raise typer.Exit(1)
+
+        from arcane.project_management import NotionClient
+
+        client = NotionClient(api_key=settings.notion_api_key)
+
+        console.print("[dim]Validating Notion credentials...[/dim]")
+        if not await client.validate_credentials():
+            console.print("[red]Error:[/red] Could not connect to Notion API. Check your API key.")
+            raise typer.Exit(1)
+        console.print("[green]✓[/green] Connected to Notion")
+
+        console.print("[dim]Exporting to Notion...[/dim]")
+        result = await client.export(roadmap, parent_page_id=workspace)
+
+        if result.success:
+            console.print(f"[green]✓[/green] Exported {result.items_created} items to Notion")
+            if result.items_by_type:
+                for type_name, count in result.items_by_type.items():
+                    console.print(f"  {type_name}: {count}")
+            if result.url:
+                console.print(f"[bold]🔗 View at:[/bold] {result.url}")
+            if result.warnings:
+                console.print(f"\n[yellow]⚠ {len(result.warnings)} warning(s):[/yellow]")
+                for w in result.warnings:
+                    console.print(f"  {w}")
+        else:
+            console.print("[red]Error:[/red] Export failed")
+            for error in result.errors:
+                console.print(f"  {error}")
+            raise typer.Exit(1)
     else:
         console.print(
             f"[red]Error:[/red] Unknown export target: {to}\n"
@@ -478,11 +556,11 @@ def new(
         "--notes",
         help="Additional context or notes",
     ),
-    provider: str = typer.Option(
-        "anthropic",
-        "--provider",
-        "-p",
-        help="AI provider to use",
+    model: str = typer.Option(
+        None,
+        "--model",
+        "-m",
+        help="AI model to use (sonnet, opus, haiku)",
     ),
     output: str = typer.Option(
         "./",
@@ -532,7 +610,21 @@ def new(
         similar_products=_split_csv(similar),
         notes=notes,
     )
-    asyncio.run(_new(prefilled, provider, output, not no_interactive, idea))
+
+    # Resolve model: CLI flag > interactive prompt > settings > default
+    interactive = not no_interactive
+    if model is None:
+        settings = Settings()
+        if settings.model != DEFAULT_MODEL:
+            # User set ARCANE_MODEL env var, use that
+            model = settings.model
+        elif interactive:
+            # Interactive mode with no explicit model: prompt the user
+            model = _prompt_model_selection()
+        else:
+            model = DEFAULT_MODEL
+
+    asyncio.run(_new(prefilled, model, output, interactive, idea))
 
 
 @app.command()
@@ -540,6 +632,12 @@ def resume(
     path: str = typer.Argument(
         ...,
         help="Path to project directory or roadmap.json",
+    ),
+    model: str = typer.Option(
+        None,
+        "--model",
+        "-m",
+        help="AI model to use (sonnet, opus, haiku)",
     ),
     no_interactive: bool = typer.Option(
         False,
@@ -551,7 +649,12 @@ def resume(
 
     Detects where generation stopped and continues from that point.
     """
-    asyncio.run(_resume(path, not no_interactive))
+    # Resolve model: CLI flag > settings > default
+    if model is None:
+        settings = Settings()
+        model = settings.model
+
+    asyncio.run(_resume(path, model, not no_interactive))
 
 
 @app.command()
@@ -614,9 +717,14 @@ def config(
     """
     if show:
         settings = Settings()
+        try:
+            model_info = resolve_model(settings.model)
+            model_display = f"{model_info.alias} ({model_info.model_id})"
+        except ValueError:
+            model_display = f"{settings.model} (unrecognized)"
         console.print(
             Panel(
-                f"[bold]Model:[/bold] {settings.model}\n"
+                f"[bold]Model:[/bold] {model_display}\n"
                 f"[bold]API Key:[/bold] {'✓ set' if settings.anthropic_api_key else '✗ missing'}\n"
                 f"[bold]Max Retries:[/bold] {settings.max_retries}\n"
                 f"[bold]Interactive:[/bold] {settings.interactive}\n"
@@ -634,7 +742,7 @@ def config(
         console.print("Use [bold]arcane config --show[/bold] to display current settings.")
         console.print("\nConfiguration is set via environment variables or .env file:")
         console.print("  ARCANE_ANTHROPIC_API_KEY  - Required for generation")
-        console.print("  ARCANE_MODEL              - Model to use (default: claude-sonnet-4-20250514)")
+        console.print(f"  ARCANE_MODEL              - Model to use (default: {DEFAULT_MODEL})")
         console.print("  ARCANE_MAX_RETRIES        - Retry count (default: 3)")
         console.print("  ARCANE_LINEAR_API_KEY     - For Linear export")
         console.print("  ARCANE_JIRA_DOMAIN        - For Jira export")

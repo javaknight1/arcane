@@ -33,6 +33,7 @@ from arcane.clients.anthropic import AnthropicClient
 from arcane.config import Settings
 from arcane.generators import RoadmapOrchestrator
 from arcane.items import ProjectContext
+from arcane.models import resolve_model
 from arcane.project_management import CSVClient
 from arcane.storage import StorageManager
 
@@ -72,9 +73,11 @@ async def run_smoke_test(console: Console, output_dir: Path) -> bool:
         console.print("Set it in .env or as an environment variable")
         return False
 
+    model_info = resolve_model(settings.model)
+
     console.print(Panel(
         "[bold magenta]Arcane Smoke Test[/bold magenta]\n"
-        f"Model: {settings.model}\n"
+        f"Model: {model_info.alias} ({model_info.model_id})\n"
         f"Output: {output_dir}",
         border_style="magenta",
     ))
@@ -82,7 +85,7 @@ async def run_smoke_test(console: Console, output_dir: Path) -> bool:
     # Create clients
     client = AnthropicClient(
         api_key=settings.anthropic_api_key,
-        model=settings.model,
+        model=model_info.model_id,
     )
 
     # Validate connection
