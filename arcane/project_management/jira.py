@@ -8,7 +8,7 @@ import httpx
 
 from arcane.items import Roadmap
 
-from .base import BasePMClient, ExportResult
+from .base import BasePMClient, ExportResult, ProgressCallback
 
 
 class JiraClient(BasePMClient):
@@ -60,6 +60,7 @@ class JiraClient(BasePMClient):
     async def export(
         self,
         roadmap: Roadmap,
+        progress_callback: ProgressCallback | None = None,
         project_key: str | None = None,
         **kwargs,
     ) -> ExportResult:

@@ -1,62 +1,8 @@
 """Tests for PM client stub implementations (Linear, Jira, Notion)."""
 
-from datetime import datetime, timezone
-
 import pytest
 
-from arcane.items import (
-    Milestone,
-    Priority,
-    ProjectContext,
-    Roadmap,
-    Status,
-)
 from arcane.project_management import JiraClient, LinearClient, NotionClient
-
-
-@pytest.fixture
-def sample_context():
-    """Sample ProjectContext for testing."""
-    return ProjectContext(
-        project_name="Test Project",
-        vision="A test application",
-        problem_statement="Testing is important",
-        target_users=["developers"],
-        timeline="3 months",
-        team_size=2,
-        developer_experience="senior",
-        budget_constraints="moderate",
-        tech_stack=["Python"],
-        infrastructure_preferences="AWS",
-        existing_codebase=False,
-        must_have_features=["auth"],
-        nice_to_have_features=[],
-        out_of_scope=[],
-        similar_products=[],
-        notes="",
-    )
-
-
-@pytest.fixture
-def sample_roadmap(sample_context):
-    """Minimal roadmap for testing stubs."""
-    return Roadmap(
-        id="roadmap-001",
-        project_name="Test Project",
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
-        context=sample_context,
-        milestones=[
-            Milestone(
-                id="milestone-001",
-                name="MVP",
-                goal="Launch minimum viable product",
-                description="First release",
-                priority=Priority.CRITICAL,
-                status=Status.NOT_STARTED,
-            )
-        ],
-    )
 
 
 class TestLinearClient:
@@ -149,7 +95,7 @@ class TestJiraClient:
 
 
 class TestNotionClient:
-    """Tests for NotionClient stub."""
+    """Tests for NotionClient basics."""
 
     def test_instantiation(self):
         """NotionClient can be instantiated with API key."""
@@ -175,17 +121,21 @@ class TestNotionClient:
         assert "Notion-Version" in client.headers
 
     @pytest.mark.asyncio
-    async def test_export_raises_not_implemented(self, sample_roadmap):
-        """NotionClient.export() raises NotImplementedError."""
+    async def test_export_requires_parent_page_id(self, sample_roadmap):
+        """NotionClient.export() raises ValueError without parent_page_id."""
         client = NotionClient(api_key="test")
-        with pytest.raises(NotImplementedError) as exc_info:
+        with pytest.raises(ValueError, match="parent_page_id is required"):
             await client.export(sample_roadmap)
-        assert "Sprint 9" in str(exc_info.value)
-        assert "CSV export" in str(exc_info.value)
 
 
 class TestPMClientImports:
     """Tests that all clients are properly exported from package."""
+
+    def test_import_progress_callback(self):
+        """ProgressCallback type can be imported from package."""
+        from arcane.project_management import ProgressCallback
+
+        assert ProgressCallback is not None
 
     def test_import_from_package(self):
         """All clients can be imported from project_management package."""

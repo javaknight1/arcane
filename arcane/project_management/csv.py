@@ -9,7 +9,7 @@ from pathlib import Path
 
 from arcane.items import Roadmap
 
-from .base import BasePMClient, ExportResult
+from .base import BasePMClient, ExportResult, ProgressCallback
 from .docs import build_all_pages, render_markdown
 
 
@@ -52,6 +52,7 @@ class CSVClient(BasePMClient):
     async def export(
         self,
         roadmap: Roadmap,
+        progress_callback: ProgressCallback | None = None,
         output_path: str | None = None,
         **kwargs,
     ) -> ExportResult:
@@ -59,6 +60,8 @@ class CSVClient(BasePMClient):
 
         Args:
             roadmap: The Roadmap to export.
+            progress_callback: Optional callback called with (item_type, item_name)
+                after each item is written.
             output_path: Optional path for the CSV file. If not provided,
                 defaults to ./{project_slug}/roadmap.csv
 
@@ -93,7 +96,10 @@ class CSVClient(BasePMClient):
             with open(path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=self.FIELDNAMES)
                 writer.writeheader()
-                writer.writerows(rows)
+                for row in rows:
+                    writer.writerow(row)
+                    if progress_callback:
+                        progress_callback(row["Type"], row["Name"])
 
             # Write project docs markdown alongside the CSV
             docs_path = path.parent / "project-docs.md"

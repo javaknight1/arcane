@@ -5,10 +5,15 @@ so they can be used interchangeably by the CLI export command.
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
 from arcane.items import Roadmap
+
+# Callback type for export progress reporting.
+# Called with (item_type, item_name) after each item is exported.
+ProgressCallback = Callable[[str, str], None]
 
 
 class ExportResult(BaseModel):
@@ -52,11 +57,18 @@ class BasePMClient(ABC):
         pass
 
     @abstractmethod
-    async def export(self, roadmap: Roadmap, **kwargs) -> ExportResult:
+    async def export(
+        self,
+        roadmap: Roadmap,
+        progress_callback: ProgressCallback | None = None,
+        **kwargs,
+    ) -> ExportResult:
         """Export a roadmap to the PM tool.
 
         Args:
             roadmap: The Roadmap to export.
+            progress_callback: Optional callback called with (item_type, item_name)
+                after each item is exported. Used for progress bar display.
             **kwargs: Tool-specific options (e.g., workspace, project_key).
 
         Returns:

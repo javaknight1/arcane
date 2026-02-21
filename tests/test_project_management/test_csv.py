@@ -1,112 +1,11 @@
 """Tests for arcane.project_management.csv module."""
 
 import csv
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 
-from arcane.items import (
-    Epic,
-    Milestone,
-    Priority,
-    ProjectContext,
-    Roadmap,
-    Status,
-    Story,
-    Task,
-)
 from arcane.project_management import CSVClient, ExportResult
-
-
-@pytest.fixture
-def sample_context():
-    """Sample ProjectContext for testing."""
-    return ProjectContext(
-        project_name="Test Project",
-        vision="A test application",
-        problem_statement="Testing is important",
-        target_users=["developers"],
-        timeline="3 months",
-        team_size=2,
-        developer_experience="senior",
-        budget_constraints="moderate",
-        tech_stack=["Python", "React"],
-        infrastructure_preferences="AWS",
-        existing_codebase=False,
-        must_have_features=["auth", "dashboard"],
-        nice_to_have_features=["dark mode"],
-        out_of_scope=["mobile app"],
-        similar_products=["other apps"],
-        notes="Test notes",
-    )
-
-
-@pytest.fixture
-def sample_roadmap(sample_context):
-    """Sample Roadmap with full hierarchy for testing."""
-    task1 = Task(
-        id="task-001",
-        name="Create login form",
-        description="Build the login form component",
-        priority=Priority.HIGH,
-        status=Status.NOT_STARTED,
-        estimated_hours=4,
-        acceptance_criteria=["Form renders", "Validates input"],
-        implementation_notes="Use React Hook Form",
-        claude_code_prompt="Create a login form with email and password fields...",
-    )
-    task2 = Task(
-        id="task-002",
-        name="Add form validation",
-        description="Validate form inputs",
-        priority=Priority.MEDIUM,
-        status=Status.NOT_STARTED,
-        estimated_hours=2,
-        prerequisites=["task-001"],
-        acceptance_criteria=["Email validated", "Password validated"],
-        implementation_notes="Use Zod for validation",
-        claude_code_prompt="Add Zod validation to the login form...",
-    )
-
-    story = Story(
-        id="story-001",
-        name="User Login",
-        description="Users can log in with email/password",
-        priority=Priority.CRITICAL,
-        status=Status.NOT_STARTED,
-        acceptance_criteria=["Can enter credentials", "Error on invalid"],
-        tasks=[task1, task2],
-    )
-
-    epic = Epic(
-        id="epic-001",
-        name="Authentication",
-        goal="Secure user authentication",
-        description="User login and registration",
-        priority=Priority.CRITICAL,
-        status=Status.NOT_STARTED,
-        stories=[story],
-    )
-
-    milestone = Milestone(
-        id="milestone-001",
-        name="MVP",
-        goal="Launch minimum viable product",
-        description="First release with core features",
-        priority=Priority.CRITICAL,
-        status=Status.NOT_STARTED,
-        epics=[epic],
-    )
-
-    return Roadmap(
-        id="roadmap-001",
-        project_name="Test Project",
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
-        context=sample_context,
-        milestones=[milestone],
-    )
 
 
 class TestCSVClient:
@@ -342,6 +241,42 @@ class TestCSVClient:
         assert "# Requirements" in content
         assert "# Technical Decisions" in content
         assert "# Team & Constraints" in content
+
+
+    @pytest.mark.asyncio
+    async def test_export_calls_progress_callback(self, tmp_path, sample_roadmap):
+        """Export calls progress_callback for each item."""
+        client = CSVClient()
+        output_path = tmp_path / "output.csv"
+        calls = []
+
+        def callback(item_type: str, item_name: str):
+            calls.append((item_type, item_name))
+
+        await client.export(
+            sample_roadmap, progress_callback=callback, output_path=str(output_path)
+        )
+
+        # 1 milestone + 1 epic + 1 story + 2 tasks = 5 calls
+        assert len(calls) == 5
+        assert calls[0] == ("Milestone", "MVP")
+        assert calls[1] == ("Epic", "Authentication")
+        assert calls[2] == ("Story", "User Login")
+        assert calls[3][0] == "Task"
+        assert calls[4][0] == "Task"
+
+    @pytest.mark.asyncio
+    async def test_export_works_without_callback(self, tmp_path, sample_roadmap):
+        """Export works when progress_callback is None."""
+        client = CSVClient()
+        output_path = tmp_path / "output.csv"
+
+        result = await client.export(
+            sample_roadmap, progress_callback=None, output_path=str(output_path)
+        )
+
+        assert result.success is True
+        assert result.items_created == 5
 
 
 class TestExportResult:

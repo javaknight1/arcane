@@ -8,7 +8,7 @@ import httpx
 
 from arcane.items import Roadmap
 
-from .base import BasePMClient, ExportResult
+from .base import BasePMClient, ExportResult, ProgressCallback
 
 
 class LinearClient(BasePMClient):
@@ -65,6 +65,7 @@ class LinearClient(BasePMClient):
     async def export(
         self,
         roadmap: Roadmap,
+        progress_callback: ProgressCallback | None = None,
         team_id: str | None = None,
         **kwargs,
     ) -> ExportResult:

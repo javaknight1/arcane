@@ -15,6 +15,7 @@ from typing import Any
 import typer
 from rich.console import Console
 from rich.panel import Panel
+from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
 from rich.prompt import Confirm
 from rich.tree import Tree
 
@@ -302,6 +303,39 @@ async def _resume(path: str, model: str | None = None, interactive: bool = True)
     console.print(f"\n[bold]📁 Saved to:[/bold] {output_dir.absolute()}")
 
 
+async def _export_with_progress(
+    client,
+    roadmap: Roadmap,
+    total: int,
+    **kwargs,
+):
+    """Run a PM export with a Rich progress bar."""
+    with Progress(
+        TextColumn("[bold blue]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        TextColumn("{task.fields[remaining]} remaining"),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Exporting...", total=total, remaining=total)
+
+        def on_progress(item_type: str, item_name: str):
+            completed = progress.tasks[0].completed + 1
+            remaining = total - int(completed)
+            progress.update(
+                task,
+                advance=1,
+                remaining=remaining,
+                description=f"Exporting {item_type}: {item_name}",
+            )
+
+        result = await client.export(
+            roadmap, progress_callback=on_progress, **kwargs
+        )
+
+    return result
+
+
 async def _export(path: str, to: str, workspace: str | None) -> None:
     """Internal async implementation of the export command."""
     path_obj = Path(path)
@@ -325,9 +359,11 @@ async def _export(path: str, to: str, workspace: str | None) -> None:
         else:
             output_path = path_obj / "roadmap.csv"
 
-        console.print(f"[dim]Exporting to CSV...[/dim]")
         client = CSVClient()
-        result = await client.export(roadmap, output_path=str(output_path))
+        total = sum(roadmap.total_items.values())
+        result = await _export_with_progress(
+            client, roadmap, total, output_path=str(output_path)
+        )
 
         if result.success:
             console.print(f"[green]✓[/green] Exported {result.items_created} items to CSV")
@@ -368,8 +404,10 @@ async def _export(path: str, to: str, workspace: str | None) -> None:
             raise typer.Exit(1)
         console.print("[green]✓[/green] Connected to Notion")
 
-        console.print("[dim]Exporting to Notion...[/dim]")
-        result = await client.export(roadmap, parent_page_id=workspace)
+        total = sum(roadmap.total_items.values())
+        result = await _export_with_progress(
+            client, roadmap, total, parent_page_id=workspace
+        )
 
         if result.success:
             console.print(f"[green]✓[/green] Exported {result.items_created} items to Notion")

@@ -7,7 +7,7 @@ Provides exporters for various PM tools:
 - Notion: Native API integration (stub - coming Sprint 9)
 """
 
-from .base import BasePMClient, ExportResult
+from .base import BasePMClient, ExportResult, ProgressCallback
 from .csv import CSVClient
 from .docs import (
     DocPage,
@@ -26,6 +26,7 @@ from .notion import NotionClient
 __all__ = [
     "BasePMClient",
     "ExportResult",
+    "ProgressCallback",
     "CSVClient",
     "DocPage",
     "DocSection",
