@@ -517,6 +517,49 @@ def _make_roadmap(context, *, num_complete_milestones=0,
     return roadmap
 
 
+class TestCalculateResumeTotal:
+    """Tests for _calculate_resume_total static method."""
+
+    def test_complete_roadmap_returns_zero(self, sample_context):
+        """Complete roadmap needs zero generation steps."""
+        roadmap = _make_roadmap(sample_context, num_complete_milestones=2)
+        assert RoadmapOrchestrator._calculate_resume_total(roadmap) == 0
+
+    def test_milestone_with_no_epics(self, sample_context):
+        """Milestone with no epics needs 1 step (epic gen)."""
+        roadmap = _make_roadmap(sample_context, milestone_with_no_epics=True)
+        assert RoadmapOrchestrator._calculate_resume_total(roadmap) == 1
+
+    def test_epic_with_no_stories(self, sample_context):
+        """Epic with no stories needs 1 step (story gen)."""
+        roadmap = _make_roadmap(sample_context, epic_with_no_stories=True)
+        assert RoadmapOrchestrator._calculate_resume_total(roadmap) == 1
+
+    def test_story_with_no_tasks(self, sample_context):
+        """Story with no tasks needs 1 step (task gen)."""
+        roadmap = _make_roadmap(sample_context, story_with_no_tasks=True)
+        assert RoadmapOrchestrator._calculate_resume_total(roadmap) == 1
+
+    def test_multiple_incomplete_items(self, sample_context):
+        """Multiple incomplete items sum their steps."""
+        roadmap = _make_roadmap(
+            sample_context,
+            milestone_with_no_epics=True,
+            epic_with_no_stories=True,
+            story_with_no_tasks=True,
+        )
+        assert RoadmapOrchestrator._calculate_resume_total(roadmap) == 3
+
+    def test_complete_plus_incomplete(self, sample_context):
+        """Complete milestones don't add to total."""
+        roadmap = _make_roadmap(
+            sample_context,
+            num_complete_milestones=2,
+            story_with_no_tasks=True,
+        )
+        assert RoadmapOrchestrator._calculate_resume_total(roadmap) == 1
+
+
 class TestGenerateShellSaving:
     """Tests that generate() saves shells before expanding them."""
 

@@ -9,6 +9,7 @@ from enum import Enum
 
 from rich.console import Console
 from rich.panel import Panel
+from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
 from rich.prompt import Prompt
 from rich.table import Table
 
@@ -60,6 +61,8 @@ class RoadmapOrchestrator:
         self.storage = storage
         self.interactive = interactive
         self._previous_usage = StoredUsage()
+        self._progress: Progress | None = None
+        self._task_id: int | None = None
 
         templates = TemplateLoader()
         self.milestone_gen = MilestoneGenerator(client, console, templates)
@@ -173,6 +176,73 @@ class RoadmapOrchestrator:
             return ReviewAction.REGENERATE
         return ReviewAction.APPROVE
 
+    def _init_progress(self, total: int) -> None:
+        """Initialize the generation progress bar."""
+        self._progress = Progress(
+            TextColumn("[bold blue]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            TextColumn("{task.fields[remaining]} remaining"),
+            console=self.console,
+        )
+        self._progress.start()
+        self._task_id = self._progress.add_task(
+            "Starting...", total=max(total, 1), remaining=total
+        )
+
+    def _update_description(self, description: str) -> None:
+        """Update the progress bar description to show current step."""
+        if self._progress and self._task_id is not None:
+            self._progress.update(self._task_id, description=description)
+
+    def _advance(self, add_total: int = 0) -> None:
+        """Advance progress by one step, optionally growing the total."""
+        if not self._progress or self._task_id is None:
+            return
+        task = self._progress.tasks[self._task_id]
+        new_total = task.total + add_total
+        remaining = int(new_total - task.completed - 1)
+        self._progress.update(
+            self._task_id,
+            total=new_total,
+            advance=1,
+            remaining=remaining,
+        )
+
+    def _pause_progress(self) -> None:
+        """Temporarily hide the progress bar for interactive prompts."""
+        if self._progress:
+            self._progress.stop()
+
+    def _resume_progress(self) -> None:
+        """Resume the progress bar after a pause."""
+        if self._progress:
+            self._progress.start()
+
+    def _finish_progress(self) -> None:
+        """Stop and clean up the progress bar."""
+        if self._progress:
+            self._progress.stop()
+            self._progress = None
+            self._task_id = None
+
+    @staticmethod
+    def _calculate_resume_total(roadmap: Roadmap) -> int:
+        """Calculate the number of generation steps needed to complete a roadmap."""
+        total = 0
+        for ms in roadmap.milestones:
+            if not ms.epics:
+                total += 1
+            else:
+                for epic in ms.epics:
+                    if not epic.stories:
+                        total += 1
+                    else:
+                        for story in epic.stories:
+                            if not story.tasks:
+                                total += 1
+        return total
+
     async def generate(self, context: ProjectContext) -> Roadmap:
         """Generate a complete roadmap from project context.
 
@@ -197,12 +267,17 @@ class RoadmapOrchestrator:
         self._previous_usage = StoredUsage()
         self.client.reset_usage()
 
+        # Initialize progress bar (1 step for milestone generation)
+        self._init_progress(1)
+
         # Phase 1: Generate milestones
+        self._update_description("Generating milestones...")
         self.console.print("\n[bold]📋 Generating milestones...[/bold]")
         ms_result = await self.milestone_gen.generate(context)
 
         # Interactive review of milestones
         if self.interactive:
+            self._pause_progress()
             while True:
                 self._display_milestones(ms_result.milestones)
                 self.console.print(
@@ -213,6 +288,9 @@ class RoadmapOrchestrator:
                     break
                 self.console.print("\n[bold]🔄 Regenerating milestones...[/bold]")
                 ms_result = await self.milestone_gen.generate(context)
+            self._resume_progress()
+
+        self._advance(add_total=len(ms_result.milestones))
 
         # Create all milestone shells so resume can find them if generation fails
         ms_pairs = []
@@ -235,6 +313,7 @@ class RoadmapOrchestrator:
             self.console.print(f"\n[bold]📦 Expanding: {ms_skel.name}[/bold]")
 
             # Generate epics for this milestone
+            self._update_description(f"Generating epics for: {ms_skel.name}")
             ep_result = await self.epic_gen.generate(
                 context,
                 parent_context={"milestone": ms_skel.model_dump()},
@@ -242,6 +321,7 @@ class RoadmapOrchestrator:
 
             # Interactive review of epics
             if self.interactive:
+                self._pause_progress()
                 while True:
                     self._display_epics(ep_result.epics, ms_skel.name)
                     self.console.print(
@@ -257,6 +337,9 @@ class RoadmapOrchestrator:
                         context,
                         parent_context={"milestone": ms_skel.model_dump()},
                     )
+                self._resume_progress()
+
+            self._advance(add_total=len(ep_result.epics))
 
             # Create all epic shells first so resume can detect incomplete ones
             epic_pairs = []
@@ -279,6 +362,7 @@ class RoadmapOrchestrator:
                 self.console.print(f"  [bold]🏗  Epic: {ep_skel.name}[/bold]")
 
                 # Generate stories for this epic
+                self._update_description(f"Generating stories for: {ep_skel.name}")
                 st_result = await self.story_gen.generate(
                     context,
                     parent_context={
@@ -290,6 +374,7 @@ class RoadmapOrchestrator:
 
                 # Interactive review of stories
                 if self.interactive:
+                    self._pause_progress()
                     while True:
                         self._display_stories(st_result.stories, ep_skel.name)
                         self.console.print(
@@ -309,6 +394,9 @@ class RoadmapOrchestrator:
                             },
                             sibling_context=[s.name for s in epic.stories],
                         )
+                    self._resume_progress()
+
+                self._advance(add_total=len(st_result.stories))
 
                 # Create all story shells first so resume can detect incomplete ones
                 story_pairs = []
@@ -331,6 +419,7 @@ class RoadmapOrchestrator:
                     self.console.print(f"    [dim]📝 Story: {st_skel.name}[/dim]")
 
                     # Generate tasks for this story
+                    self._update_description(f"Generating tasks for: {st_skel.name}")
                     task_result = await self.task_gen.generate(
                         context,
                         parent_context={
@@ -342,6 +431,7 @@ class RoadmapOrchestrator:
 
                     # Interactive review of tasks
                     if self.interactive:
+                        self._pause_progress()
                         while True:
                             self._display_tasks(task_result.tasks, st_skel.name)
                             self.console.print(
@@ -361,6 +451,9 @@ class RoadmapOrchestrator:
                                     "story": st_skel.model_dump(),
                                 },
                             )
+                        self._resume_progress()
+
+                    self._advance()
 
                     story.tasks = task_result.tasks
 
@@ -370,6 +463,7 @@ class RoadmapOrchestrator:
         # Final save
         await self._save(roadmap)
 
+        self._finish_progress()
         self._print_summary(roadmap)
         return roadmap
 
@@ -391,6 +485,11 @@ class RoadmapOrchestrator:
         self._previous_usage = roadmap.usage.model_copy()
         self.client.reset_usage()
 
+        # Initialize progress bar based on remaining work
+        resume_total = self._calculate_resume_total(roadmap)
+        if resume_total > 0:
+            self._init_progress(resume_total)
+
         # Walk milestones — they already exist, just need children filled in
         for milestone in roadmap.milestones:
             ms_ctx = self._item_context(milestone)
@@ -401,12 +500,14 @@ class RoadmapOrchestrator:
                     f"\n[bold]📦 Resuming: {milestone.name}[/bold] (generating epics)"
                 )
 
+                self._update_description(f"Generating epics for: {milestone.name}")
                 ep_result = await self.epic_gen.generate(
                     context,
                     parent_context={"milestone": ms_ctx},
                 )
 
                 if self.interactive:
+                    self._pause_progress()
                     while True:
                         self._display_epics(ep_result.epics, milestone.name)
                         self.console.print(
@@ -422,6 +523,9 @@ class RoadmapOrchestrator:
                             context,
                             parent_context={"milestone": ms_ctx},
                         )
+                    self._resume_progress()
+
+                self._advance(add_total=len(ep_result.epics))
 
                 for ep_skel in ep_result.epics:
                     epic = Epic(
@@ -446,6 +550,7 @@ class RoadmapOrchestrator:
                         f"  [bold]🏗  Resuming: {epic.name}[/bold] (generating stories)"
                     )
 
+                    self._update_description(f"Generating stories for: {epic.name}")
                     st_result = await self.story_gen.generate(
                         context,
                         parent_context={"milestone": ms_ctx, "epic": ep_ctx},
@@ -453,6 +558,7 @@ class RoadmapOrchestrator:
                     )
 
                     if self.interactive:
+                        self._pause_progress()
                         while True:
                             self._display_stories(st_result.stories, epic.name)
                             self.console.print(
@@ -469,6 +575,9 @@ class RoadmapOrchestrator:
                                 parent_context={"milestone": ms_ctx, "epic": ep_ctx},
                                 sibling_context=[],
                             )
+                        self._resume_progress()
+
+                    self._advance(add_total=len(st_result.stories))
 
                     for st_skel in st_result.stories:
                         story = Story(
@@ -494,6 +603,7 @@ class RoadmapOrchestrator:
                         f"    [dim]📝 Resuming: {story.name}[/dim] (generating tasks)"
                     )
 
+                    self._update_description(f"Generating tasks for: {story.name}")
                     task_result = await self.task_gen.generate(
                         context,
                         parent_context={
@@ -504,6 +614,7 @@ class RoadmapOrchestrator:
                     )
 
                     if self.interactive:
+                        self._pause_progress()
                         while True:
                             self._display_tasks(task_result.tasks, story.name)
                             self.console.print(
@@ -523,6 +634,9 @@ class RoadmapOrchestrator:
                                     "story": st_ctx,
                                 },
                             )
+                        self._resume_progress()
+
+                    self._advance()
 
                     story.tasks = task_result.tasks
 
@@ -532,6 +646,7 @@ class RoadmapOrchestrator:
         # Final save
         await self._save(roadmap)
 
+        self._finish_progress()
         self._print_summary(roadmap)
         return roadmap
 
