@@ -2,7 +2,7 @@
 
 Provides exporters for various PM tools:
 - CSV: Universal format for any tool that accepts CSV import
-- Linear: Native GraphQL integration (stub - coming Sprint 9)
+- Linear: Native GraphQL integration
 - Jira: Native REST API integration (stub - coming Sprint 9)
 - Notion: Native API integration (stub - coming Sprint 9)
 """

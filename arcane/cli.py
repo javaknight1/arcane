@@ -375,7 +375,54 @@ async def _export(path: str, to: str, workspace: str | None) -> None:
             raise typer.Exit(1)
 
     elif to_lower == "linear":
-        console.print("[dim]Linear export coming soon...[/dim]")
+        settings = Settings()
+        if not settings.linear_api_key:
+            console.print(
+                "[red]Error:[/red] No Linear API key found. "
+                "Set ARCANE_LINEAR_API_KEY environment variable or add to .env file."
+            )
+            raise typer.Exit(1)
+
+        if not workspace:
+            console.print(
+                "[red]Error:[/red] Linear export requires --workspace/-w with the team ID.\n"
+                "Find it in Linear settings under 'Teams' or via the API."
+            )
+            raise typer.Exit(1)
+
+        from arcane.project_management import LinearClient
+
+        client = LinearClient(api_key=settings.linear_api_key)
+
+        console.print("[dim]Validating Linear credentials...[/dim]")
+        if not await client.validate_credentials():
+            console.print("[red]Error:[/red] Could not connect to Linear API. Check your API key.")
+            raise typer.Exit(1)
+        console.print("[green]✓[/green] Connected to Linear")
+
+        # Epics are flattened in Linear, so exclude them from total
+        total_items = roadmap.total_items
+        total = total_items["milestones"] + total_items["stories"] + total_items["tasks"]
+        result = await _export_with_progress(
+            client, roadmap, total, team_id=workspace
+        )
+
+        if result.success:
+            console.print(f"[green]✓[/green] Exported {result.items_created} items to Linear")
+            if result.items_by_type:
+                for type_name, count in result.items_by_type.items():
+                    console.print(f"  {type_name}: {count}")
+            if result.url:
+                console.print(f"[bold]🔗 View at:[/bold] {result.url}")
+            if result.warnings:
+                console.print(f"\n[yellow]⚠ {len(result.warnings)} warning(s):[/yellow]")
+                for w in result.warnings:
+                    console.print(f"  {w}")
+        else:
+            console.print("[red]Error:[/red] Export failed")
+            for error in result.errors:
+                console.print(f"  {error}")
+            raise typer.Exit(1)
     elif to_lower == "jira":
         console.print("[dim]Jira export coming soon...[/dim]")
     elif to_lower == "notion":

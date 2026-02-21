@@ -2,9 +2,9 @@
 
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
-**Last Updated:** 2026-02-13
-**Current Task:** T31 (Update Example Scripts)
-**Current Sprint:** S6 (Documentation & Testing)
+**Last Updated:** 2026-02-20
+**Current Task:** T29 (Jira Integration)
+**Current Sprint:** S9 (Native Integrations)
 
 ---
 
@@ -42,11 +42,11 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T26~~  | ~~S8~~ | ~~P1~~   | ~~Clients~~ | ~~Rate Limiting~~            | ~~Backoff/retry for API rate limits~~ ✓                    |
 | ~~T27~~  | ~~S8~~ | ~~P1~~   | ~~Questions~~ | ~~Back-Navigation~~        | ~~Edit previous answers in question flow~~ ✓               |
 | ~~T34~~  | ~~S10~~ | ~~P1~~  | ~~CLI~~     | ~~Model Selection UX~~       | ~~Replace `--provider` with `--model` chooser~~ ✓          |
-| T35      | S11    | P1       | UX          | Export Progress Bar          | Progress bar with percent and items remaining during export |
-| T36      | S11    | P1       | UX          | Generation Progress Bar      | Progress bar with percent and items remaining during new/resume |
-| T28      | S9     | P2       | Export      | Linear Integration           | Native export via GraphQL API                              |
+| ~~T35~~  | ~~S11~~ | ~~P1~~  | ~~UX~~      | ~~Export Progress Bar~~      | ~~Progress bar with percent and items remaining during export~~ ✓ |
+| ~~T36~~  | ~~S11~~ | ~~P1~~  | ~~UX~~      | ~~Generation Progress Bar~~  | ~~Progress bar with percent and items remaining during new/resume~~ ✓ |
+| ~~T28~~  | ~~S9~~  | ~~P2~~  | ~~Export~~  | ~~Linear Integration~~       | ~~Native export via GraphQL API~~ ✓                        |
 | T29      | S9     | P2       | Export      | Jira Integration             | Native export via REST API                                 |
-| T30      | S9     | P2       | Export      | Notion Integration           | Native export via Notion API                               |
+| ~~T30~~  | ~~S9~~  | ~~P2~~  | ~~Export~~  | ~~Notion Integration~~       | ~~Native export via Notion API~~ ✓                         |
 | T31      | S6     | P1       | Scripts     | Update Example Scripts       | Create new scripts that use `arcane new` CLI               |
 | T32      | S6     | P1       | Scripts     | Create Example Idea File     | Create telchar.txt example for testing                     |
 | ~~T33~~  | ~~S9~~ | ~~P1~~   | ~~Export~~  | ~~Documentation Page Builders~~ | ~~Shared doc page builders from ProjectContext~~ ✓         |
@@ -111,18 +111,18 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 ### Sprint 9 - Native Integrations
 
 - [x] **T33** - Shared documentation page builders from ProjectContext ✓
-- [ ] **T28** - Native Linear integration via GraphQL API (includes doc page export)
+- [x] **T28** - Native Linear integration via GraphQL API (includes doc page export) ✓
 - [ ] **T29** - Native Jira Cloud integration via REST API (includes doc page export)
-- [ ] **T30** - Native Notion integration via API (includes doc page export)
+- [x] **T30** - Native Notion integration via API (includes doc page export) ✓
 
 ### Sprint 10 - Multi-Model Support (COMPLETE)
 
 - [x] **T34** - Replace `--provider` with `--model` chooser ✓
 
-### Sprint 11 - Progress Indicators
+### Sprint 11 - Progress Indicators (COMPLETE)
 
-- [ ] **T35** - Export progress bar with percent and items remaining
-- [ ] **T36** - Generation progress bar with percent and items remaining
+- [x] **T35** - Export progress bar with percent and items remaining ✓
+- [x] **T36** - Generation progress bar with percent and items remaining ✓
 
 ---
 
