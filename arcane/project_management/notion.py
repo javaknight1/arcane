@@ -349,8 +349,8 @@ class NotionClient(BasePMClient):
             }
         ]
 
-    @staticmethod
-    def _build_acceptance_criteria_blocks(criteria: list[str]) -> list[dict]:
+    @classmethod
+    def _build_acceptance_criteria_blocks(cls, criteria: list[str]) -> list[dict]:
         blocks: list[dict] = [
             {
                 "object": "block",
@@ -368,9 +368,7 @@ class NotionClient(BasePMClient):
                     "object": "block",
                     "type": "to_do",
                     "to_do": {
-                        "rich_text": [
-                            {"type": "text", "text": {"content": item}}
-                        ],
+                        "rich_text": cls._chunk_rich_text(item),
                         "checked": False,
                     },
                 }
@@ -422,8 +420,8 @@ class NotionClient(BasePMClient):
             }
         ]
 
-    @staticmethod
-    def _doc_section_to_blocks(section: DocSection) -> list[dict]:
+    @classmethod
+    def _doc_section_to_blocks(cls, section: DocSection) -> list[dict]:
         """Convert a DocSection to Notion blocks."""
         blocks: list[dict] = [
             {
@@ -444,9 +442,7 @@ class NotionClient(BasePMClient):
                         "object": "block",
                         "type": "paragraph",
                         "paragraph": {
-                            "rich_text": [
-                                {"type": "text", "text": {"content": item}}
-                            ]
+                            "rich_text": cls._chunk_rich_text(item)
                         },
                     }
                 )
@@ -457,9 +453,7 @@ class NotionClient(BasePMClient):
                         "object": "block",
                         "type": "bulleted_list_item",
                         "bulleted_list_item": {
-                            "rich_text": [
-                                {"type": "text", "text": {"content": item}}
-                            ]
+                            "rich_text": cls._chunk_rich_text(item)
                         },
                     }
                 )
@@ -470,9 +464,7 @@ class NotionClient(BasePMClient):
                         "object": "block",
                         "type": "to_do",
                         "to_do": {
-                            "rich_text": [
-                                {"type": "text", "text": {"content": item}}
-                            ],
+                            "rich_text": cls._chunk_rich_text(item),
                             "checked": False,
                         },
                     }
@@ -485,9 +477,7 @@ class NotionClient(BasePMClient):
                     "object": "block",
                     "type": "callout",
                     "callout": {
-                        "rich_text": [
-                            {"type": "text", "text": {"content": content}}
-                        ],
+                        "rich_text": cls._chunk_rich_text(content),
                         "icon": {"type": "emoji", "emoji": icon},
                     },
                 }

@@ -2,9 +2,10 @@
 
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
-**Last Updated:** 2026-02-20
-**Current Task:** T29 (Jira Integration)
-**Current Sprint:** S9 (Native Integrations)
+**Last Updated:** 2026-02-21
+**Current Task:** T31 (Update Example Scripts) — only remaining CLI task
+**Current Sprint:** S6 (Documentation) — S9, S10, S11 complete
+**Next Milestone:** S12 (Core Extraction) — prerequisite for SaaS work
 
 ---
 
@@ -45,11 +46,36 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T35~~  | ~~S11~~ | ~~P1~~  | ~~UX~~      | ~~Export Progress Bar~~      | ~~Progress bar with percent and items remaining during export~~ ✓ |
 | ~~T36~~  | ~~S11~~ | ~~P1~~  | ~~UX~~      | ~~Generation Progress Bar~~  | ~~Progress bar with percent and items remaining during new/resume~~ ✓ |
 | ~~T28~~  | ~~S9~~  | ~~P2~~  | ~~Export~~  | ~~Linear Integration~~       | ~~Native export via GraphQL API~~ ✓                        |
-| T29      | S9     | P2       | Export      | Jira Integration             | Native export via REST API                                 |
+| ~~T29~~  | ~~S9~~ | ~~P2~~   | ~~Export~~  | ~~Jira Integration~~         | ~~Native export via REST API~~ ✓                           |
 | ~~T30~~  | ~~S9~~  | ~~P2~~  | ~~Export~~  | ~~Notion Integration~~       | ~~Native export via Notion API~~ ✓                         |
 | T31      | S6     | P1       | Scripts     | Update Example Scripts       | Create new scripts that use `arcane new` CLI               |
-| T32      | S6     | P1       | Scripts     | Create Example Idea File     | Create telchar.txt example for testing                     |
+| ~~T32~~  | ~~S6~~ | ~~P1~~   | ~~Scripts~~ | ~~Create Example Idea File~~ | ~~Create telchar.txt example for testing~~ ✓               |
 | ~~T33~~  | ~~S9~~ | ~~P1~~   | ~~Export~~  | ~~Documentation Page Builders~~ | ~~Shared doc page builders from ProjectContext~~ ✓         |
+|          |        |          |             |                              |                                                            |
+| **SaaS** |        |          |             | **Arcane Web — AI-Native PM Tool** |                                                       |
+| T37      | S12    | P0       | Refactor    | Extract arcane-core          | Shared library for models, generators, clients, templates  |
+| T38      | S12    | P0       | Refactor    | Thin CLI Wrapper             | Refactor CLI to import from arcane-core                    |
+| T39      | S13    | P0       | Backend     | FastAPI + PostgreSQL Setup   | API scaffolding, DB schema, migrations                     |
+| T40      | S13    | P0       | Backend     | Authentication               | JWT auth, user accounts, API key storage                   |
+| T41      | S13    | P0       | Backend     | Project & Roadmap CRUD       | REST endpoints for all item types                          |
+| T42      | S14    | P0       | Backend     | Background Generation        | Task queue for async roadmap generation                    |
+| T43      | S14    | P1       | Backend     | Progress Streaming           | WebSocket/SSE for real-time generation progress            |
+| T44      | S15    | P0       | Frontend    | Frontend Scaffolding         | React/Next.js project, routing, auth UI                    |
+| T45      | S15    | P0       | Frontend    | Discovery Wizard             | Web-based question conductor                               |
+| T46      | S15    | P1       | Frontend    | Generation Progress View     | Real-time progress display during generation               |
+| T47      | S16    | P0       | Frontend    | Roadmap Tree Viewer          | Interactive tree view of roadmap hierarchy                 |
+| T48      | S16    | P0       | Frontend    | Inline Editing               | Edit, add, remove, reorder items in-place                  |
+| T49      | S16    | P1       | Feature     | Multi-Roadmap Projects       | Multiple roadmaps per project (MVP, v2, etc.)              |
+| T50      | S17    | P0       | Feature     | Regenerate at Any Level      | Regenerate children of any item without full rebuild        |
+| T51      | S17    | P1       | Feature     | AI-Assisted Editing          | "Split this story", "add error handling tasks", etc.       |
+| T52      | S17    | P1       | Feature     | Status Tracking              | Progress dashboards and status sync                        |
+| T53      | S17    | P2       | Feature     | Web Export to External PMs   | Wire existing exporters through web UI                     |
+| T54      | S18    | P1       | Infra       | vLLM Infrastructure          | GPU setup, model serving, deployment                       |
+| T55      | S18    | P1       | Clients     | VLLMClient Implementation    | BaseAIClient adapter for self-hosted models                |
+| T56      | S18    | P2       | Testing     | Model Benchmarking           | Quality comparison of self-hosted vs Claude/GPT            |
+| T57      | S19    | P1       | Feature     | Billing Integration          | Stripe payments, plan tiers, usage tracking                |
+| T58      | S19    | P1       | Feature     | Team Collaboration           | Shared projects, roles, invites                            |
+| T59      | S19    | P0       | Infra       | Deployment Infrastructure    | Docker, CI/CD, monitoring, production deploy               |
 
 ---
 
@@ -88,14 +114,14 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 - [x] **T17** - Wire all components and verify CLI works ✓
 - [x] **T18** - End-to-end integration tests with mock client ✓
 
-### Sprint 6 - Documentation & Testing (CURRENT)
+### Sprint 6 - Documentation & Testing
 
 - [x] **T19** - README and user documentation ✓
 - [x] **T20** - Real API smoke test script ✓
 - [x] **T21** - Prompt tuning based on smoke test results ✓
 - [x] **T22** - Repository cleanup of legacy files ✓
 - [ ] **T31** - Update example scripts to use new CLI
-- [ ] **T32** - Create example idea file (telchar.txt)
+- [x] **T32** - Create example idea file (telchar-idea.txt in examples/) ✓
 
 ### Sprint 7 - UX Improvements (COMPLETE)
 
@@ -108,11 +134,11 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 - [x] **T26** - Rate limiting with backoff/retry logic ✓
 - [x] **T27** - Back-navigation to edit previous answers ✓
 
-### Sprint 9 - Native Integrations
+### Sprint 9 - Native Integrations (COMPLETE)
 
 - [x] **T33** - Shared documentation page builders from ProjectContext ✓
 - [x] **T28** - Native Linear integration via GraphQL API (includes doc page export) ✓
-- [ ] **T29** - Native Jira Cloud integration via REST API (includes doc page export)
+- [x] **T29** - Native Jira Cloud integration via REST API (includes doc page export) ✓
 - [x] **T30** - Native Notion integration via API (includes doc page export) ✓
 
 ### Sprint 10 - Multi-Model Support (COMPLETE)
@@ -123,6 +149,77 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 
 - [x] **T35** - Export progress bar with percent and items remaining ✓
 - [x] **T36** - Generation progress bar with percent and items remaining ✓
+
+---
+
+## Arcane Web — AI-Native PM Tool
+
+> **Goal:** Turn Arcane from a CLI roadmap generator into a full AI-native project management tool. Users generate roadmaps via a web interface, edit them in-place, track progress, and generate new roadmaps for subsequent project phases. The CLI continues to work as a standalone tool.
+>
+> **Architecture:** Shared `arcane-core` library consumed by both `arcane-cli` (existing) and `arcane-web` (new FastAPI + React app). Self-hosted model support added as a learning exercise via vLLM.
+
+### Sprint 12 - Core Extraction
+
+> **Goal:** Split the monolith into a reusable core library + thin CLI wrapper. This is the prerequisite for everything — no web work starts until this is done.
+
+- [ ] **T37** - Extract `arcane-core` shared library (models, generators, clients, templates, questions registry)
+- [ ] **T38** - Refactor CLI as thin wrapper importing from arcane-core
+
+### Sprint 13 - API Foundation
+
+> **Goal:** Stand up a FastAPI backend with auth and CRUD for all item types. By the end of this sprint, you can create a project, generate a roadmap, and read it back via REST API.
+
+- [ ] **T39** - FastAPI project scaffolding, PostgreSQL schema, Alembic migrations
+- [ ] **T40** - JWT authentication, user accounts, encrypted PM credential storage
+- [ ] **T41** - Project & Roadmap CRUD endpoints (all 4 item levels)
+
+### Sprint 14 - Async Generation
+
+> **Goal:** Generation runs as a background job with real-time progress pushed to the client. The API returns immediately with a job ID; the client polls or streams for updates.
+
+- [ ] **T42** - Background task queue (Arq or Celery) wrapping the existing orchestrator
+- [ ] **T43** - WebSocket or SSE endpoint for generation progress streaming
+
+### Sprint 15 - Frontend Foundation
+
+> **Goal:** A working web UI where a user can log in, answer discovery questions, kick off generation, and watch it happen in real time. No editing yet — just generate and view.
+
+- [ ] **T44** - React/Next.js project scaffolding, routing, auth pages (login/register)
+- [ ] **T45** - Discovery wizard (web version of QuestionConductor)
+- [ ] **T46** - Real-time generation progress view
+
+### Sprint 16 - Roadmap Viewer & Editor
+
+> **Goal:** The core PM experience. Users can view their roadmap as an interactive tree, edit any item inline, and manage multiple roadmaps per project. This is where it becomes a real PM tool.
+
+- [ ] **T47** - Interactive roadmap tree view with expand/collapse and detail panels
+- [ ] **T48** - Inline editing: add, remove, reorder, edit fields for all item types
+- [ ] **T49** - Multi-roadmap per project (MVP roadmap, v2 roadmap, etc.)
+
+### Sprint 17 - AI-Native PM Features
+
+> **Goal:** The differentiating features. Regenerate any subtree, use AI to assist with editing, and track status. Export to external PM tools as an offramp.
+
+- [ ] **T50** - Regenerate at any level ("regenerate this epic's stories")
+- [ ] **T51** - AI-assisted editing ("split this story into smaller stories", "add tests")
+- [ ] **T52** - Status tracking and progress dashboards
+- [ ] **T53** - Export to external PM tools via web UI (wire existing Linear/Jira/Notion/CSV exporters)
+
+### Sprint 18 - Self-Hosted Models (Learning)
+
+> **Goal:** Learn vLLM and self-hosted model serving by adding it as an alternative AI backend. Uses the existing `BaseAIClient` abstraction — zero changes to generation logic.
+
+- [ ] **T54** - vLLM infrastructure setup (GPU provisioning, model serving, health checks)
+- [ ] **T55** - `VLLMClient` implementation conforming to `BaseAIClient` interface
+- [ ] **T56** - Benchmark quality: compare self-hosted model output vs Claude/GPT on same prompts
+
+### Sprint 19 - Launch Prep
+
+> **Goal:** Everything needed to open the product to real users. Billing, deployment, and basic collaboration.
+
+- [ ] **T57** - Stripe billing integration (plan tiers, usage tracking, checkout)
+- [ ] **T58** - Team collaboration (shared projects, role-based access, invites)
+- [ ] **T59** - Deployment infrastructure (Docker, CI/CD, monitoring, production deploy)
 
 ---
 
@@ -915,7 +1012,7 @@ Proceed with generation? [Y/n] >
 
 ---
 
-### T29: Jira Integration
+### T29: Jira Integration ✓
 
 | Field       | Value                                                      |
 | ----------- | ---------------------------------------------------------- |
@@ -924,15 +1021,16 @@ Proceed with generation? [Y/n] >
 | Type        | Export                                                     |
 | Description | Native export to Jira Cloud using REST API, including documentation pages via Confluence (optional) |
 
-**Commit message:** `feat: add native Jira Cloud integration`
+**Commit:** `feat: add native Jira Cloud integration`
 
-**Mapping:**
-- Milestones → Versions
-- Epics → Epics
-- Stories → Stories linked to Epic
-- Tasks → Sub-tasks
-
-**Documentation pages:** Uses T33's doc page builders. If user provides `--confluence-space`, creates Confluence pages using the Confluence REST API. Otherwise, puts a minimal summary in the Jira project description and logs a warning. See PM_INTEGRATIONS.md "Documentation Pages" section for details.
+**What was done:**
+- Full `JiraClient` implementation in `arcane/project_management/jira.py`
+- 4-phase export: project/field discovery → version creation → issue hierarchy (Epic → Story → Sub-task) → status transitions + prerequisite links
+- ADF (Atlassian Document Format) builders for rich descriptions
+- Priority mapping, story points, epic link custom field support
+- Claude Code prompts exported as task comments
+- Progress callback support
+- Comprehensive test suite in `tests/test_project_management/test_jira.py`
 
 ---
 
@@ -1002,7 +1100,7 @@ The old scripts in `scripts/` use the deprecated `arcane interactive` command wi
 
 ---
 
-### T32: Create Example Idea File
+### T32: Create Example Idea File ✓
 
 | Field       | Value                                                      |
 | ----------- | ---------------------------------------------------------- |
@@ -1011,32 +1109,14 @@ The old scripts in `scripts/` use the deprecated `arcane interactive` command wi
 | Type        | Scripts                                                    |
 | Description | Create telchar.txt example idea file for testing Arcane with real project |
 
-**Commit message:** `docs: add example idea file for testing`
+**Commit:** `docs: add example idea file for testing`
 
-**Background:**
-The telchar.txt file is an example project idea that can be used when testing Arcane. It contains a real project concept (the "Telchar" application) that serves as input for manual testing of the roadmap generation.
-
-**Create `telchar.txt`:**
-- Should contain a realistic project description
-- Include enough detail to generate a meaningful roadmap
-- Serve as a reference during the discovery question phase
-
-**Example format:**
-```
-Project: Telchar - Full-Stack Application Scaffolding CLI
-
-Description: A CLI tool that scaffolds complete full-stack applications based on user preferences. Similar to create-react-app but for full-stack projects.
-
-Key Features:
-- Interactive project setup wizard
-- Template-based code generation
-- Support for multiple frameworks (React, Vue, Django, FastAPI, etc.)
-- Database configuration (PostgreSQL, MongoDB, etc.)
-- Authentication boilerplate
-- Docker and CI/CD setup
-
-Target Users: Developers who want to quickly bootstrap production-ready projects
-```
+**What was done:**
+- Created `examples/telchar-idea.txt` — comprehensive 630-line project idea document
+- Covers all 16 arcane prompts with detailed answers for the Telchar project (interactive project scaffolding CLI)
+- Includes architecture notes (hybrid template engine), full 8-phase prompt flow, template directory structure
+- Serves as both a testing input and a template for users writing their own idea files
+- Documents both `--idea` flag usage and full `--no-interactive` flag-based invocation
 
 ---
 
@@ -1304,6 +1384,655 @@ Generating tasks for: Set up CI/CD pipeline  ━━━━━━━━━━━�
 
 ---
 
+---
+
+## SaaS Detailed Tasks
+
+---
+
+### T37: Extract arcane-core Shared Library
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S12 - Core Extraction                                      |
+| Priority    | P0 - Critical                                              |
+| Type        | Refactor                                                   |
+| Description | Extract all reusable logic into an `arcane-core` package that both CLI and web consume |
+
+**Why this matters:** Every subsequent SaaS task depends on a clean boundary between core logic and CLI presentation. Without this, the web app would import from the CLI package, creating awkward dependencies on Typer and Rich.
+
+**What moves to `arcane-core`:**
+- `items/` — All Pydantic models (Roadmap, Milestone, Epic, Story, Task, ProjectContext, enums). Zero changes needed.
+- `generators/` — BaseGenerator, all generators, orchestrator, skeletons. Zero changes needed (already UI-agnostic).
+- `clients/` — BaseAIClient, AnthropicClient, client factory. Zero changes needed.
+- `templates/` — TemplateLoader and all .j2 files. Zero changes needed.
+- `questions/` — Question base class, all question implementations, QuestionRegistry. The `QuestionConductor` stays in CLI (it depends on Rich).
+- `project_management/` — BasePMClient, all exporters (CSV, Linear, Jira, Notion), docs builder. Zero changes needed.
+- `config.py` — Base settings (API keys, model config). CLI-specific settings (interactive, output_dir) stay in CLI.
+- `utils/ids.py` — ID generation. Moves to core.
+- `utils/console.py` — Rich helpers. Stays in CLI.
+- `storage/manager.py` — File-based storage. Stays in CLI (web uses PostgreSQL).
+
+**Package structure option A (monorepo with namespace packages):**
+```
+arcane/
+├── core/                    # arcane-core (pip installable)
+│   ├── pyproject.toml
+│   └── src/arcane/core/
+│       ├── items/
+│       ├── generators/
+│       ├── clients/
+│       ├── templates/
+│       ├── questions/
+│       ├── project_management/
+│       ├── config.py
+│       └── utils/
+├── cli/                     # arcane-cli (pip installable, depends on arcane-core)
+│   ├── pyproject.toml
+│   └── src/arcane/cli/
+│       ├── app.py
+│       ├── conductor.py
+│       ├── storage/
+│       └── utils/console.py
+└── web/                     # arcane-web (depends on arcane-core)
+    ├── pyproject.toml
+    ├── backend/
+    └── frontend/
+```
+
+**Package structure option B (simpler, single pyproject.toml with extras):**
+```
+arcane/
+├── pyproject.toml           # [project.optional-dependencies] cli = [...], web = [...]
+├── src/arcane/
+│   ├── core/                # No CLI or web dependencies
+│   ├── cli/                 # Depends on typer, rich
+│   └── web/                 # Depends on fastapi, etc.
+```
+
+**Decision needed:** Pick option A or B. Option A is cleaner long-term (separate versioning, independent deploys). Option B is faster to set up.
+
+**Verification:**
+- `arcane-core` has zero dependencies on typer, rich, or any CLI/web framework
+- `arcane-cli` imports from `arcane.core.*` and works identically to current behavior
+- All 422+ existing tests pass
+- `pip install arcane-core` works standalone
+
+---
+
+### T38: Thin CLI Wrapper
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S12 - Core Extraction                                      |
+| Priority    | P0 - Critical                                              |
+| Type        | Refactor                                                   |
+| Description | Refactor the existing CLI to import from arcane-core instead of owning the logic |
+
+**What changes:**
+- `cli.py` imports from `arcane.core.items`, `arcane.core.generators`, etc.
+- `QuestionConductor` stays in CLI (it's the only Rich-dependent question code)
+- `StorageManager` stays in CLI (web will have its own DB-backed storage)
+- `utils/console.py` stays in CLI
+- All Typer commands work identically
+- Entry point `python -m arcane` still works
+
+**Tests:** All existing tests pass. Test imports reference `arcane.core.*` where applicable.
+
+---
+
+### T39: FastAPI + PostgreSQL Setup
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S13 - API Foundation                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | Backend                                                    |
+| Description | Scaffold the FastAPI application with PostgreSQL database and Alembic migrations |
+
+**Tech choices:**
+- **FastAPI** — Same async/Pydantic ecosystem as arcane-core
+- **SQLAlchemy 2.0** (async) — ORM with native async support
+- **Alembic** — Database migrations
+- **PostgreSQL** — Primary database; roadmap JSON stored in JSONB columns
+
+**Database schema (initial):**
+```sql
+users (
+    id UUID PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ
+)
+
+projects (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users,
+    name TEXT NOT NULL,
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ
+)
+
+roadmaps (
+    id UUID PRIMARY KEY,
+    project_id UUID REFERENCES projects,
+    name TEXT NOT NULL,           -- "MVP", "v2.0", etc.
+    context JSONB NOT NULL,       -- ProjectContext serialized
+    roadmap_data JSONB NOT NULL,  -- Full Roadmap serialized via model_dump()
+    status TEXT NOT NULL,         -- draft, generating, complete
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ
+)
+
+generation_jobs (
+    id UUID PRIMARY KEY,
+    roadmap_id UUID REFERENCES roadmaps,
+    status TEXT NOT NULL,          -- pending, running, completed, failed
+    progress JSONB,                -- {current_step, total_steps, current_item}
+    error TEXT,
+    started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ
+)
+
+pm_credentials (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users,
+    service TEXT NOT NULL,          -- notion, linear, jira
+    credentials JSONB NOT NULL,    -- Encrypted API keys / OAuth tokens
+    created_at TIMESTAMPTZ
+)
+```
+
+**Key insight:** `roadmap_data` stores the full `Roadmap.model_dump()` as JSONB. This means we get the existing Pydantic serialization for free. Reads deserialize via `Roadmap.model_validate(data)`. No ORM mapping of the 4-level hierarchy needed — it's just a JSON document.
+
+**API structure:**
+```
+web/backend/
+├── app/
+│   ├── __init__.py
+│   ├── main.py              # FastAPI app, middleware, CORS
+│   ├── config.py            # Web-specific settings
+│   ├── database.py          # SQLAlchemy engine, session
+│   ├── models/              # SQLAlchemy ORM models
+│   ├── schemas/             # Pydantic request/response schemas
+│   ├── routers/             # API route handlers
+│   │   ├── auth.py
+│   │   ├── projects.py
+│   │   ├── roadmaps.py
+│   │   ├── generation.py
+│   │   └── export.py
+│   ├── services/            # Business logic
+│   └── deps.py              # Dependency injection (current_user, db session)
+├── alembic/
+├── alembic.ini
+└── pyproject.toml
+```
+
+---
+
+### T40: Authentication
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S13 - API Foundation                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | Backend                                                    |
+| Description | JWT-based authentication with user registration, login, and API key storage |
+
+**Implementation:**
+- **Registration:** `POST /auth/register` — email + password, returns JWT
+- **Login:** `POST /auth/login` — email + password, returns access + refresh tokens
+- **Token refresh:** `POST /auth/refresh` — refresh token → new access token
+- **Password hashing:** bcrypt via `passlib`
+- **JWT:** `python-jose` with RS256 or HS256
+- **Dependency:** `get_current_user()` FastAPI dependency for protected routes
+- **PM credentials:** Encrypted at rest (Fernet symmetric encryption, key from env var)
+
+**Keep it simple for now:** Email/password auth only. OAuth (Google, GitHub) and SSO are Sprint 19 concerns.
+
+---
+
+### T41: Project & Roadmap CRUD
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S13 - API Foundation                                       |
+| Priority    | P0 - Critical                                              |
+| Type        | Backend                                                    |
+| Description | REST API endpoints for projects, roadmaps, and individual item CRUD |
+
+**Endpoints:**
+
+```
+# Projects
+POST   /projects                     Create project
+GET    /projects                     List user's projects
+GET    /projects/{id}                Get project with roadmap list
+PATCH  /projects/{id}                Update project name
+DELETE /projects/{id}                Delete project and all roadmaps
+
+# Roadmaps
+POST   /projects/{id}/roadmaps       Create roadmap (from context, triggers generation)
+GET    /projects/{id}/roadmaps        List roadmaps for project
+GET    /roadmaps/{id}                 Get full roadmap (entire hierarchy)
+DELETE /roadmaps/{id}                 Delete roadmap
+
+# Items (operate on roadmap_data JSONB)
+GET    /roadmaps/{id}/milestones                         List milestones
+PATCH  /roadmaps/{id}/milestones/{ms_id}                 Update milestone
+POST   /roadmaps/{id}/milestones                         Add milestone
+DELETE /roadmaps/{id}/milestones/{ms_id}                 Remove milestone
+# Same pattern for epics, stories, tasks nested under their parents
+PATCH  /roadmaps/{id}/items/{item_id}                    Update any item by ID
+DELETE /roadmaps/{id}/items/{item_id}                    Remove any item by ID
+POST   /roadmaps/{id}/items/{parent_id}/children         Add child item
+PUT    /roadmaps/{id}/items/reorder                      Reorder items within parent
+```
+
+**Key design decision:** Items are stored as JSONB, not normalized tables. CRUD operations load the Roadmap, modify the Pydantic model in memory, and save back. This is fine for single-user editing. If we need concurrent editing later (Sprint 19 collaboration), we'd add optimistic locking via `updated_at` version checks.
+
+---
+
+### T42: Background Generation
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S14 - Async Generation                                     |
+| Priority    | P0 - Critical                                              |
+| Type        | Backend                                                    |
+| Description | Run roadmap generation as a background job with progress tracking |
+
+**Why background:** A full roadmap generation makes dozens of AI API calls over several minutes. This can't be a synchronous HTTP request.
+
+**Tech choice: Arq** (async Redis-based task queue) — lightweight, async-native, fits the existing async codebase. Alternative: Celery (heavier, more mature).
+
+**Flow:**
+1. `POST /projects/{id}/roadmaps` creates a roadmap record (status=generating) and enqueues a generation job
+2. Job worker picks up the job, instantiates `RoadmapOrchestrator` from arcane-core
+3. Orchestrator runs generation, saving progress to `generation_jobs.progress` JSONB after each item
+4. On completion, saves final roadmap to `roadmaps.roadmap_data` and sets status=complete
+5. On failure, sets status=failed with error message
+
+**Progress tracking:**
+- Generation job updates `progress` JSONB: `{step: "Generating stories for: Auth Epic", completed: 12, total: 45}`
+- Client polls `GET /generation-jobs/{id}` or uses WebSocket (T43)
+
+---
+
+### T43: Progress Streaming
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S14 - Async Generation                                     |
+| Priority    | P1 - High                                                  |
+| Type        | Backend                                                    |
+| Description | Real-time progress updates via WebSocket or SSE during generation |
+
+**Options:**
+- **SSE (Server-Sent Events):** Simpler, one-directional, works through proxies. Client uses `EventSource` API.
+- **WebSocket:** Bidirectional (but we only need server→client), slightly more complex.
+
+**Recommendation:** SSE for simplicity. Endpoint: `GET /generation-jobs/{id}/stream` returns event stream.
+
+**Event format:**
+```
+event: progress
+data: {"step": "Generating stories for: Auth Epic", "completed": 12, "total": 45}
+
+event: item_created
+data: {"type": "story", "name": "User Login", "parent": "Auth Epic"}
+
+event: complete
+data: {"roadmap_id": "uuid", "total_items": 156}
+
+event: error
+data: {"message": "API rate limit exceeded, retrying..."}
+```
+
+---
+
+### T44: Frontend Scaffolding
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S15 - Frontend Foundation                                  |
+| Priority    | P0 - Critical                                              |
+| Type        | Frontend                                                   |
+| Description | React/Next.js project setup with routing, auth UI, and API client |
+
+**Tech choices:**
+- **Next.js 14+** (App Router) — SSR where needed, file-based routing
+- **Tailwind CSS** — Utility-first styling
+- **shadcn/ui** — Component library (built on Radix primitives)
+- **React Query (TanStack Query)** — Server state management, caching
+- **Zustand** — Client state (if needed beyond React Query)
+
+**Pages:**
+```
+/                          Landing / dashboard (project list)
+/login                     Login form
+/register                  Registration form
+/projects/[id]             Project detail (roadmap list)
+/projects/[id]/new         Discovery wizard → generation
+/roadmaps/[id]             Roadmap viewer/editor
+/roadmaps/[id]/generating  Generation progress view
+/settings                  User settings, PM credentials
+```
+
+**API client:** Thin wrapper around `fetch` with JWT token handling, auto-refresh, and React Query integration.
+
+---
+
+### T45: Discovery Wizard
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S15 - Frontend Foundation                                  |
+| Priority    | P0 - Critical                                              |
+| Type        | Frontend                                                   |
+| Description | Web-based question flow replacing the CLI QuestionConductor |
+
+**Design:** Multi-step form wizard. Each category (Basic Info, Constraints, Technical, Requirements) is one step. Uses the same `QuestionRegistry` from arcane-core to define questions — the frontend renders them based on `question_type`.
+
+**Component mapping:**
+- `QuestionType.TEXT` → `<textarea>` or `<input type="text">`
+- `QuestionType.INT` → `<input type="number">`
+- `QuestionType.CHOICE` → Radio buttons or select dropdown
+- `QuestionType.LIST` → Tag input (comma-separated with chips)
+- `QuestionType.CONFIRM` → Toggle switch
+
+**Flow:** Step through categories → Review summary → Submit → Redirect to generation progress view.
+
+**API call:** `POST /projects/{id}/roadmaps` with the `ProjectContext` JSON body.
+
+---
+
+### T46: Generation Progress View
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S15 - Frontend Foundation                                  |
+| Priority    | P1 - High                                                  |
+| Type        | Frontend                                                   |
+| Description | Real-time progress display during roadmap generation |
+
+**UI:** Progress bar + live feed of items being generated. Shows current step, percent complete, and a scrolling list of created items (milestones → epics → stories → tasks appearing in real time).
+
+**Implementation:** Connect to SSE endpoint from T43. Update React state on each event. On `complete` event, redirect to roadmap viewer.
+
+---
+
+### T47: Roadmap Tree Viewer
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S16 - Roadmap Viewer & Editor                              |
+| Priority    | P0 - Critical                                              |
+| Type        | Frontend                                                   |
+| Description | Interactive tree view of the full roadmap hierarchy with expand/collapse and detail panels |
+
+**Layout:** Left panel: collapsible tree (milestones → epics → stories → tasks). Right panel: detail view of selected item (description, acceptance criteria, hours, status, claude_code_prompt).
+
+**Features:**
+- Expand/collapse at any level
+- Click item to view details
+- Color-coded by status (not started, in progress, completed)
+- Priority badges
+- Hour estimates rolled up at each level
+- Search/filter by name
+
+**Libraries to evaluate:** react-arborist (tree component), or custom with Radix Accordion.
+
+---
+
+### T48: Inline Editing
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S16 - Roadmap Viewer & Editor                              |
+| Priority    | P0 - Critical                                              |
+| Type        | Frontend                                                   |
+| Description | Edit any item in-place: modify fields, add/remove items, reorder within parent |
+
+**Capabilities:**
+- Click any field in the detail panel to edit inline
+- Add new item (milestone, epic, story, task) under any parent
+- Delete items (with confirmation for items with children)
+- Drag-and-drop reorder within a parent
+- Status and priority dropdowns
+- Auto-save on blur (PATCH to API)
+
+**API calls:** Uses the CRUD endpoints from T41. Optimistic updates with React Query mutation + rollback on error.
+
+---
+
+### T49: Multi-Roadmap Projects
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S16 - Roadmap Viewer & Editor                              |
+| Priority    | P1 - High                                                  |
+| Type        | Feature                                                    |
+| Description | Support multiple roadmaps per project for phased planning (MVP, v2, etc.) |
+
+**This is the retention feature.** Users don't generate one roadmap and leave — they generate the MVP roadmap, work through it, then come back and generate the v2 roadmap. The project page shows all roadmaps with their completion status.
+
+**UI:** Project page shows a list of roadmaps as cards (name, status, item counts, progress %). "New Roadmap" button starts the discovery wizard with the project context pre-filled. Previous roadmap context is optionally injected into generation ("here's what was built in v1, now plan v2").
+
+**Generation context:** When creating a subsequent roadmap, the system prompt includes a summary of completed roadmaps: "The following milestones have already been delivered: [list]. Generate the NEXT phase of work, not what's already done."
+
+---
+
+### T50: Regenerate at Any Level
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S17 - AI-Native PM Features                                |
+| Priority    | P0 - Critical                                              |
+| Type        | Feature                                                    |
+| Description | Regenerate children of any item without rebuilding the full roadmap |
+
+**Use cases:**
+- "This epic's stories don't look right" → Regenerate stories for that epic
+- "I need more tasks for this story" → Regenerate tasks
+- "Restructure this milestone's epics" → Regenerate epics, which cascades to stories/tasks
+
+**Implementation:**
+- Add a "Regenerate" button to each item in the tree viewer
+- Uses the existing generators from arcane-core with `parent_context` set to the selected item
+- `sibling_context` populated from existing siblings to avoid duplication
+- Option to keep or discard existing children
+- Runs as background job (reuse T42 infrastructure)
+
+---
+
+### T51: AI-Assisted Editing
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S17 - AI-Native PM Features                                |
+| Priority    | P1 - High                                                  |
+| Type        | Feature                                                    |
+| Description | Natural language commands to modify roadmap items using AI |
+
+**Examples:**
+- Select a story → "Split this into 3 smaller stories"
+- Select an epic → "Add error handling and monitoring tasks to every story"
+- Select a milestone → "This is too ambitious, reduce scope by 30%"
+- Select a task → "Make this more detailed, include specific file paths"
+
+**Implementation:**
+- Chat-like input on the detail panel
+- Sends the current item + command to an AI call
+- AI returns modified item(s) as structured output (same Pydantic models)
+- User reviews changes before applying
+- New Jinja2 templates for edit commands (separate from generation templates)
+
+---
+
+### T52: Status Tracking
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S17 - AI-Native PM Features                                |
+| Priority    | P1 - High                                                  |
+| Type        | Feature                                                    |
+| Description | Progress dashboards and status management for roadmap items |
+
+**Features:**
+- Change status on any item (not started → in progress → completed)
+- Parent status auto-calculated from children (e.g., milestone is "in progress" if any epic is in progress)
+- Dashboard view: progress bars per milestone, burndown-style chart
+- Hours completed vs remaining
+- Overdue detection (if target_date is set on milestones)
+
+---
+
+### T53: Web Export to External PMs
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S17 - AI-Native PM Features                                |
+| Priority    | P2 - Medium                                                |
+| Type        | Feature                                                    |
+| Description | Wire the existing CLI exporters (Linear, Jira, Notion, CSV) through the web UI |
+
+**Implementation:**
+- Settings page: "Connect to Notion/Linear/Jira" with API key input (OAuth in Sprint 19)
+- Export button on roadmap page with target selector
+- Runs export as background job using the existing PM client classes from arcane-core
+- Shows export progress (reuse progress bar infrastructure)
+- Export history: which roadmap was exported where and when
+
+---
+
+### T54: vLLM Infrastructure
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S18 - Self-Hosted Models                                   |
+| Priority    | P1 - High                                                  |
+| Type        | Infra                                                      |
+| Description | Set up vLLM model serving infrastructure for self-hosted AI |
+
+**Learning goals:** Understand GPU provisioning, model loading, batching, quantization, and serving performance.
+
+**Setup:**
+- vLLM server serving an open-source model (Llama 3, Mistral, or similar)
+- OpenAI-compatible API endpoint (vLLM provides this natively)
+- Docker container for reproducible deployment
+- Health check and monitoring endpoints
+- GPU options: RunPod, Lambda Labs, or local GPU if available
+
+**Key questions to answer through experimentation:**
+- What's the minimum GPU needed for acceptable latency?
+- How does quantization (4-bit, 8-bit) affect roadmap quality?
+- What's the cost per roadmap vs Claude API?
+- Can a 7B model produce usable roadmaps, or do we need 70B+?
+
+---
+
+### T55: VLLMClient Implementation
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S18 - Self-Hosted Models                                   |
+| Priority    | P1 - High                                                  |
+| Type        | Clients                                                    |
+| Description | BaseAIClient adapter for vLLM-served models |
+
+**Implementation:**
+- New `VLLMClient(BaseAIClient)` in arcane-core
+- Uses vLLM's OpenAI-compatible API (`/v1/chat/completions`)
+- Structured output via instructor's OpenAI integration (vLLM supports function calling)
+- `_is_rate_limit_error()` returns False (self-hosted, no rate limits)
+- Connection validation via health check endpoint
+- Configuration: `ARCANE_VLLM_URL`, `ARCANE_VLLM_MODEL`
+
+**Add to model registry:**
+```python
+SUPPORTED_MODELS = {
+    ...
+    "local": ("vllm", "auto", "Self-hosted model via vLLM"),
+}
+```
+
+---
+
+### T56: Model Benchmarking
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S18 - Self-Hosted Models                                   |
+| Priority    | P2 - Medium                                                |
+| Type        | Testing                                                    |
+| Description | Compare self-hosted model output quality against Claude and GPT |
+
+**Benchmark script:**
+- Use a fixed ProjectContext (e.g., the telchar project)
+- Generate roadmaps with Claude Sonnet, Claude Opus, GPT-4o, and self-hosted model
+- Compare: item count, hour estimates, description quality, claude_code_prompt usefulness
+- Measure: latency per API call, total generation time, cost per roadmap
+- Output: comparison report (markdown or HTML)
+
+---
+
+### T57: Billing Integration
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S19 - Launch Prep                                          |
+| Priority    | P1 - High                                                  |
+| Type        | Feature                                                    |
+| Description | Stripe payments with plan tiers and usage tracking |
+
+**Pricing model (decide later, but scaffold for):**
+- **Free tier:** 1 project, 2 roadmaps, uses self-hosted model
+- **Pro ($15-20/month):** Unlimited projects/roadmaps, Claude/GPT models, export to PM tools
+- **Team ($30/user/month):** Collaboration, shared projects (Sprint 19)
+
+**Implementation:** Stripe Checkout for subscriptions, webhook handler for payment events, usage metering for AI token consumption.
+
+---
+
+### T58: Team Collaboration
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S19 - Launch Prep                                          |
+| Priority    | P1 - High                                                  |
+| Type        | Feature                                                    |
+| Description | Shared projects with role-based access and team invites |
+
+**Features:**
+- Teams with owner, admin, member roles
+- Invite via email
+- Shared projects visible to all team members
+- Activity log (who generated, edited, exported)
+- Optional: OAuth login (Google, GitHub) for easier team onboarding
+
+---
+
+### T59: Deployment Infrastructure
+
+| Field       | Value                                                      |
+| ----------- | ---------------------------------------------------------- |
+| Sprint      | S19 - Launch Prep                                          |
+| Priority    | P0 - Critical                                              |
+| Type        | Infra                                                      |
+| Description | Production deployment with Docker, CI/CD, monitoring |
+
+**Components:**
+- **Docker Compose:** Backend (FastAPI), Frontend (Next.js), PostgreSQL, Redis (for Arq), optional vLLM
+- **CI/CD:** GitHub Actions — lint, test, build, deploy
+- **Hosting:** Railway, Fly.io, or AWS ECS (pick based on cost at launch scale)
+- **Monitoring:** Sentry for errors, basic health checks, log aggregation
+- **Domain:** arcane.dev or similar
+- **SSL:** Let's Encrypt via Caddy or cloud provider
+
+---
+
 ## Quick Reference
 
 ### Priority Levels
@@ -1328,6 +2057,11 @@ Generating tasks for: Set up CI/CD pipeline  ━━━━━━━━━━━�
 - **Docs:** Documentation
 - **Maintenance:** Cleanup and housekeeping
 - **UX:** User experience improvements
+- **Refactor:** Code restructuring
+- **Backend:** FastAPI / server-side
+- **Frontend:** React / client-side
+- **Feature:** Product feature
+- **Infra:** Infrastructure and deployment
 
 ### Running Tests
 ```bash
