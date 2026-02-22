@@ -10,6 +10,13 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     model: str = "claude-sonnet-4-20250514"
 
+    # Auth
+    jwt_secret_key: str = "change-me-in-production"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
+    encryption_key: str = ""  # Fernet key; empty = PM credential encryption disabled
+
     model_config = {"env_prefix": "ARCANE_"}
 
 
