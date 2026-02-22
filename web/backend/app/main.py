@@ -7,6 +7,8 @@ from .config import get_settings
 from .database import get_engine
 from .routers.auth import router as auth_router
 from .routers.health import router as health_router
+from .routers.projects import router as projects_router
+from .routers.roadmaps import router as roadmaps_router
 
 
 @asynccontextmanager
@@ -34,3 +36,5 @@ app.add_middleware(
 
 app.include_router(health_router)
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(projects_router, prefix="/projects", tags=["projects"])
+app.include_router(roadmaps_router, tags=["roadmaps"])
