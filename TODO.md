@@ -3,9 +3,9 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-22
-**Current Task:** T43 (Progress Streaming) — WebSocket/SSE for real-time generation progress
-**Current Sprint:** S14 (Async Generation) — T42 complete
-**Next Milestone:** S14 completion — Progress streaming
+**Current Task:** T44 (Frontend Scaffolding) — React/Next.js project, routing, auth UI
+**Current Sprint:** S15 (Frontend Foundation) — Starting
+**Next Milestone:** S15 completion — Working web UI with generation
 
 ---
 
@@ -59,7 +59,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T40~~  | ~~S13~~ | ~~P0~~  | ~~Backend~~ | ~~Authentication~~           | ~~JWT auth, user accounts, API key storage~~ ✓             |
 | ~~T41~~  | ~~S13~~ | ~~P0~~  | ~~Backend~~ | ~~Project & Roadmap CRUD~~   | ~~REST endpoints for all item types~~ ✓                    |
 | ~~T42~~  | ~~S14~~ | ~~P0~~  | ~~Backend~~ | ~~Background Generation~~    | ~~Task queue for async roadmap generation~~ ✓              |
-| T43      | S14    | P1       | Backend     | Progress Streaming           | WebSocket/SSE for real-time generation progress            |
+| ~~T43~~  | ~~S14~~ | ~~P1~~  | ~~Backend~~ | ~~Progress Streaming~~       | ~~WebSocket/SSE for real-time generation progress~~ ✓      |
 | T44      | S15    | P0       | Frontend    | Frontend Scaffolding         | React/Next.js project, routing, auth UI                    |
 | T45      | S15    | P0       | Frontend    | Discovery Wizard             | Web-based question conductor                               |
 | T46      | S15    | P1       | Frontend    | Generation Progress View     | Real-time progress display during generation               |
@@ -173,12 +173,12 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 - [x] **T40** - JWT authentication, user accounts, encrypted PM credential storage ✓
 - [x] **T41** - Project & Roadmap CRUD endpoints (all 4 item levels) ✓
 
-### Sprint 14 - Async Generation
+### Sprint 14 - Async Generation (COMPLETE)
 
 > **Goal:** Generation runs as a background job with real-time progress pushed to the client. The API returns immediately with a job ID; the client polls or streams for updates.
 
 - [x] **T42** - Background generation via asyncio.create_task wrapping the existing orchestrator ✓
-- [ ] **T43** - WebSocket or SSE endpoint for generation progress streaming
+- [x] **T43** - SSE endpoint for generation progress streaming ✓
 
 ### Sprint 15 - Frontend Foundation
 

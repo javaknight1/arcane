@@ -1,11 +1,13 @@
-"""Generation endpoints for starting and polling background AI generation."""
+"""Generation endpoints for starting, polling, and streaming background AI generation."""
 
 import asyncio
+import json
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sse_starlette.sse import EventSourceResponse
 
 from ..config import Settings, get_settings
 from ..database import get_session_factory
@@ -15,6 +17,7 @@ from ..models.project import Project
 from ..models.roadmap import RoadmapRecord
 from ..models.user import User
 from ..schemas.generation import GenerateRequest, GenerationJobResponse
+from ..services import event_bus
 from ..services.generation import run_generation
 from ..services.roadmap_items import get_roadmap_for_user
 
@@ -113,3 +116,72 @@ async def get_generation_job(
             detail="Generation job not found",
         )
     return GenerationJobResponse.model_validate(job)
+
+
+@router.get("/generation-jobs/{job_id}/stream")
+async def stream_generation_progress(
+    job_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Stream generation progress via Server-Sent Events."""
+    # Verify job exists and user owns it
+    result = await db.execute(
+        select(GenerationJob)
+        .join(RoadmapRecord)
+        .join(Project)
+        .where(GenerationJob.id == job_id, Project.user_id == user.id)
+    )
+    job = result.scalar_one_or_none()
+    if job is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Generation job not found",
+        )
+
+    job_id_str = str(job_id)
+
+    # If job already completed or failed, send final event immediately
+    if job.status in ("completed", "failed"):
+
+        async def _terminal_events():
+            if job.status == "completed":
+                yield {
+                    "event": "complete",
+                    "data": json.dumps({
+                        "roadmap_id": str(job.roadmap_id),
+                        "total_items": job.progress or {},
+                    }),
+                }
+            else:
+                yield {
+                    "event": "error",
+                    "data": json.dumps({"message": job.error or "Generation failed"}),
+                }
+
+        return EventSourceResponse(_terminal_events())
+
+    # Subscribe and stream live events
+    async def _stream_events():
+        queue = event_bus.subscribe(job_id_str)
+        try:
+            # Send current progress as catch-up if available
+            if job.progress:
+                yield {
+                    "event": "progress",
+                    "data": json.dumps(job.progress),
+                }
+
+            while True:
+                event = await queue.get()
+                yield {
+                    "event": event["event"],
+                    "data": json.dumps(event["data"]),
+                }
+                # Stop after terminal events
+                if event["event"] in ("complete", "error"):
+                    break
+        finally:
+            event_bus.unsubscribe(job_id_str, queue)
+
+    return EventSourceResponse(_stream_events())

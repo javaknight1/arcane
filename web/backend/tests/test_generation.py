@@ -1,6 +1,8 @@
 """Tests for background generation endpoints and services."""
 
+import asyncio
 import copy
+import json
 import uuid
 from unittest.mock import AsyncMock, patch
 
@@ -13,6 +15,7 @@ from app.config import Settings, get_settings
 from app.main import app
 from app.models.generation_job import GenerationJob
 from app.models.roadmap import RoadmapRecord
+from app.services import event_bus
 from app.services.generation import WebStorageAdapter
 
 pytestmark = pytest.mark.asyncio
@@ -299,3 +302,219 @@ class TestWebStorageAdapter:
         assert job.progress["epics"] == 2
         assert job.progress["stories"] == 3
         assert job.progress["phase"] == "tasks"
+
+
+# --- Event Bus Unit Tests ---
+
+
+class TestEventBus:
+    def setup_method(self):
+        """Clear event bus state between tests."""
+        event_bus._subscribers.clear()
+
+    def test_publish_subscribe(self):
+        queue = event_bus.subscribe("job-1")
+        event_bus.publish("job-1", {"event": "progress", "data": {"phase": "tasks"}})
+        assert not queue.empty()
+        item = queue.get_nowait()
+        assert item["event"] == "progress"
+        assert item["data"]["phase"] == "tasks"
+
+    def test_multiple_subscribers(self):
+        q1 = event_bus.subscribe("job-2")
+        q2 = event_bus.subscribe("job-2")
+        event_bus.publish("job-2", {"event": "progress", "data": {}})
+        assert not q1.empty()
+        assert not q2.empty()
+        assert q1.get_nowait() == q2.get_nowait()
+
+    def test_cleanup_removes_subscribers(self):
+        event_bus.subscribe("job-3")
+        event_bus.subscribe("job-3")
+        assert "job-3" in event_bus._subscribers
+        event_bus.cleanup("job-3")
+        assert "job-3" not in event_bus._subscribers
+
+    def test_unsubscribe_removes_single_queue(self):
+        q1 = event_bus.subscribe("job-4")
+        q2 = event_bus.subscribe("job-4")
+        event_bus.unsubscribe("job-4", q1)
+        assert len(event_bus._subscribers["job-4"]) == 1
+        # Publishing should only reach q2
+        event_bus.publish("job-4", {"event": "test", "data": {}})
+        assert q1.empty()
+        assert not q2.empty()
+
+
+# --- SSE Streaming Endpoint Tests ---
+
+
+@pytest.fixture
+async def job_with_status(client: AsyncClient, roadmap_with_context, db_session: AsyncSession):
+    """Create a job and return a helper to set its status directly."""
+    rm, headers = roadmap_with_context
+    with patch("app.routers.generation.run_generation", side_effect=_noop_run_generation):
+        resp = await client.post(f"/roadmaps/{rm['id']}/generate", headers=headers)
+    job_id = resp.json()["id"]
+
+    async def _set_status(status, error=None, progress=None):
+        result = await db_session.execute(
+            select(GenerationJob).where(GenerationJob.id == uuid.UUID(job_id))
+        )
+        job = result.scalar_one()
+        job.status = status
+        if error:
+            job.error = error
+        if progress is not None:
+            job.progress = copy.deepcopy(progress)
+        await db_session.commit()
+
+    return job_id, headers, _set_status
+
+
+class TestStreamGeneration:
+    async def test_stream_completed_job(self, client: AsyncClient, job_with_status):
+        job_id, headers, set_status = job_with_status
+        progress = {"milestones": 2, "epics": 4, "stories": 8, "tasks": 16}
+        await set_status("completed", progress=progress)
+
+        async with client.stream(
+            "GET", f"/generation-jobs/{job_id}/stream", headers=headers
+        ) as resp:
+            assert resp.status_code == 200
+            body = b""
+            async for chunk in resp.aiter_bytes():
+                body += chunk
+
+        text = body.decode()
+        assert "event: complete" in text
+        # Parse the data line
+        for line in text.split("\n"):
+            if line.startswith("data: "):
+                data = json.loads(line[6:])
+                assert "roadmap_id" in data
+                break
+
+    async def test_stream_failed_job(self, client: AsyncClient, job_with_status):
+        job_id, headers, set_status = job_with_status
+        await set_status("failed", error="Something went wrong")
+
+        async with client.stream(
+            "GET", f"/generation-jobs/{job_id}/stream", headers=headers
+        ) as resp:
+            assert resp.status_code == 200
+            body = b""
+            async for chunk in resp.aiter_bytes():
+                body += chunk
+
+        text = body.decode()
+        assert "event: error" in text
+        for line in text.split("\n"):
+            if line.startswith("data: "):
+                data = json.loads(line[6:])
+                assert "Something went wrong" in data["message"]
+                break
+
+    async def test_stream_not_found(self, client: AsyncClient, user_and_headers):
+        _, headers = user_and_headers
+        fake_id = str(uuid.uuid4())
+        resp = await client.get(f"/generation-jobs/{fake_id}/stream", headers=headers)
+        assert resp.status_code == 404
+
+    async def test_stream_ownership_isolation(self, client: AsyncClient, job_with_status):
+        job_id, _, _ = job_with_status
+        # Register a different user
+        resp = await client.post("/auth/register", json={
+            "email": "streamother@example.com",
+            "password": "otherpassword",
+        })
+        other_headers = {"Authorization": f"Bearer {resp.json()['access_token']}"}
+        resp = await client.get(f"/generation-jobs/{job_id}/stream", headers=other_headers)
+        assert resp.status_code == 404
+
+    async def test_stream_no_auth(self, client: AsyncClient):
+        fake_id = str(uuid.uuid4())
+        resp = await client.get(f"/generation-jobs/{fake_id}/stream")
+        assert resp.status_code == 401
+
+
+# --- Adapter Event Emission Test ---
+
+
+class TestAdapterEventEmission:
+    def setup_method(self):
+        event_bus._subscribers.clear()
+
+    async def test_adapter_publishes_progress_event(self, db_session: AsyncSession):
+        from app.models.project import Project
+        from app.models.user import User
+        from app.services.auth import hash_password
+        from tests.conftest import async_session_test
+
+        # Set up DB chain
+        user = User(email="eventadapter@example.com", password_hash=hash_password("password"))
+        db_session.add(user)
+        await db_session.flush()
+
+        project = Project(user_id=user.id, name="Event Test")
+        db_session.add(project)
+        await db_session.flush()
+
+        roadmap = RoadmapRecord(
+            project_id=project.id, name="Event RM", status="generating"
+        )
+        db_session.add(roadmap)
+        await db_session.flush()
+
+        job = GenerationJob(roadmap_id=roadmap.id, status="in_progress")
+        db_session.add(job)
+        await db_session.commit()
+        await db_session.refresh(roadmap)
+        await db_session.refresh(job)
+
+        job_id_str = str(job.id)
+
+        # Subscribe to events before saving
+        queue = event_bus.subscribe(job_id_str)
+
+        class MockMilestone:
+            def __init__(self, name):
+                self.name = name
+                self.epics = []
+
+        class MockRoadmap:
+            def __init__(self):
+                self.milestones = [MockMilestone("M1")]
+
+            @property
+            def total_items(self):
+                return {"milestones": 1, "epics": 0, "stories": 0, "tasks": 0}
+
+            def model_dump(self, mode=None):
+                return {"milestones": [{"name": "M1", "epics": []}]}
+
+        adapter = WebStorageAdapter(
+            session_factory=async_session_test,
+            roadmap_record_id=str(roadmap.id),
+            job_id=job_id_str,
+        )
+        await adapter.save_roadmap(MockRoadmap())
+
+        # Should receive item_created + progress events
+        events = []
+        while not queue.empty():
+            events.append(queue.get_nowait())
+
+        event_types = [e["event"] for e in events]
+        assert "item_created" in event_types
+        assert "progress" in event_types
+
+        # Check item_created event
+        item_event = next(e for e in events if e["event"] == "item_created")
+        assert item_event["data"]["type"] == "milestone"
+        assert item_event["data"]["name"] == "M1"
+
+        # Check progress event
+        progress_event = next(e for e in events if e["event"] == "progress")
+        assert progress_event["data"]["milestones"] == 1
+        assert progress_event["data"]["phase"] == "epics"

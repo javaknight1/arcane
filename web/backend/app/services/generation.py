@@ -20,6 +20,7 @@ from arcane.core.items.context import ProjectContext
 
 from ..models.generation_job import GenerationJob
 from ..models.roadmap import RoadmapRecord
+from . import event_bus
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,9 @@ class WebStorageAdapter:
     each story. This adapter serialises the arcane-core Roadmap into
     the RoadmapRecord.roadmap_data JSONB column and extracts progress
     counts into the GenerationJob.progress JSONB column.
+
+    It also publishes progress and item_created events to the event bus
+    so that SSE subscribers receive real-time updates.
     """
 
     def __init__(
@@ -42,6 +46,13 @@ class WebStorageAdapter:
         self.session_factory = session_factory
         self.roadmap_record_id = uuid.UUID(roadmap_record_id)
         self.job_id = uuid.UUID(job_id)
+        self.job_id_str = job_id
+        self._prev_counts: dict[str, int] = {
+            "milestones": 0,
+            "epics": 0,
+            "stories": 0,
+            "tasks": 0,
+        }
 
     async def save_roadmap(self, roadmap) -> None:
         """Persist roadmap data and progress to the database."""
@@ -62,6 +73,72 @@ class WebStorageAdapter:
             job.progress = copy.deepcopy(progress)
 
             await session.commit()
+
+        # Emit item_created events for newly added items
+        self._emit_item_created_events(roadmap, progress)
+
+        # Emit progress event
+        event_bus.publish(self.job_id_str, {
+            "event": "progress",
+            "data": progress,
+        })
+
+        # Update previous counts
+        self._prev_counts = {
+            "milestones": progress["milestones"],
+            "epics": progress["epics"],
+            "stories": progress["stories"],
+            "tasks": progress["tasks"],
+        }
+
+    def _emit_item_created_events(self, roadmap, progress: dict) -> None:
+        """Detect newly added items and emit item_created events."""
+        # Walk the hierarchy and emit events for new items
+        item_type_order = ["milestones", "epics", "stories", "tasks"]
+        for item_type in item_type_order:
+            new_count = progress[item_type]
+            old_count = self._prev_counts[item_type]
+            if new_count <= old_count:
+                continue
+            # Find the new items by walking the roadmap
+            for item_info in self._find_new_items(roadmap, item_type, old_count):
+                event_bus.publish(self.job_id_str, {
+                    "event": "item_created",
+                    "data": item_info,
+                })
+
+    @staticmethod
+    def _find_new_items(roadmap, item_type: str, skip_count: int) -> list[dict]:
+        """Walk the roadmap and return info for items past skip_count."""
+        results = []
+        count = 0
+        if item_type == "milestones":
+            for m in roadmap.milestones:
+                if count >= skip_count:
+                    results.append({"type": "milestone", "name": m.name, "parent": None})
+                count += 1
+        elif item_type == "epics":
+            for m in roadmap.milestones:
+                for e in m.epics:
+                    if count >= skip_count:
+                        results.append({"type": "epic", "name": e.name, "parent": m.name})
+                    count += 1
+        elif item_type == "stories":
+            for m in roadmap.milestones:
+                for e in m.epics:
+                    for s in e.stories:
+                        if count >= skip_count:
+                            results.append({"type": "story", "name": s.name, "parent": e.name})
+                        count += 1
+        elif item_type == "tasks":
+            for m in roadmap.milestones:
+                for e in m.epics:
+                    for s in e.stories:
+                        for t in s.tasks:
+                            if count >= skip_count:
+                                results.append({"type": "task", "name": t.name, "parent": s.name})
+                            count += 1
+        return results
 
     @staticmethod
     def _extract_progress(roadmap) -> dict:
@@ -137,7 +214,16 @@ async def run_generation(
             interactive=False,
         )
 
-        await orchestrator.generate(context)
+        roadmap = await orchestrator.generate(context)
+
+        # Emit complete event before DB update
+        event_bus.publish(job_id, {
+            "event": "complete",
+            "data": {
+                "roadmap_id": roadmap_record_id,
+                "total_items": roadmap.total_items,
+            },
+        })
 
         # Mark job completed & roadmap generated
         async with session_factory() as session:
@@ -158,6 +244,13 @@ async def run_generation(
 
     except Exception as exc:
         logger.exception("Generation failed for job %s", job_id)
+
+        # Emit error event before DB update
+        event_bus.publish(job_id, {
+            "event": "error",
+            "data": {"message": f"Generation failed: {exc}"},
+        })
+
         async with session_factory() as session:
             result = await session.execute(
                 select(GenerationJob).where(GenerationJob.id == job_uuid)
@@ -174,3 +267,6 @@ async def run_generation(
             roadmap_record.status = "failed"
 
             await session.commit()
+
+    finally:
+        event_bus.cleanup(job_id)
