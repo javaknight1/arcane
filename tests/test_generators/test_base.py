@@ -4,12 +4,12 @@ import pytest
 from pydantic import BaseModel
 from rich.console import Console
 
-from arcane.clients.base import BaseAIClient, AIClientError, UsageStats
-from arcane.generators.base import BaseGenerator, GenerationError
-from arcane.generators.skeletons import MilestoneSkeleton, MilestoneSkeletonList
-from arcane.items.base import Priority
-from arcane.items.context import ProjectContext
-from arcane.templates.loader import TemplateLoader
+from arcane.core.clients.base import BaseAIClient, AIClientError, UsageStats
+from arcane.core.generators.base import BaseGenerator, GenerationError
+from arcane.core.generators.skeletons import MilestoneSkeleton, MilestoneSkeletonList
+from arcane.core.items.base import Priority
+from arcane.core.items.context import ProjectContext
+from arcane.core.templates.loader import TemplateLoader
 
 
 class MockClient(BaseAIClient):

@@ -2,7 +2,7 @@
 
 import pytest
 
-from arcane.project_management import JiraClient, LinearClient, NotionClient
+from arcane.core.project_management import JiraClient, LinearClient, NotionClient
 
 
 class TestLinearClient:
@@ -129,13 +129,13 @@ class TestPMClientImports:
 
     def test_import_progress_callback(self):
         """ProgressCallback type can be imported from package."""
-        from arcane.project_management import ProgressCallback
+        from arcane.core.project_management import ProgressCallback
 
         assert ProgressCallback is not None
 
     def test_import_from_package(self):
         """All clients can be imported from project_management package."""
-        from arcane.project_management import (
+        from arcane.core.project_management import (
             BasePMClient,
             CSVClient,
             ExportResult,
@@ -154,7 +154,7 @@ class TestPMClientImports:
 
     def test_all_clients_inherit_from_base(self):
         """All concrete clients inherit from BasePMClient."""
-        from arcane.project_management import (
+        from arcane.core.project_management import (
             BasePMClient,
             CSVClient,
             JiraClient,

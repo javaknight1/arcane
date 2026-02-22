@@ -29,13 +29,13 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from arcane.clients.anthropic import AnthropicClient
-from arcane.config import Settings
-from arcane.generators import RoadmapOrchestrator
-from arcane.items import ProjectContext
-from arcane.models import resolve_model
-from arcane.project_management import CSVClient
-from arcane.storage import StorageManager
+from arcane.core.clients.anthropic import AnthropicClient
+from arcane.core.config import Settings
+from arcane.core.generators import RoadmapOrchestrator
+from arcane.core.items import ProjectContext
+from arcane.core.models import resolve_model
+from arcane.core.project_management import CSVClient
+from arcane.core.storage import StorageManager
 
 
 # Hardcoded test context - small but realistic project

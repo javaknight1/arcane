@@ -2,7 +2,7 @@
 
 import pytest
 
-from arcane.questions.base import Question, QuestionType
+from arcane.core.questions.base import Question, QuestionType
 
 
 class TestQuestionTypeEnum:

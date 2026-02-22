@@ -15,7 +15,7 @@ import logging
 
 import httpx
 
-from arcane.items import Priority, Roadmap, Status
+from arcane.core.items import Priority, Roadmap, Status
 
 from .base import BasePMClient, ExportResult, ProgressCallback
 

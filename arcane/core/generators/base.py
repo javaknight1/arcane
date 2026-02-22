@@ -12,9 +12,9 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel, ValidationError
 from rich.console import Console
 
-from arcane.clients.base import BaseAIClient, AIClientError
-from arcane.items.context import ProjectContext
-from arcane.templates.loader import TemplateLoader
+from arcane.core.clients.base import BaseAIClient, AIClientError
+from arcane.core.items.context import ProjectContext
+from arcane.core.templates.loader import TemplateLoader
 
 
 class GenerationError(Exception):

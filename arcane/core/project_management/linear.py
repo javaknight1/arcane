@@ -14,7 +14,7 @@ Epic context is preserved by adding "Epic: {name}" to story descriptions.
 
 import httpx
 
-from arcane.items import Priority, Roadmap, Status
+from arcane.core.items import Priority, Roadmap, Status
 
 from .base import BasePMClient, ExportResult, ProgressCallback
 from .docs import build_all_pages, render_markdown

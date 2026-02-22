@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from arcane.items import (
+from arcane.core.items import (
     Roadmap,
     Milestone,
     Epic,
@@ -16,7 +16,7 @@ from arcane.items import (
     Priority,
     Status,
 )
-from arcane.storage import StorageManager
+from arcane.core.storage import StorageManager
 
 
 @pytest.fixture

@@ -2,9 +2,9 @@
 
 import pytest
 
-from arcane.items import Priority, Status
-from arcane.project_management import LinearClient
-from arcane.project_management.linear import LinearAPIError
+from arcane.core.items import Priority, Status
+from arcane.core.project_management import LinearClient
+from arcane.core.project_management.linear import LinearAPIError
 
 
 class MockGraphQL:

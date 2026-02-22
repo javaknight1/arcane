@@ -5,7 +5,7 @@ Provides estimates for API calls, tokens, and costs before generation starts.
 
 from dataclasses import dataclass
 
-from arcane.models import SUPPORTED_MODELS, _MODEL_ID_TO_ALIAS
+from arcane.core.models import SUPPORTED_MODELS, _MODEL_ID_TO_ALIAS
 
 
 @dataclass

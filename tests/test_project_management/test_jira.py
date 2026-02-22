@@ -2,9 +2,9 @@
 
 import pytest
 
-from arcane.items import Priority, Status
-from arcane.project_management import JiraClient
-from arcane.project_management.jira import JiraAPIError, PRIORITY_NAME_MAP, STATUS_TARGET_MAP
+from arcane.core.items import Priority, Status
+from arcane.core.project_management import JiraClient
+from arcane.core.project_management.jira import JiraAPIError, PRIORITY_NAME_MAP, STATUS_TARGET_MAP
 
 
 class MockJiraAPI:

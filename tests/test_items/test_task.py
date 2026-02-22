@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from arcane.items import Task, Priority, Status
+from arcane.core.items import Task, Priority, Status
 
 
 class TestTask:

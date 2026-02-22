@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from rich.console import Console
 
-from arcane.items.context import ProjectContext
-from arcane.questions.conductor import QuestionConductor
+from arcane.core.items.context import ProjectContext
+from arcane.core.questions.conductor import QuestionConductor
 
 
 # Complete set of answers for all 16 questions

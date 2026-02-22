@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock, patch
 import httpx
 import pytest
 
-from arcane.project_management.docs import DocSection
-from arcane.project_management.notion import (
+from arcane.core.project_management.docs import DocSection
+from arcane.core.project_management.notion import (
     PRIORITY_MAP,
     STATUS_MAP,
     NotionClient,

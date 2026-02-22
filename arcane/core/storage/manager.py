@@ -9,7 +9,7 @@ from pathlib import Path
 
 import yaml
 
-from arcane.items import Roadmap, ProjectContext
+from arcane.core.items import Roadmap, ProjectContext
 
 
 class StorageManager:

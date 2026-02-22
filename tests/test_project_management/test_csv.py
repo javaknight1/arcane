@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from arcane.project_management import CSVClient, ExportResult
+from arcane.core.project_management import CSVClient, ExportResult
 
 
 class TestCSVClient:

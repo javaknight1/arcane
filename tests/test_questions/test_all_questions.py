@@ -9,8 +9,8 @@ technical, requirements) to verify:
 
 import pytest
 
-from arcane.items import ProjectContext
-from arcane.questions import (
+from arcane.core.items import ProjectContext
+from arcane.core.questions import (
     QuestionType,
     # Basic
     ProjectNameQuestion,

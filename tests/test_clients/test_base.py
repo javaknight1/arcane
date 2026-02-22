@@ -3,7 +3,7 @@
 import pytest
 from pydantic import BaseModel
 
-from arcane.clients import (
+from arcane.core.clients import (
     BaseAIClient,
     AIClientError,
     AnthropicClient,

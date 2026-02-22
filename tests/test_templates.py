@@ -3,7 +3,7 @@
 import pytest
 from jinja2 import TemplateNotFound
 
-from arcane.templates import TemplateLoader
+from arcane.core.templates import TemplateLoader
 
 
 class TestTemplateLoaderSystem:

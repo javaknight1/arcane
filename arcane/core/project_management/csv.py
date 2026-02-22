@@ -7,7 +7,7 @@ that accepts CSV imports (Jira, Asana, Trello, etc.).
 import csv
 from pathlib import Path
 
-from arcane.items import Roadmap
+from arcane.core.items import Roadmap
 
 from .base import BasePMClient, ExportResult, ProgressCallback
 from .docs import build_all_pages, render_markdown

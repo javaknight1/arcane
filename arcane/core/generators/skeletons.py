@@ -7,7 +7,7 @@ items but not the actual children.
 
 from pydantic import BaseModel
 
-from arcane.items.base import Priority
+from arcane.core.items.base import Priority
 
 
 class MilestoneSkeleton(BaseModel):

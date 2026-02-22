@@ -9,7 +9,7 @@ import logging
 
 import httpx
 
-from arcane.items import Roadmap
+from arcane.core.items import Roadmap
 
 from .base import BasePMClient, ExportResult, ProgressCallback
 from .docs import DocSection, build_all_pages

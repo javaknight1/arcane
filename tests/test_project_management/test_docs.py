@@ -2,8 +2,8 @@
 
 import pytest
 
-from arcane.items import ProjectContext
-from arcane.project_management.docs import (
+from arcane.core.items import ProjectContext
+from arcane.core.project_management.docs import (
     DocPage,
     DocSection,
     build_all_pages,

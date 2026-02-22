@@ -2,7 +2,7 @@
 
 import pytest
 
-from arcane.utils import generate_id
+from arcane.core.utils import generate_id
 
 
 class TestGenerateId:

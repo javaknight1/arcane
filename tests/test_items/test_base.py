@@ -2,7 +2,7 @@
 
 import pytest
 
-from arcane.items import Priority, Status, BaseItem
+from arcane.core.items import Priority, Status, BaseItem
 
 
 class TestPriorityEnum:

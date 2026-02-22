@@ -2,8 +2,8 @@
 
 import pytest
 
-from arcane.items import ProjectContext
-from arcane.questions import QuestionRegistry
+from arcane.core.items import ProjectContext
+from arcane.core.questions import QuestionRegistry
 
 
 class TestQuestionRegistry:

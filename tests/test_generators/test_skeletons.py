@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from arcane.items.base import Priority
-from arcane.generators.skeletons import (
+from arcane.core.items.base import Priority
+from arcane.core.generators.skeletons import (
     MilestoneSkeleton,
     MilestoneSkeletonList,
     EpicSkeleton,

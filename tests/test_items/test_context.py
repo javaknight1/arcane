@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from arcane.items import ProjectContext
+from arcane.core.items import ProjectContext
 
 
 class TestProjectContext:

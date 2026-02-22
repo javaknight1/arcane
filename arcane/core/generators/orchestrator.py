@@ -13,8 +13,8 @@ from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
 from rich.prompt import Prompt
 from rich.table import Table
 
-from arcane.clients.base import BaseAIClient
-from arcane.items import (
+from arcane.core.clients.base import BaseAIClient
+from arcane.core.items import (
     Roadmap,
     StoredUsage,
     Milestone,
@@ -22,9 +22,9 @@ from arcane.items import (
     Story,
     ProjectContext,
 )
-from arcane.storage import StorageManager
-from arcane.templates import TemplateLoader
-from arcane.utils import generate_id, format_actual_usage
+from arcane.core.storage import StorageManager
+from arcane.core.templates import TemplateLoader
+from arcane.core.utils import generate_id, format_actual_usage
 
 from .milestone import MilestoneGenerator
 from .epic import EpicGenerator

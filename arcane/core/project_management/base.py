@@ -9,7 +9,7 @@ from collections.abc import Callable
 
 from pydantic import BaseModel
 
-from arcane.items import Roadmap
+from arcane.core.items import Roadmap
 
 # Callback type for export progress reporting.
 # Called with (item_type, item_name) after each item is exported.

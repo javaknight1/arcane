@@ -2,8 +2,8 @@
 
 import pytest
 
-from arcane.questions.base import QuestionType
-from arcane.questions.basic import (
+from arcane.core.questions.base import QuestionType
+from arcane.core.questions.basic import (
     ProjectNameQuestion,
     VisionQuestion,
     ProblemStatementQuestion,
@@ -141,7 +141,7 @@ class TestAllBasicQuestionsMatchContext:
 
     def test_all_keys_are_valid_context_fields(self):
         """All question keys should be valid ProjectContext field names."""
-        from arcane.items import ProjectContext
+        from arcane.core.items import ProjectContext
 
         questions = [
             ProjectNameQuestion(),

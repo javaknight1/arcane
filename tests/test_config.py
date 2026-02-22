@@ -2,7 +2,7 @@
 
 import pytest
 
-from arcane.config import Settings
+from arcane.core.config import Settings
 
 
 class TestSettings:

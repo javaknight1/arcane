@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 
-from arcane.items import Task
+from arcane.core.items import Task
 
 from .base import BaseGenerator
 

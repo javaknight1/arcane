@@ -2,14 +2,14 @@
 
 import pytest
 
-from arcane.models import (
+from arcane.core.models import (
     SUPPORTED_MODELS,
     DEFAULT_MODEL,
     ModelInfo,
     resolve_model,
     _MODEL_ID_TO_ALIAS,
 )
-from arcane.utils.cost_estimator import estimate_generation_cost, _resolve_model_id
+from arcane.core.utils.cost_estimator import estimate_generation_cost, _resolve_model_id
 
 
 class TestSupportedModels:

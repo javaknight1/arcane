@@ -13,8 +13,8 @@ import pytest
 from pydantic import BaseModel
 from rich.console import Console
 
-from arcane.clients.base import BaseAIClient, UsageStats
-from arcane.generators import (
+from arcane.core.clients.base import BaseAIClient, UsageStats
+from arcane.core.generators import (
     EpicSkeleton,
     EpicSkeletonList,
     MilestoneSkeleton,
@@ -24,10 +24,10 @@ from arcane.generators import (
     StorySkeletonList,
     TaskList,
 )
-from arcane.items import Priority, ProjectContext, Roadmap, Task
-from arcane.project_management import CSVClient
-from arcane.storage import StorageManager
-from arcane.utils import generate_id
+from arcane.core.items import Priority, ProjectContext, Roadmap, Task
+from arcane.core.project_management import CSVClient
+from arcane.core.storage import StorageManager
+from arcane.core.utils import generate_id
 
 
 class MockAIClient(BaseAIClient):

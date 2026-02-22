@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from arcane.items import (
+from arcane.core.items import (
     Epic,
     Milestone,
     Priority,

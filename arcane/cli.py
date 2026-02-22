@@ -19,17 +19,17 @@ from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
 from rich.prompt import Confirm
 from rich.tree import Tree
 
-from arcane.clients import create_client
-from arcane.config import Settings
-from arcane.generators import RoadmapOrchestrator
-from arcane.items import Roadmap
-from arcane.models import SUPPORTED_MODELS, DEFAULT_MODEL, ModelInfo, resolve_model
-from arcane.project_management import CSVClient
-from arcane.questions import QuestionConductor
-from arcane.questions.base import QuestionType
-from arcane.questions.registry import QuestionRegistry
-from arcane.storage import StorageManager
-from arcane.utils import estimate_generation_cost, format_cost_estimate
+from arcane.core.clients import create_client
+from arcane.core.config import Settings
+from arcane.core.generators import RoadmapOrchestrator
+from arcane.core.items import Roadmap
+from arcane.core.models import SUPPORTED_MODELS, DEFAULT_MODEL, ModelInfo, resolve_model
+from arcane.core.project_management import CSVClient
+from arcane.core.questions import QuestionConductor
+from arcane.core.questions.base import QuestionType
+from arcane.core.questions.registry import QuestionRegistry
+from arcane.core.storage import StorageManager
+from arcane.core.utils import estimate_generation_cost, format_cost_estimate
 
 app = typer.Typer(
     name="arcane",
@@ -390,7 +390,7 @@ async def _export(path: str, to: str, workspace: str | None) -> None:
             )
             raise typer.Exit(1)
 
-        from arcane.project_management import LinearClient
+        from arcane.core.project_management import LinearClient
 
         client = LinearClient(api_key=settings.linear_api_key)
 
@@ -447,7 +447,7 @@ async def _export(path: str, to: str, workspace: str | None) -> None:
             )
             raise typer.Exit(1)
 
-        from arcane.project_management import JiraClient
+        from arcane.core.project_management import JiraClient
 
         client = JiraClient(
             domain=settings.jira_domain,
@@ -498,7 +498,7 @@ async def _export(path: str, to: str, workspace: str | None) -> None:
             )
             raise typer.Exit(1)
 
-        from arcane.project_management import NotionClient
+        from arcane.core.project_management import NotionClient
 
         client = NotionClient(api_key=settings.notion_api_key)
 

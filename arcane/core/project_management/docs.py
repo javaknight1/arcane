@@ -8,7 +8,7 @@ No AI generation — purely data formatting from existing ProjectContext fields.
 
 from pydantic import BaseModel
 
-from arcane.items import ProjectContext
+from arcane.core.items import ProjectContext
 
 
 class DocSection(BaseModel):
