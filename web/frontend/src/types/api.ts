@@ -1,0 +1,84 @@
+// Auth
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: "bearer";
+}
+
+export interface UserResponse {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
+// Projects
+export interface ProjectCreate {
+  name: string;
+}
+
+export interface ProjectSummary {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  roadmap_count: number;
+}
+
+export interface RoadmapSummary {
+  id: string;
+  name: string;
+  status: "draft" | "generating" | "completed";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectDetail {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  roadmaps: RoadmapSummary[];
+}
+
+// Roadmaps
+export interface RoadmapCreate {
+  name: string;
+  context?: Record<string, unknown> | null;
+}
+
+export interface RoadmapDetail {
+  id: string;
+  project_id: string;
+  name: string;
+  status: "draft" | "generating" | "completed";
+  context: Record<string, unknown> | null;
+  roadmap_data: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Generation
+export interface GenerationJobResponse {
+  id: string;
+  roadmap_id: string;
+  status: "pending" | "in_progress" | "completed" | "failed";
+  progress: Record<string, unknown> | null;
+  error: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+// API Errors
+export interface ApiError {
+  detail: string;
+}

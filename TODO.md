@@ -3,8 +3,8 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-22
-**Current Task:** T44 (Frontend Scaffolding) — React/Next.js project, routing, auth UI
-**Current Sprint:** S15 (Frontend Foundation) — Starting
+**Current Task:** T45 (Discovery Wizard) — Web-based question conductor
+**Current Sprint:** S15 (Frontend Foundation) — In Progress
 **Next Milestone:** S15 completion — Working web UI with generation
 
 ---
@@ -60,7 +60,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T41~~  | ~~S13~~ | ~~P0~~  | ~~Backend~~ | ~~Project & Roadmap CRUD~~   | ~~REST endpoints for all item types~~ ✓                    |
 | ~~T42~~  | ~~S14~~ | ~~P0~~  | ~~Backend~~ | ~~Background Generation~~    | ~~Task queue for async roadmap generation~~ ✓              |
 | ~~T43~~  | ~~S14~~ | ~~P1~~  | ~~Backend~~ | ~~Progress Streaming~~       | ~~WebSocket/SSE for real-time generation progress~~ ✓      |
-| T44      | S15    | P0       | Frontend    | Frontend Scaffolding         | React/Next.js project, routing, auth UI                    |
+| ~~T44~~  | ~~S15~~ | ~~P0~~  | ~~Frontend~~ | ~~Frontend Scaffolding~~     | ~~React/Next.js project, routing, auth UI~~ ✓              |
 | T45      | S15    | P0       | Frontend    | Discovery Wizard             | Web-based question conductor                               |
 | T46      | S15    | P1       | Frontend    | Generation Progress View     | Real-time progress display during generation               |
 | T47      | S16    | P0       | Frontend    | Roadmap Tree Viewer          | Interactive tree view of roadmap hierarchy                 |
@@ -184,7 +184,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 
 > **Goal:** A working web UI where a user can log in, answer discovery questions, kick off generation, and watch it happen in real time. No editing yet — just generate and view.
 
-- [ ] **T44** - React/Next.js project scaffolding, routing, auth pages (login/register)
+- [x] **T44** - React/Next.js project scaffolding, routing, auth pages (login/register) ✓
 - [ ] **T45** - Discovery wizard (web version of QuestionConductor)
 - [ ] **T46** - Real-time generation progress view
 
