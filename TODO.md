@@ -3,9 +3,9 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-22
-**Current Task:** T42 (Background Generation) — Task queue for async roadmap generation
-**Current Sprint:** S14 (Async Generation) — S13 complete
-**Next Milestone:** S14 (Async Generation) — Background jobs + progress streaming
+**Current Task:** T43 (Progress Streaming) — WebSocket/SSE for real-time generation progress
+**Current Sprint:** S14 (Async Generation) — T42 complete
+**Next Milestone:** S14 completion — Progress streaming
 
 ---
 
@@ -58,7 +58,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T39~~  | ~~S13~~ | ~~P0~~  | ~~Backend~~ | ~~FastAPI + PostgreSQL Setup~~ | ~~API scaffolding, DB schema, migrations~~ ✓               |
 | ~~T40~~  | ~~S13~~ | ~~P0~~  | ~~Backend~~ | ~~Authentication~~           | ~~JWT auth, user accounts, API key storage~~ ✓             |
 | ~~T41~~  | ~~S13~~ | ~~P0~~  | ~~Backend~~ | ~~Project & Roadmap CRUD~~   | ~~REST endpoints for all item types~~ ✓                    |
-| T42      | S14    | P0       | Backend     | Background Generation        | Task queue for async roadmap generation                    |
+| ~~T42~~  | ~~S14~~ | ~~P0~~  | ~~Backend~~ | ~~Background Generation~~    | ~~Task queue for async roadmap generation~~ ✓              |
 | T43      | S14    | P1       | Backend     | Progress Streaming           | WebSocket/SSE for real-time generation progress            |
 | T44      | S15    | P0       | Frontend    | Frontend Scaffolding         | React/Next.js project, routing, auth UI                    |
 | T45      | S15    | P0       | Frontend    | Discovery Wizard             | Web-based question conductor                               |
@@ -177,7 +177,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 
 > **Goal:** Generation runs as a background job with real-time progress pushed to the client. The API returns immediately with a job ID; the client polls or streams for updates.
 
-- [ ] **T42** - Background task queue (Arq or Celery) wrapping the existing orchestrator
+- [x] **T42** - Background generation via asyncio.create_task wrapping the existing orchestrator ✓
 - [ ] **T43** - WebSocket or SSE endpoint for generation progress streaming
 
 ### Sprint 15 - Frontend Foundation
