@@ -3,8 +3,8 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-22
-**Current Task:** T40 (Authentication) — JWT auth, user accounts, API key storage
-**Current Sprint:** S13 (API Foundation) — T39 complete
+**Current Task:** T41 (Project & Roadmap CRUD) — REST endpoints for all item types
+**Current Sprint:** S13 (API Foundation) — T39, T40 complete
 **Next Milestone:** S14 (Async Generation) — Background jobs + progress streaming
 
 ---
@@ -56,7 +56,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T37~~  | ~~S12~~ | ~~P0~~  | ~~Refactor~~ | ~~Extract arcane-core~~     | ~~Shared library for models, generators, clients, templates~~ ✓ |
 | ~~T38~~  | ~~S12~~ | ~~P0~~  | ~~Refactor~~ | ~~Thin CLI Wrapper~~        | ~~Refactor CLI to import from arcane-core~~ ✓              |
 | ~~T39~~  | ~~S13~~ | ~~P0~~  | ~~Backend~~ | ~~FastAPI + PostgreSQL Setup~~ | ~~API scaffolding, DB schema, migrations~~ ✓               |
-| T40      | S13    | P0       | Backend     | Authentication               | JWT auth, user accounts, API key storage                   |
+| ~~T40~~  | ~~S13~~ | ~~P0~~  | ~~Backend~~ | ~~Authentication~~           | ~~JWT auth, user accounts, API key storage~~ ✓             |
 | T41      | S13    | P0       | Backend     | Project & Roadmap CRUD       | REST endpoints for all item types                          |
 | T42      | S14    | P0       | Backend     | Background Generation        | Task queue for async roadmap generation                    |
 | T43      | S14    | P1       | Backend     | Progress Streaming           | WebSocket/SSE for real-time generation progress            |
@@ -170,7 +170,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 > **Goal:** Stand up a FastAPI backend with auth and CRUD for all item types. By the end of this sprint, you can create a project, generate a roadmap, and read it back via REST API.
 
 - [x] **T39** - FastAPI project scaffolding, PostgreSQL schema, Alembic migrations ✓
-- [ ] **T40** - JWT authentication, user accounts, encrypted PM credential storage
+- [x] **T40** - JWT authentication, user accounts, encrypted PM credential storage ✓
 - [ ] **T41** - Project & Roadmap CRUD endpoints (all 4 item levels)
 
 ### Sprint 14 - Async Generation
