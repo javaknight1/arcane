@@ -22,6 +22,12 @@ When generating roadmaps with AI in a single shot:
 
 ---
 
+## Workflow Rules
+
+- **TODO.md is the source of truth.** When a task (T37, T38, etc.) is completed, always update TODO.md to mark it done — strike through the task index row, check the sprint checklist item, and update the "Current Task" / "Current Sprint" header. Do not wait to be asked.
+
+---
+
 ## Tech Stack
 
 - **Language**: Python 3.11+

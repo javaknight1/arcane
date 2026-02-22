@@ -2,10 +2,10 @@
 
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
-**Last Updated:** 2026-02-21
+**Last Updated:** 2026-02-22
 **Current Task:** T31 (Update Example Scripts) — only remaining CLI task
-**Current Sprint:** S6 (Documentation) — S9, S10, S11 complete
-**Next Milestone:** S12 (Core Extraction) — prerequisite for SaaS work
+**Current Sprint:** S6 (Documentation) — S9, S10, S11, S12 complete
+**Next Milestone:** S13 (API Foundation) — FastAPI + PostgreSQL + Auth + CRUD
 
 ---
 
@@ -53,8 +53,8 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T33~~  | ~~S9~~ | ~~P1~~   | ~~Export~~  | ~~Documentation Page Builders~~ | ~~Shared doc page builders from ProjectContext~~ ✓         |
 |          |        |          |             |                              |                                                            |
 | **SaaS** |        |          |             | **Arcane Web — AI-Native PM Tool** |                                                       |
-| T37      | S12    | P0       | Refactor    | Extract arcane-core          | Shared library for models, generators, clients, templates  |
-| T38      | S12    | P0       | Refactor    | Thin CLI Wrapper             | Refactor CLI to import from arcane-core                    |
+| ~~T37~~  | ~~S12~~ | ~~P0~~  | ~~Refactor~~ | ~~Extract arcane-core~~     | ~~Shared library for models, generators, clients, templates~~ ✓ |
+| ~~T38~~  | ~~S12~~ | ~~P0~~  | ~~Refactor~~ | ~~Thin CLI Wrapper~~        | ~~Refactor CLI to import from arcane-core~~ ✓              |
 | T39      | S13    | P0       | Backend     | FastAPI + PostgreSQL Setup   | API scaffolding, DB schema, migrations                     |
 | T40      | S13    | P0       | Backend     | Authentication               | JWT auth, user accounts, API key storage                   |
 | T41      | S13    | P0       | Backend     | Project & Roadmap CRUD       | REST endpoints for all item types                          |
@@ -158,12 +158,12 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 >
 > **Architecture:** Shared `arcane-core` library consumed by both `arcane-cli` (existing) and `arcane-web` (new FastAPI + React app). Self-hosted model support added as a learning exercise via vLLM.
 
-### Sprint 12 - Core Extraction
+### Sprint 12 - Core Extraction (COMPLETE)
 
 > **Goal:** Split the monolith into a reusable core library + thin CLI wrapper. This is the prerequisite for everything — no web work starts until this is done.
 
-- [ ] **T37** - Extract `arcane-core` shared library (models, generators, clients, templates, questions registry)
-- [ ] **T38** - Refactor CLI as thin wrapper importing from arcane-core
+- [x] **T37** - Extract `arcane-core` shared library (models, generators, clients, templates, questions registry) ✓
+- [x] **T38** - Refactor CLI as thin wrapper importing from arcane-core ✓
 
 ### Sprint 13 - API Foundation
 
@@ -1390,7 +1390,7 @@ Generating tasks for: Set up CI/CD pipeline  ━━━━━━━━━━━�
 
 ---
 
-### T37: Extract arcane-core Shared Library
+### T37: Extract arcane-core Shared Library ✓
 
 | Field       | Value                                                      |
 | ----------- | ---------------------------------------------------------- |
@@ -1399,68 +1399,20 @@ Generating tasks for: Set up CI/CD pipeline  ━━━━━━━━━━━�
 | Type        | Refactor                                                   |
 | Description | Extract all reusable logic into an `arcane-core` package that both CLI and web consume |
 
-**Why this matters:** Every subsequent SaaS task depends on a clean boundary between core logic and CLI presentation. Without this, the web app would import from the CLI package, creating awkward dependencies on Typer and Rich.
+**Commit:** `refactor: extract arcane-core shared library under arcane/core/`
 
-**What moves to `arcane-core`:**
-- `items/` — All Pydantic models (Roadmap, Milestone, Epic, Story, Task, ProjectContext, enums). Zero changes needed.
-- `generators/` — BaseGenerator, all generators, orchestrator, skeletons. Zero changes needed (already UI-agnostic).
-- `clients/` — BaseAIClient, AnthropicClient, client factory. Zero changes needed.
-- `templates/` — TemplateLoader and all .j2 files. Zero changes needed.
-- `questions/` — Question base class, all question implementations, QuestionRegistry. The `QuestionConductor` stays in CLI (it depends on Rich).
-- `project_management/` — BasePMClient, all exporters (CSV, Linear, Jira, Notion), docs builder. Zero changes needed.
-- `config.py` — Base settings (API keys, model config). CLI-specific settings (interactive, output_dir) stay in CLI.
-- `utils/ids.py` — ID generation. Moves to core.
-- `utils/console.py` — Rich helpers. Stays in CLI.
-- `storage/manager.py` — File-based storage. Stays in CLI (web uses PostgreSQL).
+**What was done:**
+- Chose the subdirectory split approach (Option B): single `pyproject.toml`, modules moved under `arcane/core/`
+- Moved 8 directories (`items/`, `clients/`, `generators/`, `templates/`, `project_management/`, `questions/`, `storage/`, `utils/`) and 2 files (`config.py`, `models.py`) into `arcane/core/` via `git mv`
+- Updated all imports from `arcane.X` to `arcane.core.X` across 13 source files, 22 test files, and `scripts/smoke_test.py`
+- Created `arcane/core/__init__.py`
+- CLI stays at `arcane/cli.py`, entry point unchanged
 
-**Package structure option A (monorepo with namespace packages):**
-```
-arcane/
-├── core/                    # arcane-core (pip installable)
-│   ├── pyproject.toml
-│   └── src/arcane/core/
-│       ├── items/
-│       ├── generators/
-│       ├── clients/
-│       ├── templates/
-│       ├── questions/
-│       ├── project_management/
-│       ├── config.py
-│       └── utils/
-├── cli/                     # arcane-cli (pip installable, depends on arcane-core)
-│   ├── pyproject.toml
-│   └── src/arcane/cli/
-│       ├── app.py
-│       ├── conductor.py
-│       ├── storage/
-│       └── utils/console.py
-└── web/                     # arcane-web (depends on arcane-core)
-    ├── pyproject.toml
-    ├── backend/
-    └── frontend/
-```
-
-**Package structure option B (simpler, single pyproject.toml with extras):**
-```
-arcane/
-├── pyproject.toml           # [project.optional-dependencies] cli = [...], web = [...]
-├── src/arcane/
-│   ├── core/                # No CLI or web dependencies
-│   ├── cli/                 # Depends on typer, rich
-│   └── web/                 # Depends on fastapi, etc.
-```
-
-**Decision needed:** Pick option A or B. Option A is cleaner long-term (separate versioning, independent deploys). Option B is faster to set up.
-
-**Verification:**
-- `arcane-core` has zero dependencies on typer, rich, or any CLI/web framework
-- `arcane-cli` imports from `arcane.core.*` and works identically to current behavior
-- All 422+ existing tests pass
-- `pip install arcane-core` works standalone
+**Verification:** All 537 tests pass, CLI works identically, imports resolve correctly.
 
 ---
 
-### T38: Thin CLI Wrapper
+### T38: Thin CLI Wrapper ✓
 
 | Field       | Value                                                      |
 | ----------- | ---------------------------------------------------------- |
@@ -1469,15 +1421,15 @@ arcane/
 | Type        | Refactor                                                   |
 | Description | Refactor the existing CLI to import from arcane-core instead of owning the logic |
 
-**What changes:**
-- `cli.py` imports from `arcane.core.items`, `arcane.core.generators`, etc.
-- `QuestionConductor` stays in CLI (it's the only Rich-dependent question code)
-- `StorageManager` stays in CLI (web will have its own DB-backed storage)
-- `utils/console.py` stays in CLI
-- All Typer commands work identically
-- Entry point `python -m arcane` still works
+**Commit:** `refactor: extract arcane-core shared library under arcane/core/` (same commit as T37)
 
-**Tests:** All existing tests pass. Test imports reference `arcane.core.*` where applicable.
+**What was done:**
+- `cli.py` imports updated from `arcane.X` to `arcane.core.X` (11 top-level imports + 3 lazy imports)
+- All Typer commands work identically
+- Entry point `python -m arcane` unchanged
+- `QuestionConductor`, `StorageManager`, and `utils/console.py` moved to `arcane/core/` (Rich dependency is fine — Console is always injected as a constructor parameter)
+
+**Verification:** All 537 tests pass, CLI works identically.
 
 ---
 
@@ -2082,13 +2034,18 @@ EOF
 ### Project Structure
 ```
 arcane/
-├── clients/            # AI provider abstraction
-├── config.py           # Settings with pydantic-settings
-├── generators/         # Generation orchestration
-├── items/              # Pydantic data models
-├── project_management/ # PM tool exporters
-├── questions/          # Discovery question system
-├── storage/            # Save/load/resume
-├── templates/          # Jinja2 prompt templates
-└── utils/              # ID generation, console helpers
+├── __init__.py         # Package root (version only)
+├── __main__.py         # Entry point
+├── cli.py              # Typer CLI commands
+└── core/               # Shared library (arcane-core)
+    ├── clients/        # AI provider abstraction
+    ├── config.py       # Settings with pydantic-settings
+    ├── generators/     # Generation orchestration
+    ├── items/          # Pydantic data models
+    ├── models.py       # Model registry
+    ├── project_management/ # PM tool exporters
+    ├── questions/      # Discovery question system
+    ├── storage/        # Save/load/resume
+    ├── templates/      # Jinja2 prompt templates
+    └── utils/          # ID generation, console helpers
 ```
