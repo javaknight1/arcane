@@ -1,7 +1,8 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -21,6 +22,8 @@ interface TreeNodeProps {
   onToggle: (id: string) => void;
   onSelect: (item: RoadmapItem, type: ItemType) => void;
   searchQuery: string;
+  onAddChild?: (parentId: string, parentType: ItemType) => void;
+  onDelete?: (itemId: string, itemType: ItemType, itemName: string) => void;
 }
 
 function matchesSearch(
@@ -48,13 +51,16 @@ export function TreeNode({
   onToggle,
   onSelect,
   searchQuery,
+  onAddChild,
+  onDelete,
 }: TreeNodeProps) {
   const children = getChildren(item, type);
   const childType = getChildType(type);
-  const isLeaf = children.length === 0;
+  const isLeaf = children.length === 0 && !childType;
   const isExpanded = expandedNodes.has(item.id);
   const isSelected = selectedId === item.id;
   const hours = getEstimatedHours(item, type);
+  const canHaveChildren = type !== "task";
 
   if (searchQuery && !matchesSearch(item, type, searchQuery)) {
     return null;
@@ -63,50 +69,85 @@ export function TreeNode({
   return (
     <Collapsible open={isExpanded} onOpenChange={() => !isLeaf && onToggle(item.id)}>
       <CollapsibleTrigger asChild>
-        <button
-          className={cn(
-            "flex w-full items-center gap-1.5 rounded-md border-l-2 px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent/50",
-            STATUS_COLORS[item.status],
-            isSelected && "bg-accent"
-          )}
-          style={{ paddingLeft: depth * 16 + 8 }}
-          onClick={(e) => {
-            e.preventDefault();
-            onSelect(item, type);
-            if (!isLeaf) onToggle(item.id);
-          }}
-        >
-          {!isLeaf ? (
-            <ChevronRight
-              className={cn(
-                "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform",
-                isExpanded && "rotate-90"
-              )}
-            />
-          ) : (
-            <span className="w-3.5 shrink-0" />
-          )}
-          <Badge
-            variant="secondary"
-            className={cn("shrink-0 text-[10px] px-1.5 py-0", TYPE_STYLES[type])}
+        <div className="group/node relative">
+          <button
+            className={cn(
+              "flex w-full items-center gap-1.5 rounded-md border-l-2 px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent/50",
+              STATUS_COLORS[item.status],
+              isSelected && "bg-accent"
+            )}
+            style={{ paddingLeft: depth * 16 + 8 }}
+            onClick={(e) => {
+              e.preventDefault();
+              onSelect(item, type);
+              if (!isLeaf) onToggle(item.id);
+            }}
           >
-            {type}
-          </Badge>
-          <span className="truncate font-medium">{item.name}</span>
-          <span className="ml-auto flex shrink-0 items-center gap-1.5">
+            {!isLeaf || (childType && children.length === 0) ? (
+              <ChevronRight
+                className={cn(
+                  "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform",
+                  isExpanded && "rotate-90"
+                )}
+              />
+            ) : (
+              <span className="w-3.5 shrink-0" />
+            )}
             <Badge
               variant="secondary"
-              className={cn("text-[10px] px-1 py-0", PRIORITY_STYLES[item.priority])}
+              className={cn("shrink-0 text-[10px] px-1.5 py-0", TYPE_STYLES[type])}
             >
-              {item.priority}
+              {type}
             </Badge>
-            <span className="text-[10px] text-muted-foreground tabular-nums">
-              {hours}h
+            <span className="truncate font-medium">{item.name}</span>
+            <span className="ml-auto flex shrink-0 items-center gap-1.5">
+              {/* Action buttons - visible on hover */}
+              {(onAddChild || onDelete) && (
+                <span className="flex items-center gap-0.5 opacity-0 group-hover/node:opacity-100 transition-opacity">
+                  {canHaveChildren && onAddChild && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onAddChild(item.id, type);
+                      }}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 text-destructive hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onDelete(item.id, type, item.name);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </span>
+              )}
+              <Badge
+                variant="secondary"
+                className={cn("text-[10px] px-1 py-0", PRIORITY_STYLES[item.priority])}
+              >
+                {item.priority}
+              </Badge>
+              <span className="text-[10px] text-muted-foreground tabular-nums">
+                {hours}h
+              </span>
             </span>
-          </span>
-        </button>
+          </button>
+        </div>
       </CollapsibleTrigger>
-      {!isLeaf && childType && (
+      {childType && (
         <CollapsibleContent>
           {children.map((child) => (
             <TreeNode
@@ -119,6 +160,8 @@ export function TreeNode({
               onToggle={onToggle}
               onSelect={onSelect}
               searchQuery={searchQuery}
+              onAddChild={onAddChild}
+              onDelete={onDelete}
             />
           ))}
         </CollapsibleContent>

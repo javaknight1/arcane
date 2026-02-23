@@ -3,7 +3,7 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-22
-**Current Task:** T48 (Inline Editing) — Edit, add, remove, reorder items in-place
+**Current Task:** T49 (Multi-Roadmap Projects) — Multiple roadmaps per project (MVP, v2, etc.)
 **Current Sprint:** S16 (Roadmap Viewer & Editor) — In Progress
 **Next Milestone:** S16 completion — Interactive roadmap viewing and editing
 
@@ -64,7 +64,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T45~~  | ~~S15~~ | ~~P0~~  | ~~Frontend~~ | ~~Discovery Wizard~~         | ~~Web-based question conductor~~ ✓                         |
 | ~~T46~~  | ~~S15~~ | ~~P1~~  | ~~Frontend~~ | ~~Generation Progress View~~ | ~~Real-time progress display during generation~~ ✓         |
 | ~~T47~~  | ~~S16~~ | ~~P0~~  | ~~Frontend~~ | ~~Roadmap Tree Viewer~~      | ~~Interactive tree view of roadmap hierarchy~~ ✓           |
-| T48      | S16    | P0       | Frontend    | Inline Editing               | Edit, add, remove, reorder items in-place                  |
+| ~~T48~~  | ~~S16~~ | ~~P0~~  | ~~Frontend~~ | ~~Inline Editing~~           | ~~Edit, add, remove, reorder items in-place~~ ✓            |
 | T49      | S16    | P1       | Feature     | Multi-Roadmap Projects       | Multiple roadmaps per project (MVP, v2, etc.)              |
 | T50      | S17    | P0       | Feature     | Regenerate at Any Level      | Regenerate children of any item without full rebuild        |
 | T51      | S17    | P1       | Feature     | AI-Assisted Editing          | "Split this story", "add error handling tasks", etc.       |
@@ -193,7 +193,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 > **Goal:** The core PM experience. Users can view their roadmap as an interactive tree, edit any item inline, and manage multiple roadmaps per project. This is where it becomes a real PM tool.
 
 - [x] **T47** - Interactive roadmap tree view with expand/collapse and detail panels ✓
-- [ ] **T48** - Inline editing: add, remove, reorder, edit fields for all item types
+- [x] **T48** - Inline editing: add, remove, reorder, edit fields for all item types ✓
 - [ ] **T49** - Multi-roadmap per project (MVP roadmap, v2 roadmap, etc.)
 
 ### Sprint 17 - AI-Native PM Features

@@ -97,7 +97,7 @@ function RoadmapPageContent({
           }
         />
         <div className="mt-6">
-          <RoadmapViewer data={roadmapData} />
+          <RoadmapViewer data={roadmapData} roadmapId={id} />
         </div>
       </main>
     </div>

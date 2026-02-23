@@ -78,6 +78,44 @@ export interface GenerationJobResponse {
   completed_at: string | null;
 }
 
+// Item CRUD
+export interface ItemUpdate {
+  name?: string;
+  description?: string;
+  priority?: string;
+  status?: string;
+  labels?: string[];
+  goal?: string;
+  target_date?: string;
+  estimated_hours?: number;
+  acceptance_criteria?: string[];
+  implementation_notes?: string;
+  claude_code_prompt?: string;
+  prerequisites?: string[];
+}
+
+export interface ItemCreateRequest {
+  item_type: string;
+  data: Record<string, unknown>;
+}
+
+export interface ReorderRequest {
+  parent_id: string;
+  item_ids: string[];
+}
+
+export interface ItemResponse {
+  item_id: string;
+  item_type: string;
+  data: Record<string, unknown>;
+}
+
+export interface DeleteResponse {
+  deleted_id: string;
+  deleted_type: string;
+  children_deleted: number;
+}
+
 // API Errors
 export interface ApiError {
   detail: string;

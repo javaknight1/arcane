@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { Search, ChevronsUpDown } from "lucide-react";
+import { Search, ChevronsUpDown, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ interface RoadmapTreeProps {
   data: RoadmapData;
   selectedId: string | null;
   onSelect: (item: RoadmapItem, type: ItemType) => void;
+  onAddItem?: (parentId: string, parentType: ItemType | "root") => void;
+  onDeleteItem?: (itemId: string, itemType: ItemType, itemName: string) => void;
 }
 
 function collectAllIds(items: RoadmapItem[], type: ItemType): string[] {
@@ -49,9 +51,8 @@ function countItems(data: RoadmapData) {
   };
 }
 
-export function RoadmapTree({ data, selectedId, onSelect }: RoadmapTreeProps) {
+export function RoadmapTree({ data, selectedId, onSelect, onAddItem, onDeleteItem }: RoadmapTreeProps) {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(() => {
-    // Start with milestones expanded
     return new Set(data.milestones.map((m) => m.id));
   });
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,6 +84,20 @@ export function RoadmapTree({ data, selectedId, onSelect }: RoadmapTreeProps) {
     setExpandedNodes(new Set());
   }, []);
 
+  const handleAddChild = useCallback(
+    (parentId: string, parentType: ItemType) => {
+      onAddItem?.(parentId, parentType);
+    },
+    [onAddItem]
+  );
+
+  const handleDelete = useCallback(
+    (itemId: string, itemType: ItemType, itemName: string) => {
+      onDeleteItem?.(itemId, itemType, itemName);
+    },
+    [onDeleteItem]
+  );
+
   return (
     <div className="flex flex-col h-full">
       {/* Search */}
@@ -103,15 +118,28 @@ export function RoadmapTree({ data, selectedId, onSelect }: RoadmapTreeProps) {
             <Badge variant="secondary" className="text-[10px]">{counts.stories} stories</Badge>
             <Badge variant="secondary" className="text-[10px]">{counts.tasks} tasks</Badge>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 px-2 text-xs"
-            onClick={expandedNodes.size === allExpandableIds.length ? collapseAll : expandAll}
-          >
-            <ChevronsUpDown className="h-3 w-3 mr-1" />
-            {expandedNodes.size === allExpandableIds.length ? "Collapse" : "Expand"}
-          </Button>
+          <div className="flex items-center gap-1">
+            {onAddItem && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => onAddItem("root", "root")}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Milestone
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-xs"
+              onClick={expandedNodes.size === allExpandableIds.length ? collapseAll : expandAll}
+            >
+              <ChevronsUpDown className="h-3 w-3 mr-1" />
+              {expandedNodes.size === allExpandableIds.length ? "Collapse" : "Expand"}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -128,6 +156,8 @@ export function RoadmapTree({ data, selectedId, onSelect }: RoadmapTreeProps) {
             onToggle={handleToggle}
             onSelect={onSelect}
             searchQuery={searchQuery}
+            onAddChild={onAddItem ? handleAddChild : undefined}
+            onDelete={onDeleteItem ? handleDelete : undefined}
           />
         ))}
       </div>
