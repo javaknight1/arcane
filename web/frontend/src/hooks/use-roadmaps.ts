@@ -1,12 +1,20 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import type {
   RoadmapCreate,
   RoadmapDetail,
   GenerationJobResponse,
 } from "@/types/api";
+
+export function useGetRoadmap(id: string) {
+  return useQuery<RoadmapDetail>({
+    queryKey: ["roadmaps", id],
+    queryFn: () => apiClient<RoadmapDetail>(`/roadmaps/${id}`),
+    enabled: !!id,
+  });
+}
 
 export function useCreateRoadmap(projectId: string) {
   const queryClient = useQueryClient();
