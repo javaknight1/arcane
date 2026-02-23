@@ -25,6 +25,7 @@ When generating roadmaps with AI in a single shot:
 ## Workflow Rules
 
 - **TODO.md is the source of truth.** When a task (T37, T38, etc.) is completed, always update TODO.md to mark it done — strike through the task index row, check the sprint checklist item, and update the "Current Task" / "Current Sprint" header. Do not wait to be asked.
+- **Auto-commit and push after each task.** When you finish implementing a TODO task, commit all related changes and push to the remote. Use the commit message format: `feat: <short description> (T##)`. Do not wait to be asked.
 
 ---
 
