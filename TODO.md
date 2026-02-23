@@ -3,9 +3,9 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-22
-**Current Task:** T46 (Generation Progress View) — Real-time progress display during generation
-**Current Sprint:** S15 (Frontend Foundation) — In Progress
-**Next Milestone:** S15 completion — Working web UI with generation
+**Current Task:** T47 (Roadmap Tree Viewer) — Interactive tree view of roadmap hierarchy
+**Current Sprint:** S16 (Roadmap Viewer & Editor) — In Progress
+**Next Milestone:** S16 completion — Interactive roadmap viewing and editing
 
 ---
 
@@ -62,7 +62,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T43~~  | ~~S14~~ | ~~P1~~  | ~~Backend~~ | ~~Progress Streaming~~       | ~~WebSocket/SSE for real-time generation progress~~ ✓      |
 | ~~T44~~  | ~~S15~~ | ~~P0~~  | ~~Frontend~~ | ~~Frontend Scaffolding~~     | ~~React/Next.js project, routing, auth UI~~ ✓              |
 | ~~T45~~  | ~~S15~~ | ~~P0~~  | ~~Frontend~~ | ~~Discovery Wizard~~         | ~~Web-based question conductor~~ ✓                         |
-| T46      | S15    | P1       | Frontend    | Generation Progress View     | Real-time progress display during generation               |
+| ~~T46~~  | ~~S15~~ | ~~P1~~  | ~~Frontend~~ | ~~Generation Progress View~~ | ~~Real-time progress display during generation~~ ✓         |
 | T47      | S16    | P0       | Frontend    | Roadmap Tree Viewer          | Interactive tree view of roadmap hierarchy                 |
 | T48      | S16    | P0       | Frontend    | Inline Editing               | Edit, add, remove, reorder items in-place                  |
 | T49      | S16    | P1       | Feature     | Multi-Roadmap Projects       | Multiple roadmaps per project (MVP, v2, etc.)              |
@@ -180,13 +180,13 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 - [x] **T42** - Background generation via asyncio.create_task wrapping the existing orchestrator ✓
 - [x] **T43** - SSE endpoint for generation progress streaming ✓
 
-### Sprint 15 - Frontend Foundation
+### Sprint 15 - Frontend Foundation (COMPLETE)
 
 > **Goal:** A working web UI where a user can log in, answer discovery questions, kick off generation, and watch it happen in real time. No editing yet — just generate and view.
 
 - [x] **T44** - React/Next.js project scaffolding, routing, auth pages (login/register) ✓
 - [x] **T45** - Discovery wizard (web version of QuestionConductor) ✓
-- [ ] **T46** - Real-time generation progress view
+- [x] **T46** - Real-time generation progress view ✓
 
 ### Sprint 16 - Roadmap Viewer & Editor
 

@@ -35,9 +35,9 @@ export function DiscoveryWizard({ projectId }: DiscoveryWizardProps) {
         name: state.formData.project_name,
         context: state.formData as unknown as Record<string, unknown>,
       });
-      await startGeneration.mutateAsync(roadmap.id);
+      const job = await startGeneration.mutateAsync(roadmap.id);
       toast.success("Roadmap generation started!");
-      router.push(`/roadmaps/${roadmap.id}/generating`);
+      router.push(`/roadmaps/${roadmap.id}/generating?job=${job.id}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create roadmap");
       setIsSubmitting(false);
