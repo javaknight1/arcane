@@ -5,6 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import type {
   RoadmapCreate,
   RoadmapDetail,
+  RoadmapStats,
   GenerationJobResponse,
 } from "@/types/api";
 
@@ -27,6 +28,14 @@ export function useCreateRoadmap(projectId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
+  });
+}
+
+export function useRoadmapStats(id: string) {
+  return useQuery<RoadmapStats>({
+    queryKey: ["roadmaps", id, "stats"],
+    queryFn: () => apiClient<RoadmapStats>(`/roadmaps/${id}/stats`),
+    enabled: !!id,
   });
 }
 

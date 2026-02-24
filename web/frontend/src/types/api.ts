@@ -47,6 +47,8 @@ export interface RoadmapSummary {
     tasks: number;
   } | null;
   completion_percent: number | null;
+  hours_completed: number | null;
+  hours_total: number | null;
 }
 
 export interface ProjectDetail {
@@ -129,6 +131,29 @@ export interface AiEditResponse {
   item_type: string;
   original: Record<string, unknown>;
   edited: Record<string, unknown>;
+}
+
+// Roadmap Stats
+export interface MilestoneStats {
+  id: string;
+  name: string;
+  status: string;
+  target_date: string | null;
+  is_overdue: boolean;
+  total_items: number;
+  completed_items: number;
+  hours_total: number;
+  hours_completed: number;
+  epic_count: number;
+  story_count: number;
+  task_count: number;
+}
+
+export interface RoadmapStats {
+  hours_total: number;
+  hours_completed: number;
+  completion_percent: number;
+  milestones: MilestoneStats[];
 }
 
 // API Errors

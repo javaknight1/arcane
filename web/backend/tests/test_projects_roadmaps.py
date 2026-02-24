@@ -201,8 +201,8 @@ class TestProjectCRUD:
         data = resp.json()
         summary = data["roadmaps"][0]
         assert summary["item_counts"]["tasks"] == 1
-        # 1 of 4 items completed = 25%
-        assert summary["completion_percent"] == 25.0
+        # With cascade: completing the only task also completes story, epic, milestone = 100%
+        assert summary["completion_percent"] == 100.0
 
     async def test_get_project_not_found(self, client: AsyncClient, user_and_headers):
         _, headers = user_and_headers

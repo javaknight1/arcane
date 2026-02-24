@@ -91,3 +91,22 @@ export function inferItemType(item: RoadmapItem): ItemType {
   if ("tasks" in item) return "story";
   return "task";
 }
+
+export function getCompletedHours(item: RoadmapItem, type: ItemType): number {
+  switch (type) {
+    case "task": {
+      const t = item as RoadmapTask;
+      return t.status === "completed" ? t.estimated_hours : 0;
+    }
+    case "story":
+      return (item as RoadmapStory).tasks.reduce((sum, t) => sum + getCompletedHours(t, "task"), 0);
+    case "epic":
+      return (item as RoadmapEpic).stories.reduce(
+        (sum, s) => sum + getCompletedHours(s, "story"), 0
+      );
+    case "milestone":
+      return (item as RoadmapMilestone).epics.reduce(
+        (sum, e) => sum + getCompletedHours(e, "epic"), 0
+      );
+  }
+}

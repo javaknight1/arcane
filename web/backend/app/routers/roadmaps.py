@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -19,10 +20,11 @@ from ..schemas.items import (
     ReorderRequest,
 )
 from ..schemas.projects import RoadmapSummary
-from ..schemas.roadmaps import RoadmapCreate, RoadmapDetail
+from ..schemas.roadmaps import MilestoneStats, RoadmapCreate, RoadmapDetail, RoadmapStats
 from ..services.ai_edit import run_ai_edit
 from ..services.roadmap_items import (
     apply_item_update,
+    cascade_status_update,
     count_descendants,
     create_child_item,
     ensure_roadmap_data,
@@ -100,6 +102,81 @@ async def delete_roadmap(
     await db.delete(roadmap)
 
 
+@router.get("/roadmaps/{roadmap_id}/stats", response_model=RoadmapStats)
+async def get_roadmap_stats(
+    roadmap_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    roadmap = await get_roadmap_for_user(db, roadmap_id, user)
+    data = ensure_roadmap_data(roadmap)
+
+    today = date.today()
+    total_hours = 0
+    total_hours_completed = 0
+    milestone_stats: list[MilestoneStats] = []
+
+    for ms in data.get("milestones", []):
+        ms_hours = 0
+        ms_hours_completed = 0
+        ms_total_items = 0
+        ms_completed_items = 0
+        epic_count = 0
+        story_count = 0
+        task_count = 0
+
+        for ep in ms.get("epics", []):
+            epic_count += 1
+            for st in ep.get("stories", []):
+                story_count += 1
+                for tk in st.get("tasks", []):
+                    task_count += 1
+                    ms_total_items += 1
+                    h = tk.get("estimated_hours", 0) or 0
+                    ms_hours += h
+                    if tk.get("status") == "completed":
+                        ms_completed_items += 1
+                        ms_hours_completed += h
+
+        target_date = ms.get("target_date")
+        is_overdue = False
+        if target_date and ms.get("status") != "completed":
+            try:
+                td = date.fromisoformat(target_date)
+                is_overdue = td < today
+            except (ValueError, TypeError):
+                pass
+
+        milestone_stats.append(MilestoneStats(
+            id=ms.get("id", ""),
+            name=ms.get("name", ""),
+            status=ms.get("status", "not_started"),
+            target_date=target_date,
+            is_overdue=is_overdue,
+            total_items=ms_total_items,
+            completed_items=ms_completed_items,
+            hours_total=ms_hours,
+            hours_completed=ms_hours_completed,
+            epic_count=epic_count,
+            story_count=story_count,
+            task_count=task_count,
+        ))
+
+        total_hours += ms_hours
+        total_hours_completed += ms_hours_completed
+
+    completion_percent = 0.0
+    if total_hours > 0:
+        completion_percent = round(total_hours_completed / total_hours * 100, 1)
+
+    return RoadmapStats(
+        hours_total=total_hours,
+        hours_completed=total_hours_completed,
+        completion_percent=completion_percent,
+        milestones=milestone_stats,
+    )
+
+
 # --- Item endpoints ---
 
 
@@ -119,8 +196,11 @@ async def update_item(
     item, _, _, item_type = result
     updates = body.model_dump(exclude_unset=True)
     apply_item_update(item, updates)
+    cascaded = []
+    if "status" in updates:
+        cascaded = cascade_status_update(data, item_id)
     save_roadmap_data(roadmap, data)
-    return ItemResponse(item_id=item["id"], item_type=item_type, data=item)
+    return ItemResponse(item_id=item["id"], item_type=item_type, data=item, cascaded=cascaded)
 
 
 @router.delete("/roadmaps/{roadmap_id}/items/{item_id}", response_model=DeleteResponse)

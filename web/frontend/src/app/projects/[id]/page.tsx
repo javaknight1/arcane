@@ -56,6 +56,11 @@ function RoadmapCard({ roadmap }: { roadmap: RoadmapSummary }) {
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
                   {roadmap.completion_percent}%
                 </span>
+                {roadmap.hours_total != null && roadmap.hours_total > 0 && (
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    ({roadmap.hours_completed ?? 0}/{roadmap.hours_total}h)
+                  </span>
+                )}
               </div>
             )}
           </CardContent>

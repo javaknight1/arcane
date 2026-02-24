@@ -21,8 +21,11 @@ export function useUpdateItem(roadmapId: string) {
         method: "PATCH",
         body: updates,
       }),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["roadmaps", roadmapId] });
+      if (variables.updates.status !== undefined) {
+        queryClient.invalidateQueries({ queryKey: ["roadmaps", roadmapId, "stats"] });
+      }
     },
     onError: (error: Error) => {
       toast.error("Failed to update item", { description: error.message });

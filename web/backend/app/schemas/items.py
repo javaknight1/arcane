@@ -28,10 +28,16 @@ class ReorderRequest(BaseModel):
     item_ids: list[str]
 
 
+class CascadedUpdate(BaseModel):
+    id: str
+    status: str
+
+
 class ItemResponse(BaseModel):
     item_id: str
     item_type: str
     data: dict[str, Any]
+    cascaded: list[CascadedUpdate] = []
 
 
 class DeleteResponse(BaseModel):

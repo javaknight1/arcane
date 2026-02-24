@@ -23,14 +23,16 @@ router = APIRouter()
 
 def _compute_roadmap_stats(
     roadmap_data: dict | None,
-) -> tuple[dict[str, int] | None, float | None]:
-    """Walk the JSONB hierarchy and return (item_counts, completion_percent)."""
+) -> tuple[dict[str, int] | None, float | None, int | None, int | None]:
+    """Walk the JSONB hierarchy and return (item_counts, completion_percent, hours_completed, hours_total)."""
     if not roadmap_data:
-        return None, None
+        return None, None, None, None
 
     counts = {"milestones": 0, "epics": 0, "stories": 0, "tasks": 0}
     total = 0
     completed = 0
+    hours_total = 0
+    hours_completed = 0
 
     for ms in roadmap_data.get("milestones", []):
         counts["milestones"] += 1
@@ -52,16 +54,20 @@ def _compute_roadmap_stats(
                     total += 1
                     if tk.get("status") == "completed":
                         completed += 1
+                    h = tk.get("estimated_hours", 0) or 0
+                    hours_total += h
+                    if tk.get("status") == "completed":
+                        hours_completed += h
 
     if total == 0:
-        return counts, 0.0
+        return counts, 0.0, 0, 0
 
     pct = round(completed / total * 100, 1)
-    return counts, pct
+    return counts, pct, hours_completed, hours_total
 
 
 def _roadmap_summary(r: RoadmapRecord) -> RoadmapSummary:
-    item_counts, completion_percent = _compute_roadmap_stats(r.roadmap_data)
+    item_counts, completion_percent, hours_completed, hours_total = _compute_roadmap_stats(r.roadmap_data)
     return RoadmapSummary(
         id=r.id,
         name=r.name,
@@ -70,6 +76,8 @@ def _roadmap_summary(r: RoadmapRecord) -> RoadmapSummary:
         updated_at=r.updated_at,
         item_counts=item_counts,
         completion_percent=completion_percent,
+        hours_completed=hours_completed,
+        hours_total=hours_total,
     )
 
 

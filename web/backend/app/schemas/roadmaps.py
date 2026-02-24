@@ -21,3 +21,25 @@ class RoadmapDetail(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class MilestoneStats(BaseModel):
+    id: str
+    name: str
+    status: str
+    target_date: str | None
+    is_overdue: bool
+    total_items: int
+    completed_items: int
+    hours_total: int
+    hours_completed: int
+    epic_count: int
+    story_count: int
+    task_count: int
+
+
+class RoadmapStats(BaseModel):
+    hours_total: int
+    hours_completed: int
+    completion_percent: float
+    milestones: list[MilestoneStats]

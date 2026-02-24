@@ -206,6 +206,76 @@ def find_parent_chain(data: dict, item_id: str) -> dict | None:
     return None
 
 
+def compute_parent_status(children: list[dict]) -> str:
+    """Compute a parent's status from its children's statuses."""
+    if not children:
+        return "not_started"
+    statuses = [c.get("status", "not_started") for c in children]
+    if all(s == "completed" for s in statuses):
+        return "completed"
+    if all(s == "not_started" for s in statuses):
+        return "not_started"
+    if any(s == "blocked" for s in statuses):
+        return "blocked"
+    return "in_progress"
+
+
+def cascade_status_update(data: dict, item_id: str) -> list[dict]:
+    """After a status change on item_id, recompute all ancestor statuses.
+
+    Returns list of {id, status} for each changed ancestor.
+    """
+    changed: list[dict] = []
+
+    for ms in data.get("milestones", []):
+        for ep in ms.get("epics", []):
+            for st in ep.get("stories", []):
+                for tk in st.get("tasks", []):
+                    if tk.get("id") == item_id:
+                        # Walk up: story -> epic -> milestone
+                        return _recompute_ancestors(data, ms, ep, st)
+                if st.get("id") == item_id:
+                    return _recompute_ancestors(data, ms, ep)
+            if ep.get("id") == item_id:
+                return _recompute_ancestors(data, ms)
+        if ms.get("id") == item_id:
+            # Milestone has no parent to update
+            return []
+    return changed
+
+
+def _recompute_ancestors(
+    data: dict,
+    ms: dict,
+    ep: dict | None = None,
+    st: dict | None = None,
+) -> list[dict]:
+    """Recompute status for story, epic, milestone ancestors as needed."""
+    changed: list[dict] = []
+
+    if st is not None:
+        # Recompute story status from tasks
+        new_status = compute_parent_status(st.get("tasks", []))
+        if st.get("status") != new_status:
+            st["status"] = new_status
+            changed.append({"id": st["id"], "status": new_status})
+
+    if ep is not None:
+        # Recompute epic status from stories
+        new_status = compute_parent_status(ep.get("stories", []))
+        if ep.get("status") != new_status:
+            ep["status"] = new_status
+            changed.append({"id": ep["id"], "status": new_status})
+
+    # Recompute milestone status from epics
+    new_status = compute_parent_status(ms.get("epics", []))
+    if ms.get("status") != new_status:
+        ms["status"] = new_status
+        changed.append({"id": ms["id"], "status": new_status})
+
+    return changed
+
+
 def reorder_children(parent_id: str, item_ids: list[str], data: dict) -> None:
     """Reorder children of a parent to match the given ID order.
 

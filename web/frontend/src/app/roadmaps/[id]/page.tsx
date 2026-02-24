@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useGetRoadmap } from "@/hooks/use-roadmaps";
 import { RoadmapViewer } from "@/components/roadmap/roadmap-viewer";
+import { RoadmapDashboard } from "@/components/roadmap/roadmap-dashboard";
 import type { RoadmapData } from "@/types/roadmap";
 
 const statusColor: Record<string, "default" | "secondary" | "destructive"> = {
@@ -97,6 +98,7 @@ function RoadmapPageContent({
           }
         />
         <div className="mt-6">
+          <RoadmapDashboard roadmapId={id} />
           <RoadmapViewer data={roadmapData} roadmapId={id} />
         </div>
       </main>
