@@ -18,6 +18,8 @@ class RoadmapSummary(BaseModel):
     status: str
     created_at: datetime
     updated_at: datetime
+    item_counts: dict[str, int] | None = None
+    completion_percent: float | None = None
 
     model_config = {"from_attributes": True}
 

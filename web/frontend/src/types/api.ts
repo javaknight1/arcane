@@ -40,6 +40,13 @@ export interface RoadmapSummary {
   status: "draft" | "generating" | "completed";
   created_at: string;
   updated_at: string;
+  item_counts: {
+    milestones: number;
+    epics: number;
+    stories: number;
+    tasks: number;
+  } | null;
+  completion_percent: number | null;
 }
 
 export interface ProjectDetail {

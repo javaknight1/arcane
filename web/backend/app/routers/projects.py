@@ -21,6 +21,58 @@ from ..services.roadmap_items import get_project_for_user
 router = APIRouter()
 
 
+def _compute_roadmap_stats(
+    roadmap_data: dict | None,
+) -> tuple[dict[str, int] | None, float | None]:
+    """Walk the JSONB hierarchy and return (item_counts, completion_percent)."""
+    if not roadmap_data:
+        return None, None
+
+    counts = {"milestones": 0, "epics": 0, "stories": 0, "tasks": 0}
+    total = 0
+    completed = 0
+
+    for ms in roadmap_data.get("milestones", []):
+        counts["milestones"] += 1
+        total += 1
+        if ms.get("status") == "completed":
+            completed += 1
+        for ep in ms.get("epics", []):
+            counts["epics"] += 1
+            total += 1
+            if ep.get("status") == "completed":
+                completed += 1
+            for st in ep.get("stories", []):
+                counts["stories"] += 1
+                total += 1
+                if st.get("status") == "completed":
+                    completed += 1
+                for tk in st.get("tasks", []):
+                    counts["tasks"] += 1
+                    total += 1
+                    if tk.get("status") == "completed":
+                        completed += 1
+
+    if total == 0:
+        return counts, 0.0
+
+    pct = round(completed / total * 100, 1)
+    return counts, pct
+
+
+def _roadmap_summary(r: RoadmapRecord) -> RoadmapSummary:
+    item_counts, completion_percent = _compute_roadmap_stats(r.roadmap_data)
+    return RoadmapSummary(
+        id=r.id,
+        name=r.name,
+        status=r.status,
+        created_at=r.created_at,
+        updated_at=r.updated_at,
+        item_counts=item_counts,
+        completion_percent=completion_percent,
+    )
+
+
 @router.post("/", response_model=ProjectDetail, status_code=status.HTTP_201_CREATED)
 async def create_project(
     body: ProjectCreate,
@@ -90,16 +142,7 @@ async def get_project(
         name=project.name,
         created_at=project.created_at,
         updated_at=project.updated_at,
-        roadmaps=[
-            RoadmapSummary(
-                id=r.id,
-                name=r.name,
-                status=r.status,
-                created_at=r.created_at,
-                updated_at=r.updated_at,
-            )
-            for r in project.roadmaps
-        ],
+        roadmaps=[_roadmap_summary(r) for r in project.roadmaps],
     )
 
 
@@ -126,16 +169,7 @@ async def update_project(
         name=project.name,
         created_at=project.created_at,
         updated_at=project.updated_at,
-        roadmaps=[
-            RoadmapSummary(
-                id=r.id,
-                name=r.name,
-                status=r.status,
-                created_at=r.created_at,
-                updated_at=r.updated_at,
-            )
-            for r in project.roadmaps
-        ],
+        roadmaps=[_roadmap_summary(r) for r in project.roadmaps],
     )
 
 

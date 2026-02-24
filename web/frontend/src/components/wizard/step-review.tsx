@@ -1,9 +1,22 @@
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { WizardFormData } from "@/types/wizard";
+import type { RoadmapSummary } from "@/types/api";
 
 interface StepReviewProps {
   data: WizardFormData;
+  existingRoadmaps?: RoadmapSummary[];
+  buildOnRoadmapId?: string | null;
+  onBuildOnChange?: (roadmapId: string | null) => void;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -39,9 +52,58 @@ function TagList({ tags }: { tags: string[] }) {
   );
 }
 
-export function StepReview({ data }: StepReviewProps) {
+export function StepReview({ data, existingRoadmaps, buildOnRoadmapId, onBuildOnChange }: StepReviewProps) {
+  const completedRoadmaps = existingRoadmaps?.filter((r) => r.status === "completed") ?? [];
+  const showBuildOn = completedRoadmaps.length > 0 && onBuildOnChange;
+
   return (
     <div className="space-y-6">
+      {showBuildOn && (
+        <>
+          <div className="rounded-md border p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="build-on-toggle" className="text-sm font-medium">
+                Build on previous roadmap
+              </Label>
+              <Switch
+                id="build-on-toggle"
+                checked={!!buildOnRoadmapId}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    onBuildOnChange(completedRoadmaps[0].id);
+                  } else {
+                    onBuildOnChange(null);
+                  }
+                }}
+              />
+            </div>
+            {buildOnRoadmapId && (
+              <div className="space-y-2">
+                <Select
+                  value={buildOnRoadmapId}
+                  onValueChange={(val) => onBuildOnChange(val)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a roadmap" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {completedRoadmaps.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Milestone summaries from the selected roadmap will be included so the AI avoids duplicating previous work.
+                </p>
+              </div>
+            )}
+          </div>
+          <Separator />
+        </>
+      )}
+
       <Section title="Basic Information">
         <Field label="Project Name" value={data.project_name} />
         <Field label="Vision" value={data.vision} />

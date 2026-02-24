@@ -3,14 +3,23 @@
 import { use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ChevronDownIcon } from "lucide-react";
 import { AuthGuard } from "@/components/auth-guard";
 import { Navbar } from "@/components/navbar";
 import { PageHeader } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useProject, useDeleteProject } from "@/hooks/use-projects";
 import { toast } from "sonner";
 import type { RoadmapSummary } from "@/types/api";
@@ -36,8 +45,62 @@ function RoadmapCard({ roadmap }: { roadmap: RoadmapSummary }) {
             Updated {new Date(roadmap.updated_at).toLocaleDateString()}
           </CardDescription>
         </CardHeader>
+        {roadmap.item_counts && (
+          <CardContent className="pt-0 space-y-2">
+            <p className="text-xs text-muted-foreground">
+              {roadmap.item_counts.milestones} milestones, {roadmap.item_counts.epics} epics, {roadmap.item_counts.stories} stories, {roadmap.item_counts.tasks} tasks
+            </p>
+            {roadmap.completion_percent !== null && (
+              <div className="flex items-center gap-2">
+                <Progress value={roadmap.completion_percent} className="h-1.5" />
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {roadmap.completion_percent}%
+                </span>
+              </div>
+            )}
+          </CardContent>
+        )}
       </Card>
     </Link>
+  );
+}
+
+function NewRoadmapButton({
+  projectId,
+  roadmaps,
+}: {
+  projectId: string;
+  roadmaps: RoadmapSummary[];
+}) {
+  const latestCompleted = roadmaps.find((r) => r.status === "completed");
+
+  if (!latestCompleted) {
+    return (
+      <Button asChild>
+        <Link href={`/projects/${projectId}/new`}>New Roadmap</Link>
+      </Button>
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button>
+          New Roadmap <ChevronDownIcon className="ml-1 size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link href={`/projects/${projectId}/new`}>Blank roadmap</Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href={`/projects/${projectId}/new?from=${latestCompleted.id}`}>
+            New from &ldquo;{latestCompleted.name}&rdquo;
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -95,9 +158,7 @@ function ProjectDetailContent({
           description={`Created ${new Date(project.created_at).toLocaleDateString()}`}
           action={
             <div className="flex gap-2">
-              <Button asChild>
-                <Link href={`/projects/${id}/new`}>New Roadmap</Link>
-              </Button>
+              <NewRoadmapButton projectId={id} roadmaps={project.roadmaps} />
             </div>
           }
         />

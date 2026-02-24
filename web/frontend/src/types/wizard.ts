@@ -56,4 +56,5 @@ export type WizardAction =
   | { type: "SET_STEP"; step: StepIndex }
   | { type: "UPDATE_FIELD"; field: keyof WizardFormData; value: WizardFormData[keyof WizardFormData] }
   | { type: "SET_ERRORS"; errors: Record<string, string> }
-  | { type: "CLEAR_ERRORS" };
+  | { type: "CLEAR_ERRORS" }
+  | { type: "INIT"; data: Partial<WizardFormData> };

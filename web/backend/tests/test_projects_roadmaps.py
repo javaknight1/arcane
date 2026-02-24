@@ -153,6 +153,57 @@ class TestProjectCRUD:
         assert len(data["roadmaps"]) == 1
         assert data["roadmaps"][0]["name"] == "Test Roadmap"
 
+    async def test_roadmap_summary_no_data(self, client: AsyncClient, roadmap):
+        """Draft roadmap with no roadmap_data returns null counts."""
+        rm, headers = roadmap
+        resp = await client.get(f"/projects/{rm['project_id']}", headers=headers)
+        data = resp.json()
+        summary = data["roadmaps"][0]
+        assert summary["item_counts"] is None
+        assert summary["completion_percent"] is None
+
+    async def test_roadmap_summary_with_items(self, client: AsyncClient, roadmap_with_items):
+        """Roadmap with items returns correct counts and completion percent."""
+        ctx = roadmap_with_items
+        rm = ctx["roadmap"]
+        headers = ctx["headers"]
+        resp = await client.get(f"/projects/{rm['project_id']}", headers=headers)
+        data = resp.json()
+        summary = data["roadmaps"][0]
+        # 1 milestone + 1 epic + 1 story + 1 task = 4 items
+        assert summary["item_counts"] == {
+            "milestones": 1,
+            "epics": 1,
+            "stories": 1,
+            "tasks": 1,
+        }
+        # All items default to not_started, so 0% completed
+        assert summary["completion_percent"] == 0.0
+
+    async def test_roadmap_summary_completion_percent(self, client: AsyncClient, roadmap_with_items):
+        """Marking items as completed updates completion_percent."""
+        ctx = roadmap_with_items
+        rm_id = ctx["roadmap"]["id"]
+        project_id = ctx["roadmap"]["project_id"]
+        tk_id = ctx["task_id"]
+        headers = ctx["headers"]
+
+        # Mark task as completed
+        resp = await client.patch(
+            f"/roadmaps/{rm_id}/items/{tk_id}",
+            json={"status": "completed"},
+            headers=headers,
+        )
+        assert resp.status_code == 200
+
+        # Fetch project and check completion
+        resp = await client.get(f"/projects/{project_id}", headers=headers)
+        data = resp.json()
+        summary = data["roadmaps"][0]
+        assert summary["item_counts"]["tasks"] == 1
+        # 1 of 4 items completed = 25%
+        assert summary["completion_percent"] == 25.0
+
     async def test_get_project_not_found(self, client: AsyncClient, user_and_headers):
         _, headers = user_and_headers
         fake_id = str(uuid.uuid4())

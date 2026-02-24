@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useCallback } from "react";
+import { useReducer, useCallback, useEffect, useRef } from "react";
 import type {
   WizardState,
   WizardAction,
@@ -28,6 +28,11 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
       return { ...state, errors: action.errors };
     case "CLEAR_ERRORS":
       return { ...state, errors: {} };
+    case "INIT":
+      return {
+        ...state,
+        formData: { ...INITIAL_FORM_DATA, ...action.data },
+      };
   }
 }
 
@@ -71,8 +76,16 @@ export function validateStep(
   return errors;
 }
 
-export function useWizard() {
+export function useWizard(initialData?: Partial<WizardFormData>) {
   const [state, dispatch] = useReducer(wizardReducer, initialState);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (initialData && !initialized.current) {
+      initialized.current = true;
+      dispatch({ type: "INIT", data: initialData });
+    }
+  }, [initialData]);
 
   const updateField = useCallback(
     <K extends keyof WizardFormData>(field: K, value: WizardFormData[K]) => {
