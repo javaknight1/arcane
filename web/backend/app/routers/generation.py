@@ -18,8 +18,12 @@ from ..models.roadmap import RoadmapRecord
 from ..models.user import User
 from ..schemas.generation import GenerateRequest, GenerationJobResponse
 from ..services import event_bus
-from ..services.generation import run_generation
-from ..services.roadmap_items import get_roadmap_for_user
+from ..services.generation import run_generation, run_regeneration
+from ..services.roadmap_items import (
+    get_roadmap_for_user,
+    ensure_roadmap_data,
+    find_item_by_id,
+)
 
 router = APIRouter()
 
@@ -85,6 +89,83 @@ async def start_generation(
             roadmap_record_id=str(roadmap_id),
             job_id=str(job.id),
             context_dict=context,
+            anthropic_api_key=settings.anthropic_api_key,
+            model=settings.model,
+        )
+    )
+
+    return GenerationJobResponse.model_validate(job)
+
+
+@router.post(
+    "/roadmaps/{roadmap_id}/items/{item_id}/regenerate",
+    response_model=GenerationJobResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def regenerate_item_children(
+    roadmap_id: uuid.UUID,
+    item_id: str,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+    settings: Settings = Depends(get_settings),
+):
+    """Regenerate the children of a specific roadmap item."""
+    roadmap = await get_roadmap_for_user(db, roadmap_id, user)
+
+    if not roadmap.context:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No context stored on roadmap; cannot regenerate",
+        )
+
+    if not settings.anthropic_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI generation is not configured (missing API key)",
+        )
+
+    # Conflict guard: check for active jobs
+    active_result = await db.execute(
+        select(GenerationJob).where(
+            GenerationJob.roadmap_id == roadmap_id,
+            GenerationJob.status.in_(["pending", "in_progress"]),
+        )
+    )
+    if active_result.scalar_one_or_none() is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A generation job is already active for this roadmap",
+        )
+
+    # Find the item in roadmap data
+    data = ensure_roadmap_data(roadmap)
+    found = find_item_by_id(data, item_id)
+    if found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Item {item_id} not found in roadmap",
+        )
+    _, _, _, item_type = found
+
+    if item_type == "task":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tasks have no children to regenerate",
+        )
+
+    # Create job and launch background task
+    job = GenerationJob(roadmap_id=roadmap_id, status="pending")
+    db.add(job)
+    await db.flush()
+    await db.refresh(job)
+
+    session_factory = get_session_factory()
+    asyncio.create_task(
+        run_regeneration(
+            session_factory=session_factory,
+            roadmap_record_id=str(roadmap_id),
+            job_id=str(job.id),
+            item_id=item_id,
             anthropic_api_key=settings.anthropic_api_key,
             model=settings.model,
         )

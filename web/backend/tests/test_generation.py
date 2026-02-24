@@ -518,3 +518,171 @@ class TestAdapterEventEmission:
         progress_event = next(e for e in events if e["event"] == "progress")
         assert progress_event["data"]["milestones"] == 1
         assert progress_event["data"]["phase"] == "epics"
+
+
+# --- Regenerate Endpoint Tests ---
+
+
+def _noop_run_regeneration(*args, **kwargs):
+    """A no-op coroutine that replaces run_regeneration in tests."""
+    async def noop():
+        pass
+    return noop()
+
+
+@pytest.fixture
+async def roadmap_with_generated_items(client: AsyncClient, project, db_session: AsyncSession):
+    """Create a roadmap with stored context and manually set roadmap_data with a hierarchy."""
+    proj, headers = project
+    context = {
+        "project_name": "Test",
+        "vision": "A test project",
+        "problem_statement": "Testing",
+        "target_users": ["devs"],
+        "timeline": "1 month MVP",
+        "team_size": 1,
+        "developer_experience": "senior",
+        "budget_constraints": "minimal (free tier everything)",
+        "must_have_features": ["auth"],
+    }
+    resp = await client.post(
+        f"/projects/{proj['id']}/roadmaps",
+        json={"name": "Regen Roadmap", "context": context},
+        headers=headers,
+    )
+    assert resp.status_code == 201
+    rm = resp.json()
+
+    # Manually set roadmap_data with a known hierarchy
+    rm_uuid = uuid.UUID(rm["id"])
+    result = await db_session.execute(
+        select(RoadmapRecord).where(RoadmapRecord.id == rm_uuid)
+    )
+    record = result.scalar_one()
+    record.roadmap_data = copy.deepcopy({
+        "milestones": [{
+            "id": "ms-1",
+            "name": "M1",
+            "description": "Milestone 1",
+            "priority": "high",
+            "goal": "G1",
+            "status": "not_started",
+            "labels": [],
+            "epics": [{
+                "id": "ep-1",
+                "name": "E1",
+                "description": "Epic 1",
+                "priority": "medium",
+                "goal": "EG1",
+                "status": "not_started",
+                "labels": [],
+                "stories": [{
+                    "id": "st-1",
+                    "name": "S1",
+                    "description": "Story 1",
+                    "priority": "low",
+                    "status": "not_started",
+                    "labels": [],
+                    "acceptance_criteria": ["AC1"],
+                    "tasks": [{
+                        "id": "tk-1",
+                        "name": "T1",
+                        "description": "Task 1",
+                        "priority": "medium",
+                        "status": "not_started",
+                        "labels": [],
+                        "estimated_hours": 4,
+                        "prerequisites": [],
+                        "acceptance_criteria": ["AC1"],
+                        "implementation_notes": "",
+                        "claude_code_prompt": "",
+                    }],
+                }],
+            }],
+        }],
+    })
+    record.status = "generated"
+    await db_session.commit()
+
+    return rm, headers
+
+
+class TestRegenerateEndpoint:
+    async def test_regenerate_returns_202(self, client: AsyncClient, roadmap_with_generated_items):
+        rm, headers = roadmap_with_generated_items
+        with patch("app.routers.generation.run_regeneration", side_effect=_noop_run_regeneration):
+            resp = await client.post(
+                f"/roadmaps/{rm['id']}/items/ep-1/regenerate",
+                headers=headers,
+            )
+        assert resp.status_code == 202
+        data = resp.json()
+        assert data["status"] == "pending"
+        assert data["roadmap_id"] == rm["id"]
+
+    async def test_regenerate_task_returns_400(self, client: AsyncClient, roadmap_with_generated_items):
+        rm, headers = roadmap_with_generated_items
+        resp = await client.post(
+            f"/roadmaps/{rm['id']}/items/tk-1/regenerate",
+            headers=headers,
+        )
+        assert resp.status_code == 400
+        assert "task" in resp.json()["detail"].lower()
+
+    async def test_regenerate_nonexistent_item_returns_404(self, client: AsyncClient, roadmap_with_generated_items):
+        rm, headers = roadmap_with_generated_items
+        resp = await client.post(
+            f"/roadmaps/{rm['id']}/items/nonexistent-id/regenerate",
+            headers=headers,
+        )
+        assert resp.status_code == 404
+
+    async def test_regenerate_no_context_returns_400(self, client: AsyncClient, roadmap_no_context):
+        rm, headers = roadmap_no_context
+        resp = await client.post(
+            f"/roadmaps/{rm['id']}/items/some-id/regenerate",
+            headers=headers,
+        )
+        assert resp.status_code == 400
+        assert "context" in resp.json()["detail"].lower()
+
+    async def test_regenerate_no_api_key_returns_503(self, client: AsyncClient, roadmap_with_generated_items):
+        rm, headers = roadmap_with_generated_items
+        app.dependency_overrides[get_settings] = _fake_settings(anthropic_api_key="")
+        resp = await client.post(
+            f"/roadmaps/{rm['id']}/items/ep-1/regenerate",
+            headers=headers,
+        )
+        assert resp.status_code == 503
+        assert "api key" in resp.json()["detail"].lower()
+
+    async def test_regenerate_conflict_returns_409(self, client: AsyncClient, roadmap_with_generated_items):
+        rm, headers = roadmap_with_generated_items
+        # Start a first regeneration
+        with patch("app.routers.generation.run_regeneration", side_effect=_noop_run_regeneration):
+            resp1 = await client.post(
+                f"/roadmaps/{rm['id']}/items/ep-1/regenerate",
+                headers=headers,
+            )
+        assert resp1.status_code == 202
+        # Second should conflict
+        with patch("app.routers.generation.run_regeneration", side_effect=_noop_run_regeneration):
+            resp2 = await client.post(
+                f"/roadmaps/{rm['id']}/items/ms-1/regenerate",
+                headers=headers,
+            )
+        assert resp2.status_code == 409
+
+    async def test_regenerate_ownership_check(self, client: AsyncClient, roadmap_with_generated_items):
+        rm, _ = roadmap_with_generated_items
+        # Register a different user
+        resp = await client.post("/auth/register", json={
+            "email": "regenother@example.com",
+            "password": "otherpassword",
+        })
+        other_headers = {"Authorization": f"Bearer {resp.json()['access_token']}"}
+        resp = await client.post(
+            f"/roadmaps/{rm['id']}/items/ep-1/regenerate",
+            headers=other_headers,
+        )
+        assert resp.status_code == 404

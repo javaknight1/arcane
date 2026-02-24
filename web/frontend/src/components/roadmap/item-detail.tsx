@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Check, Copy, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Check, Copy, Trash2, ChevronUp, ChevronDown, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +49,7 @@ interface ItemDetailProps {
   onItemUpdated?: (itemId: string, updates: ItemUpdate) => void;
   onItemDeleted?: (itemId: string) => void;
   onReorder?: (parentId: string, itemIds: string[]) => void;
+  onRegenerate?: (itemId: string) => void;
   parentId?: string | null;
   siblingIds?: string[];
 }
@@ -86,6 +87,7 @@ export function ItemDetail({
   onItemUpdated,
   onItemDeleted,
   onReorder,
+  onRegenerate,
   parentId,
   siblingIds,
 }: ItemDetailProps) {
@@ -377,15 +379,28 @@ export function ItemDetail({
                 </>
               )}
             </div>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="h-7 gap-1.5"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Delete
-            </Button>
+            <div className="flex items-center gap-1">
+              {type !== "task" && onRegenerate && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1.5"
+                  onClick={() => onRegenerate(item.id)}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Regenerate
+                </Button>
+              )}
+              <Button
+                variant="destructive"
+                size="sm"
+                className="h-7 gap-1.5"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete
+              </Button>
+            </div>
           </div>
 
           <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>

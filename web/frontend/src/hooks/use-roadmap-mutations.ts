@@ -9,6 +9,7 @@ import type {
   ReorderRequest,
   ItemResponse,
   DeleteResponse,
+  GenerationJobResponse,
 } from "@/types/api";
 
 export function useUpdateItem(roadmapId: string) {
@@ -81,5 +82,15 @@ export function useReorderItems(roadmapId: string) {
     onError: (error: Error) => {
       toast.error("Failed to reorder items", { description: error.message });
     },
+  });
+}
+
+export function useRegenerateItem(roadmapId: string) {
+  return useMutation({
+    mutationFn: (itemId: string) =>
+      apiClient<GenerationJobResponse>(
+        `/roadmaps/${roadmapId}/items/${itemId}/regenerate`,
+        { method: "POST" }
+      ),
   });
 }

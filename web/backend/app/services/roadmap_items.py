@@ -167,6 +167,45 @@ def create_child_item(parent_id: str, item_type: str, item_data: dict, data: dic
     return new_item
 
 
+def find_parent_chain(data: dict, item_id: str) -> dict | None:
+    """Return ancestor context for an item, formatted for generator parent_context.
+
+    Returns {} for milestones, {"milestone": {...}} for epics,
+    {"milestone": {...}, "epic": {...}} for stories, etc.
+    Returns None if item_id not found.
+    """
+    def _ancestor_entry(item: dict, item_type: str) -> dict:
+        entry = {
+            "name": item.get("name", ""),
+            "description": item.get("description", ""),
+            "priority": item.get("priority", "medium"),
+        }
+        if item_type in ("milestone", "epic"):
+            entry["goal"] = item.get("goal", "")
+        return entry
+
+    for ms in data.get("milestones", []):
+        if ms.get("id") == item_id:
+            return {}
+        for ep in ms.get("epics", []):
+            if ep.get("id") == item_id:
+                return {"milestone": _ancestor_entry(ms, "milestone")}
+            for st in ep.get("stories", []):
+                if st.get("id") == item_id:
+                    return {
+                        "milestone": _ancestor_entry(ms, "milestone"),
+                        "epic": _ancestor_entry(ep, "epic"),
+                    }
+                for tk in st.get("tasks", []):
+                    if tk.get("id") == item_id:
+                        return {
+                            "milestone": _ancestor_entry(ms, "milestone"),
+                            "epic": _ancestor_entry(ep, "epic"),
+                            "story": _ancestor_entry(st, "story"),
+                        }
+    return None
+
+
 def reorder_children(parent_id: str, item_ids: list[str], data: dict) -> None:
     """Reorder children of a parent to match the given ID order.
 

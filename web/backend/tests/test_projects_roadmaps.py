@@ -551,3 +551,98 @@ class TestItemReorder:
             headers=headers,
         )
         assert resp.status_code == 404
+
+
+# --- find_parent_chain unit tests ---
+
+
+class TestFindParentChain:
+    """Unit tests for the find_parent_chain helper."""
+
+    def _make_data(self):
+        return {
+            "milestones": [{
+                "id": "ms-1",
+                "name": "M1",
+                "description": "Milestone 1",
+                "priority": "high",
+                "goal": "G1",
+                "status": "not_started",
+                "labels": [],
+                "epics": [{
+                    "id": "ep-1",
+                    "name": "E1",
+                    "description": "Epic 1",
+                    "priority": "medium",
+                    "goal": "EG1",
+                    "status": "not_started",
+                    "labels": [],
+                    "stories": [{
+                        "id": "st-1",
+                        "name": "S1",
+                        "description": "Story 1",
+                        "priority": "low",
+                        "status": "not_started",
+                        "labels": [],
+                        "tasks": [{
+                            "id": "tk-1",
+                            "name": "T1",
+                            "description": "Task 1",
+                            "priority": "medium",
+                            "status": "not_started",
+                            "labels": [],
+                        }],
+                    }],
+                }],
+            }],
+        }
+
+    def test_find_parent_chain_milestone(self):
+        from app.services.roadmap_items import find_parent_chain
+
+        data = self._make_data()
+        result = find_parent_chain(data, "ms-1")
+        assert result == {}
+
+    def test_find_parent_chain_epic(self):
+        from app.services.roadmap_items import find_parent_chain
+
+        data = self._make_data()
+        result = find_parent_chain(data, "ep-1")
+        assert result is not None
+        assert "milestone" in result
+        assert result["milestone"]["name"] == "M1"
+        assert result["milestone"]["goal"] == "G1"
+        assert "epic" not in result
+
+    def test_find_parent_chain_story(self):
+        from app.services.roadmap_items import find_parent_chain
+
+        data = self._make_data()
+        result = find_parent_chain(data, "st-1")
+        assert result is not None
+        assert "milestone" in result
+        assert "epic" in result
+        assert result["milestone"]["name"] == "M1"
+        assert result["epic"]["name"] == "E1"
+        assert result["epic"]["goal"] == "EG1"
+
+    def test_find_parent_chain_task(self):
+        from app.services.roadmap_items import find_parent_chain
+
+        data = self._make_data()
+        result = find_parent_chain(data, "tk-1")
+        assert result is not None
+        assert "milestone" in result
+        assert "epic" in result
+        assert "story" in result
+        assert result["story"]["name"] == "S1"
+        # story entries should not have 'goal'
+        assert "goal" not in result["story"]
+
+    def test_find_parent_chain_not_found(self):
+        from app.services.roadmap_items import find_parent_chain
+
+        data = self._make_data()
+        result = find_parent_chain(data, "nonexistent")
+        assert result is None

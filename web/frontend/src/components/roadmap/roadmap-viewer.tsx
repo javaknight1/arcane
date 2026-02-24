@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import type { RoadmapData, RoadmapItem, RoadmapMilestone, RoadmapEpic, RoadmapStory, ItemType } from "@/types/roadmap";
 import { getChildren, getChildType, inferItemType } from "@/types/roadmap";
 import type { ItemUpdate } from "@/types/api";
@@ -13,6 +14,7 @@ import {
 import { RoadmapTree } from "./roadmap-tree";
 import { ItemDetail } from "./item-detail";
 import { AddItemDialog } from "./add-item-dialog";
+import { RegenerateDialog } from "./regenerate-dialog";
 import {
   Dialog,
   DialogContent,
@@ -98,7 +100,17 @@ export function RoadmapViewer({ data, roadmapId }: RoadmapViewerProps) {
     name: string;
   } | null>(null);
 
+  // Regenerate dialog state
+  const [regenerateOpen, setRegenerateOpen] = useState(false);
+  const [regenerateTarget, setRegenerateTarget] = useState<{
+    id: string;
+    name: string;
+    type: ItemType;
+    childCount: number;
+  } | null>(null);
+
   const editable = !!roadmapId;
+  const queryClient = useQueryClient();
   const updateItem = useUpdateItem(roadmapId ?? "");
   const deleteItem = useDeleteItem(roadmapId ?? "");
   const reorderItems = useReorderItems(roadmapId ?? "");
@@ -175,6 +187,34 @@ export function RoadmapViewer({ data, roadmapId }: RoadmapViewerProps) {
     []
   );
 
+  const handleRegenerate = useCallback(
+    (itemId: string) => {
+      const found = findItem(data, itemId);
+      if (!found || found.type === "task") return;
+      const children = getChildren(found.item, found.type);
+      setRegenerateTarget({
+        id: itemId,
+        name: found.item.name,
+        type: found.type,
+        childCount: children.length,
+      });
+      setRegenerateOpen(true);
+    },
+    [data]
+  );
+
+  const handleRegenerateComplete = useCallback(() => {
+    if (roadmapId) {
+      queryClient.invalidateQueries({ queryKey: ["roadmaps", roadmapId] });
+    }
+    setRegenerateOpen(false);
+    setRegenerateTarget(null);
+    // Clear selection since children are new
+    setSelectedId(null);
+    setSelectedItem(null);
+    setSelectedType(null);
+  }, [roadmapId, queryClient]);
+
   const handleItemCreated = useCallback(
     (itemId: string) => {
       // After refetch, try to select the new item
@@ -206,6 +246,7 @@ export function RoadmapViewer({ data, roadmapId }: RoadmapViewerProps) {
           onItemUpdated={editable ? handleItemUpdated : undefined}
           onItemDeleted={editable ? handleItemDeleted : undefined}
           onReorder={editable ? handleReorder : undefined}
+          onRegenerate={editable ? handleRegenerate : undefined}
           parentId={itemContext?.parentId}
           siblingIds={itemContext?.siblingIds}
         />
@@ -220,6 +261,20 @@ export function RoadmapViewer({ data, roadmapId }: RoadmapViewerProps) {
           parentId={addParentId}
           parentType={addParentType}
           onCreated={handleItemCreated}
+        />
+      )}
+
+      {/* Regenerate dialog */}
+      {editable && regenerateTarget && (
+        <RegenerateDialog
+          open={regenerateOpen}
+          onOpenChange={setRegenerateOpen}
+          roadmapId={roadmapId!}
+          itemId={regenerateTarget.id}
+          itemName={regenerateTarget.name}
+          itemType={regenerateTarget.type}
+          childCount={regenerateTarget.childCount}
+          onComplete={handleRegenerateComplete}
         />
       )}
 
