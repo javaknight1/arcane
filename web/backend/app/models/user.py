@@ -12,3 +12,4 @@ class User(UUIDPrimaryKey, TimestampMixin, Base):
 
     projects = relationship("Project", back_populates="user", cascade="all, delete-orphan")
     pm_credentials = relationship("PMCredential", back_populates="user", cascade="all, delete-orphan")
+    export_jobs = relationship("ExportJob", back_populates="user", cascade="all, delete-orphan")

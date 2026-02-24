@@ -9,6 +9,7 @@ from .routers.auth import router as auth_router
 from .routers.generation import router as generation_router
 from .routers.health import router as health_router
 from .routers.projects import router as projects_router
+from .routers.exports import router as exports_router
 from .routers.roadmaps import router as roadmaps_router
 
 
@@ -40,3 +41,4 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(projects_router, prefix="/projects", tags=["projects"])
 app.include_router(roadmaps_router, tags=["roadmaps"])
 app.include_router(generation_router, tags=["generation"])
+app.include_router(exports_router, tags=["exports"])

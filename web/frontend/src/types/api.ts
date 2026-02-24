@@ -156,6 +156,47 @@ export interface RoadmapStats {
   milestones: MilestoneStats[];
 }
 
+// Credentials
+export interface CredentialCreate {
+  service: string;
+  credentials: Record<string, string>;
+}
+
+export interface CredentialResponse {
+  id: string;
+  service: string;
+  created_at: string;
+}
+
+export interface CredentialValidateResponse {
+  service: string;
+  valid: boolean;
+  message: string;
+}
+
+// Exports
+export interface ExportRequest {
+  service: string;
+  workspace_params?: Record<string, string>;
+}
+
+export interface ExportJobResponse {
+  id: string;
+  roadmap_id: string;
+  service: string;
+  status: "pending" | "in_progress" | "completed" | "failed";
+  progress: Record<string, unknown> | null;
+  result: Record<string, unknown> | null;
+  error: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+export interface CSVExportResponse {
+  csv_content: string;
+  filename: string;
+}
+
 // API Errors
 export interface ApiError {
   detail: string;

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useGetRoadmap } from "@/hooks/use-roadmaps";
 import { RoadmapViewer } from "@/components/roadmap/roadmap-viewer";
 import { RoadmapDashboard } from "@/components/roadmap/roadmap-dashboard";
+import { ExportDialog } from "@/components/roadmap/export-dialog";
 import type { RoadmapData } from "@/types/roadmap";
 
 const statusColor: Record<string, "default" | "secondary" | "destructive"> = {
@@ -92,9 +93,12 @@ function RoadmapPageContent({
         <PageHeader
           title={roadmap.name}
           action={
-            <Badge variant={statusColor[roadmap.status] ?? "secondary"}>
-              {roadmap.status}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <ExportDialog roadmapId={id} />
+              <Badge variant={statusColor[roadmap.status] ?? "secondary"}>
+                {roadmap.status}
+              </Badge>
+            </div>
           }
         />
         <div className="mt-6">

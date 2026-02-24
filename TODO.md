@@ -3,9 +3,9 @@
 This file tracks the complete build of Arcane following the step-by-step architecture in CLAUDE.md. Each task has complete implementation details so work can continue without needing follow-up prompts.
 
 **Last Updated:** 2026-02-23
-**Current Task:** T53 (Web Export) — Wire existing exporters through web UI
-**Current Sprint:** S17 (AI-Native PM Features) — In Progress
-**Next Milestone:** S17 completion — AI-native PM features
+**Current Task:** T54 (vLLM Infrastructure) — GPU setup, model serving, deployment
+**Current Sprint:** S18 (Self-Hosted Models) — Not Started
+**Next Milestone:** S18 completion — Self-hosted model support
 
 ---
 
@@ -69,7 +69,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 | ~~T50~~  | ~~S17~~ | ~~P0~~  | ~~Feature~~ | ~~Regenerate at Any Level~~  | ~~Regenerate children of any item without full rebuild~~ ✓  |
 | ~~T51~~  | ~~S17~~ | ~~P1~~  | ~~Feature~~ | ~~AI-Assisted Editing~~      | ~~"Split this story", "add error handling tasks", etc.~~ ✓ |
 | ~~T52~~  | ~~S17~~ | ~~P1~~  | ~~Feature~~ | ~~Status Tracking~~          | ~~Progress dashboards and status sync~~ ✓                  |
-| T53      | S17    | P2       | Feature     | Web Export to External PMs   | Wire existing exporters through web UI                     |
+| ~~T53~~  | ~~S17~~ | ~~P2~~  | ~~Feature~~ | ~~Web Export to External PMs~~ | ~~Wire existing exporters through web UI~~ ✓               |
 | T54      | S18    | P1       | Infra       | vLLM Infrastructure          | GPU setup, model serving, deployment                       |
 | T55      | S18    | P1       | Clients     | VLLMClient Implementation    | BaseAIClient adapter for self-hosted models                |
 | T56      | S18    | P2       | Testing     | Model Benchmarking           | Quality comparison of self-hosted vs Claude/GPT            |
@@ -203,7 +203,7 @@ Quick reference for all tasks. Use the ID (e.g., "implement T15") to reference a
 - [x] **T50** - Regenerate at any level ("regenerate this epic's stories") ✓
 - [x] **T51** - AI-assisted editing ("split this story into smaller stories", "add tests") ✓
 - [x] **T52** - Status tracking and progress dashboards
-- [ ] **T53** - Export to external PM tools via web UI (wire existing Linear/Jira/Notion/CSV exporters)
+- [x] **T53** - Export to external PM tools via web UI (wire existing Linear/Jira/Notion/CSV exporters) ✓
 
 ### Sprint 18 - Self-Hosted Models (Learning)
 

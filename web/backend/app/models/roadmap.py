@@ -17,3 +17,4 @@ class RoadmapRecord(UUIDPrimaryKey, TimestampMixin, Base):
 
     project = relationship("Project", back_populates="roadmaps")
     generation_jobs = relationship("GenerationJob", back_populates="roadmap", cascade="all, delete-orphan")
+    export_jobs = relationship("ExportJob", back_populates="roadmap", cascade="all, delete-orphan")
