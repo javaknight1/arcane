@@ -1,0 +1,26 @@
+## Current {{ item_type | capitalize }}
+```json
+{{ current_item }}
+```
+
+## Edit Command
+{{ command }}
+
+## Project Context
+Project: {{ project.project_name }}
+Vision: {{ project.vision }}
+Problem: {{ project.problem_statement }}
+{% if project.tech_stack %}
+Tech Stack: {{ project.tech_stack | join(", ") }}
+{% endif %}
+Team: {{ project.team_size }} developer(s), {{ project.developer_experience }} level
+
+{% if parent %}
+## Parent Context
+This item belongs to:
+{% for level, data in parent.items() %}
+- {{ level | capitalize }}: {{ data.name }} — {{ data.goal | default(data.description, true) }}
+{% endfor %}
+{% endif %}
+
+Return the complete edited {{ item_type }} with all fields updated according to the edit command.

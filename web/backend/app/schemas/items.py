@@ -38,3 +38,14 @@ class DeleteResponse(BaseModel):
     deleted_id: str
     deleted_type: str
     children_deleted: int
+
+
+class AiEditRequest(BaseModel):
+    command: str = Field(min_length=1, max_length=2000)
+
+
+class AiEditResponse(BaseModel):
+    item_id: str
+    item_type: str
+    original: dict[str, Any]
+    edited: dict[str, Any]

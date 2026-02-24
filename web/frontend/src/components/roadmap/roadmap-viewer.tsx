@@ -15,6 +15,7 @@ import { RoadmapTree } from "./roadmap-tree";
 import { ItemDetail } from "./item-detail";
 import { AddItemDialog } from "./add-item-dialog";
 import { RegenerateDialog } from "./regenerate-dialog";
+import { AiEditDialog } from "./ai-edit-dialog";
 import {
   Dialog,
   DialogContent,
@@ -107,6 +108,14 @@ export function RoadmapViewer({ data, roadmapId }: RoadmapViewerProps) {
     name: string;
     type: ItemType;
     childCount: number;
+  } | null>(null);
+
+  // AI edit dialog state
+  const [aiEditOpen, setAiEditOpen] = useState(false);
+  const [aiEditTarget, setAiEditTarget] = useState<{
+    id: string;
+    name: string;
+    type: ItemType;
   } | null>(null);
 
   const editable = !!roadmapId;
@@ -215,6 +224,28 @@ export function RoadmapViewer({ data, roadmapId }: RoadmapViewerProps) {
     setSelectedType(null);
   }, [roadmapId, queryClient]);
 
+  const handleAiEdit = useCallback(
+    (itemId: string) => {
+      const found = findItem(data, itemId);
+      if (!found) return;
+      setAiEditTarget({
+        id: itemId,
+        name: found.item.name,
+        type: found.type,
+      });
+      setAiEditOpen(true);
+    },
+    [data]
+  );
+
+  const handleAiEditComplete = useCallback(() => {
+    if (roadmapId) {
+      queryClient.invalidateQueries({ queryKey: ["roadmaps", roadmapId] });
+    }
+    setAiEditOpen(false);
+    setAiEditTarget(null);
+  }, [roadmapId, queryClient]);
+
   const handleItemCreated = useCallback(
     (itemId: string) => {
       // After refetch, try to select the new item
@@ -247,6 +278,7 @@ export function RoadmapViewer({ data, roadmapId }: RoadmapViewerProps) {
           onItemDeleted={editable ? handleItemDeleted : undefined}
           onReorder={editable ? handleReorder : undefined}
           onRegenerate={editable ? handleRegenerate : undefined}
+          onAiEdit={editable ? handleAiEdit : undefined}
           parentId={itemContext?.parentId}
           siblingIds={itemContext?.siblingIds}
         />
@@ -275,6 +307,19 @@ export function RoadmapViewer({ data, roadmapId }: RoadmapViewerProps) {
           itemType={regenerateTarget.type}
           childCount={regenerateTarget.childCount}
           onComplete={handleRegenerateComplete}
+        />
+      )}
+
+      {/* AI edit dialog */}
+      {editable && aiEditTarget && (
+        <AiEditDialog
+          open={aiEditOpen}
+          onOpenChange={setAiEditOpen}
+          roadmapId={roadmapId!}
+          itemId={aiEditTarget.id}
+          itemName={aiEditTarget.name}
+          itemType={aiEditTarget.type}
+          onComplete={handleAiEditComplete}
         />
       )}
 

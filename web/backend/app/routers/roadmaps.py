@@ -4,11 +4,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..config import Settings, get_settings
 from ..deps import get_current_user, get_db
 from ..models.project import Project
 from ..models.roadmap import RoadmapRecord
 from ..models.user import User
 from ..schemas.items import (
+    AiEditRequest,
+    AiEditResponse,
     DeleteResponse,
     ItemCreate,
     ItemResponse,
@@ -17,12 +20,14 @@ from ..schemas.items import (
 )
 from ..schemas.projects import RoadmapSummary
 from ..schemas.roadmaps import RoadmapCreate, RoadmapDetail
+from ..services.ai_edit import run_ai_edit
 from ..services.roadmap_items import (
     apply_item_update,
     count_descendants,
     create_child_item,
     ensure_roadmap_data,
     find_item_by_id,
+    find_parent_chain,
     get_project_for_user,
     get_roadmap_for_user,
     reorder_children,
@@ -172,3 +177,65 @@ async def reorder_items(
     reorder_children(body.parent_id, body.item_ids, data)
     save_roadmap_data(roadmap, data)
     return {"status": "ok"}
+
+
+@router.post(
+    "/roadmaps/{roadmap_id}/items/{item_id}/ai-edit",
+    response_model=AiEditResponse,
+)
+async def ai_edit_item(
+    roadmap_id: uuid.UUID,
+    item_id: str,
+    body: AiEditRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+    settings: Settings = Depends(get_settings),
+):
+    """Edit a roadmap item using AI based on a natural language command."""
+    roadmap = await get_roadmap_for_user(db, roadmap_id, user)
+
+    if not roadmap.context:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No context stored on roadmap; cannot use AI edit",
+        )
+
+    if not settings.anthropic_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI editing is not configured (missing API key)",
+        )
+
+    data = ensure_roadmap_data(roadmap)
+    result = find_item_by_id(data, item_id)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Item not found",
+        )
+    item, _, _, item_type = result
+
+    parent_context = find_parent_chain(data, item_id)
+    original = dict(item)
+
+    edited = await run_ai_edit(
+        item=item,
+        item_type=item_type,
+        command=body.command,
+        context_dict=roadmap.context,
+        parent_context=parent_context,
+        anthropic_api_key=settings.anthropic_api_key,
+        model=settings.model,
+    )
+
+    # Apply edited fields back into the roadmap data
+    for key, value in edited.items():
+        item[key] = value
+    save_roadmap_data(roadmap, data)
+
+    return AiEditResponse(
+        item_id=item_id,
+        item_type=item_type,
+        original=original,
+        edited=edited,
+    )

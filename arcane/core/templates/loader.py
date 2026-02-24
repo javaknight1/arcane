@@ -43,3 +43,22 @@ class TemplateLoader:
             guidance=additional_guidance,
             errors=errors,
         )
+
+    def render_edit(
+        self,
+        item_type: str,
+        current_item: str,
+        command: str,
+        project_context: dict,
+        parent_context: dict | None = None,
+    ) -> tuple[str, str]:
+        """Return (system_prompt, user_prompt) for an edit operation."""
+        system = self.env.get_template("system/edit.j2").render(item_type=item_type)
+        user = self.env.get_template("user/edit.j2").render(
+            item_type=item_type,
+            current_item=current_item,
+            command=command,
+            project=project_context,
+            parent=parent_context,
+        )
+        return system, user

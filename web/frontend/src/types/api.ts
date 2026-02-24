@@ -123,6 +123,14 @@ export interface DeleteResponse {
   children_deleted: number;
 }
 
+// AI Edit
+export interface AiEditResponse {
+  item_id: string;
+  item_type: string;
+  original: Record<string, unknown>;
+  edited: Record<string, unknown>;
+}
+
 // API Errors
 export interface ApiError {
   detail: string;

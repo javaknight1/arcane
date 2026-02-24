@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Check, Copy, Trash2, ChevronUp, ChevronDown, RefreshCw } from "lucide-react";
+import { Check, Copy, Trash2, ChevronUp, ChevronDown, RefreshCw, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +50,7 @@ interface ItemDetailProps {
   onItemDeleted?: (itemId: string) => void;
   onReorder?: (parentId: string, itemIds: string[]) => void;
   onRegenerate?: (itemId: string) => void;
+  onAiEdit?: (itemId: string) => void;
   parentId?: string | null;
   siblingIds?: string[];
 }
@@ -88,6 +89,7 @@ export function ItemDetail({
   onItemDeleted,
   onReorder,
   onRegenerate,
+  onAiEdit,
   parentId,
   siblingIds,
 }: ItemDetailProps) {
@@ -380,6 +382,17 @@ export function ItemDetail({
               )}
             </div>
             <div className="flex items-center gap-1">
+              {onAiEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1.5"
+                  onClick={() => onAiEdit(item.id)}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  AI Edit
+                </Button>
+              )}
               {type !== "task" && onRegenerate && (
                 <Button
                   variant="outline"

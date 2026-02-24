@@ -10,6 +10,7 @@ import type {
   ItemResponse,
   DeleteResponse,
   GenerationJobResponse,
+  AiEditResponse,
 } from "@/types/api";
 
 export function useUpdateItem(roadmapId: string) {
@@ -91,6 +92,16 @@ export function useRegenerateItem(roadmapId: string) {
       apiClient<GenerationJobResponse>(
         `/roadmaps/${roadmapId}/items/${itemId}/regenerate`,
         { method: "POST" }
+      ),
+  });
+}
+
+export function useAiEditItem(roadmapId: string) {
+  return useMutation({
+    mutationFn: ({ itemId, command }: { itemId: string; command: string }) =>
+      apiClient<AiEditResponse>(
+        `/roadmaps/${roadmapId}/items/${itemId}/ai-edit`,
+        { method: "POST", body: { command } }
       ),
   });
 }
